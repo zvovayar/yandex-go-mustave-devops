@@ -140,6 +140,7 @@ func (m monitor) sendMetrics() {
 			// обработаем ошибку
 			fmt.Println(err)
 		}
+		defer resp.Body.Close()
 		fmt.Println(resp)
 	}
 
