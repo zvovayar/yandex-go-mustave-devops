@@ -132,6 +132,15 @@ func (m monitor) sendMetrics() {
 			fmt.Println(err)
 		}
 		request.Header.Set("Content-Type", contentType)
+
+		client := &http.Client{}
+		// отправляем запрос
+		resp, err := client.Do(request)
+		if err != nil {
+			// обработаем ошибку
+			fmt.Println(err)
+		}
+		fmt.Println(resp)
 	}
 
 }
