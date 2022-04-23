@@ -112,8 +112,8 @@ func NewMonitor(duration time.Duration) {
 }
 
 func main() {
-	b, _ := json.Marshal(gmetricnames)
-	fmt.Println(string(b))
+	// b, _ := json.Marshal(gmetricnames)
+	// fmt.Println(string(b))
 	fmt.Println(gmetricnames)
 	NewMonitor(pollInterval)
 }
@@ -139,6 +139,7 @@ func (m monitor) sendMetrics() {
 		if err != nil {
 			// обработаем ошибку
 			fmt.Println(err)
+			return
 		}
 		defer resp.Body.Close()
 		fmt.Println(resp)
