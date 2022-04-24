@@ -32,12 +32,12 @@ func UpdateGaugeMetric(w http.ResponseWriter, r *http.Request) {
 
 	if len(ss) != 5 {
 		// мало или много параметров в URL
-		w.WriteHeader(http.StatusNotFound)
+		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("<h1>Gauge metric URL is not valid</h1> length=" + fmt.Sprintf("%d", len(ss))))
 		return
 	} else if _, ok := internal.Gmetricnames[ss[3]]; !ok {
 		// не нашли название метрики, были ошибки
-		w.WriteHeader(http.StatusNotFound)
+		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("<h1>Gauge metric not found</h1>"))
 		return
 	}
@@ -47,7 +47,7 @@ func UpdateGaugeMetric(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// значения метрики нет
 		log.Println(err)
-		w.WriteHeader(http.StatusNotFound)
+		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("<h1>Gauge metric value not found</h1>"))
 		return
 	}
