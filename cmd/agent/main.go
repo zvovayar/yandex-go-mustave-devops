@@ -111,7 +111,7 @@ func NewMonitor(duration time.Duration, chanmonitor chan monitor) {
 
 		// Just encode to json and print
 		b, _ := json.Marshal(m)
-		fmt.Println("NewMonitor - > " + string(b))
+		log.Println("NewMonitor - > " + string(b))
 
 		// Save new collected data to the slice
 		chanmonitor <- m
@@ -140,7 +140,7 @@ func runSendMetrics(duration time.Duration, chanmonitor chan monitor) {
 		<-time.After(duration)
 
 		c := len(chanmonitor)
-		fmt.Printf("runSendMetrics -> %v \n quantity new elements %v\n", time.Now(), c)
+		log.Printf("runSendMetrics -> quantity new elements %v\n", c)
 		for i := 0; i < c; i++ {
 
 			m, err := <-chanmonitor
@@ -152,10 +152,6 @@ func runSendMetrics(duration time.Duration, chanmonitor chan monitor) {
 
 		}
 
-		// for i := 0; i < len(slcMonitor); i++ {
-
-		// 	slcMonitor[i].SendMetrics()
-		// }
 	}
 }
 
@@ -163,56 +159,56 @@ func (m monitor) SendMetrics() {
 
 	//Just encode to json and print
 	b, _ := json.Marshal(m)
-	fmt.Println("SendMetrics -> " + string(b))
+	log.Println("SendMetrics -> " + string(b))
 	var body = []byte(b)
 
 	// gauge type send
 	for key, element := range gmetricnames {
 		var url = "http://" + serverAddress + "/update/gauge/" + key + "/" + fmt.Sprint(m.Gmetrics[element])
-		fmt.Println(url)
+		log.Println(url)
 
 		request, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
 		if err != nil {
 			// обработаем ошибку
-			fmt.Println(err)
+			log.Println(err)
 		}
 		request.Header.Set("Content-Type", contentType)
 
-		// client := &http.Client{}
+		client := &http.Client{}
 		// отправляем запрос
-		//
-		// resp, err := client.Do(request)
-		// if err != nil {
-		// 	// обработаем ошибку
-		// 	fmt.Println(err)
-		// 	return
-		// }
-		// defer resp.Body.Close()
-		// fmt.Println(resp)
+
+		resp, err := client.Do(request)
+		if err != nil {
+			// обработаем ошибку
+			log.Println(err)
+			return
+		}
+		defer resp.Body.Close()
+		log.Println(resp)
 	}
 
 	// counter type send
 	for key, element := range cmetricnames {
 		var url = "http://" + serverAddress + "/update/counter/" + key + "/" + fmt.Sprint(m.Cmetrics[element])
-		fmt.Println(url)
+		log.Println(url)
 
 		request, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
 		if err != nil {
 			// обработаем ошибку
-			fmt.Println(err)
+			log.Println(err)
 		}
 		request.Header.Set("Content-Type", contentType)
 
-		// client := &http.Client{}
+		client := &http.Client{}
 		// отправляем запрос
-		//
-		// resp, err := client.Do(request)
-		// if err != nil {
-		// 	// обработаем ошибку
-		// 	fmt.Println(err)
-		// 	return
-		// }
-		// defer resp.Body.Close()
-		// fmt.Println(resp)
+
+		resp, err := client.Do(request)
+		if err != nil {
+			// обработаем ошибку
+			log.Println(err)
+			return
+		}
+		defer resp.Body.Close()
+		log.Println(resp)
 	}
 }
