@@ -8,7 +8,7 @@ func main() {
 	// маршрутизация запросов обработчику
 
 	// root
-	http.HandleFunc("/", HelloWorld)
+	http.HandleFunc("/", http.NotFound)
 	// update
 	http.HandleFunc("/update/", UpdateMetric)
 
@@ -16,15 +16,9 @@ func main() {
 	http.ListenAndServe(":8080", nil)
 }
 
-// HelloWorld — обработчик запроса.
-func HelloWorld(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("<h1>Hello, World</h1>"))
-	w.WriteHeader(http.StatusNoContent)
-}
-
-// HelloWorld — обработчик запроса.
+// Сохранение метрики
 func UpdateMetric(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("<h1>Hello, World</h1>"))
 	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("<h1>Hello, World</h1>"))
 
 }
