@@ -16,11 +16,20 @@ func main() {
 	// root
 	http.HandleFunc("/", http.NotFound)
 	// update
+	http.HandleFunc("/update/", NotImplemented)
+
 	http.HandleFunc("/update/gauge/", UpdateGaugeMetric)
 	http.HandleFunc("/update/counter/", UpdateCounterMetric)
 
 	// запуск сервера с адресом localhost, порт 8080
 	http.ListenAndServe(":8080", nil)
+}
+
+// Не реализовано
+func NotImplemented(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+	w.Write([]byte("<h1>Not implemented</h1> length="))
+	return
 }
 
 // Сохранение метрики Gauge
