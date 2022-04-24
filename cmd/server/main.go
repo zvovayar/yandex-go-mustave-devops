@@ -19,11 +19,12 @@ func main() {
 // HelloWorld — обработчик запроса.
 func HelloWorld(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("<h1>Hello, World</h1>"))
-
+	w.WriteHeader(http.StatusNoContent)
 }
 
 // HelloWorld — обработчик запроса.
 func UpdateMetric(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("<h1>Hello, World</h1>"))
+	w.WriteHeader(http.StatusOK)
 
 }
