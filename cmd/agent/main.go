@@ -4,9 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"math/rand"
 	"net/http"
+	"os"
+	"os/signal"
 	"runtime"
+	"syscall"
 	"time"
 )
 
@@ -51,24 +55,29 @@ var gmetricnames = map[string]int{
 var cmetricnames = map[string]int{
 	"PollCount": 0,
 }
-var pollInterval = time.Second * 2
-var reportInterval = time.Second * 10
+var pollInterval = time.Second * 1   // 3
+var reportInterval = time.Second * 5 //10
+var bufferLength = 20
 var serverAddress = "127.0.0.1:8080"
 var contentType = "text/plain"
 
-func NewMonitor(duration time.Duration) {
+//
+// добавить слайс для хранения monitor
+//
+
+func NewMonitor(duration time.Duration, chanmonitor chan monitor) {
 	var m monitor
 	var rtm runtime.MemStats
+	//
+	// добавить сохранение собранных данных в слайс
+	//
 	for {
 		<-time.After(duration)
 
 		// Read full mem stats
 		runtime.ReadMemStats(&rtm)
 
-		// Number of goroutines
-		//m.NumGoroutine = runtime.NumGoroutine()
-
-		// Misc memory stats
+		// Collect stats
 		m.Gmetrics[gmetricnames["Alloc"]] = gauge(rtm.Alloc)
 		m.Gmetrics[gmetricnames["BuckHashSys"]] = gauge(rtm.BuckHashSys)
 		m.Gmetrics[gmetricnames["Frees"]] = gauge(rtm.Frees)
@@ -99,29 +108,65 @@ func NewMonitor(duration time.Duration) {
 		m.Gmetrics[gmetricnames["RandomValue"]] = gauge(rand.Float64())
 
 		m.Cmetrics[cmetricnames["PoolCount"]]++
-		// // GC Stats
-		// m.PauseTotalNs = rtm.PauseTotalNs
-		// m.NumGC = rtm.NumGC
-
-		m.sendMetrics()
 
 		// Just encode to json and print
 		b, _ := json.Marshal(m)
-		fmt.Println(string(b))
+		fmt.Println("NewMonitor - > " + string(b))
+
+		// Save new collected data to the slice
+		chanmonitor <- m
+
+		// m.sendMetrics()
+
 	}
 }
 
 func main() {
-	// b, _ := json.Marshal(gmetricnames)
-	// fmt.Println(string(b))
-	fmt.Println(gmetricnames)
-	NewMonitor(pollInterval)
+	chanmonitor := make(chan monitor, bufferLength)
+	chanOS := make(chan os.Signal, 1) // we need to reserve to buffer size 1, so the notifier are not blocked
+	signal.Notify(chanOS, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT)
+
+	go NewMonitor(pollInterval, chanmonitor)
+	go runSendMetrics(reportInterval, chanmonitor)
+
+	sig := <-chanOS
+	log.Printf("INFO got a signal '%v', start shutting down...\n", sig) // put breakpoint here
+	log.Printf("Shutdown complete")
 }
 
-func (m monitor) sendMetrics() {
+func runSendMetrics(duration time.Duration, chanmonitor chan monitor) {
 
-	var body = []byte(`{"message":"Hello"}`)
+	for {
+		<-time.After(duration)
 
+		c := len(chanmonitor)
+		fmt.Printf("runSendMetrics -> %v \n quantity new elements %v\n", time.Now(), c)
+		for i := 0; i < c; i++ {
+
+			m, err := <-chanmonitor
+			if !err {
+				fmt.Println(err)
+				break
+			}
+			m.SendMetrics()
+
+		}
+
+		// for i := 0; i < len(slcMonitor); i++ {
+
+		// 	slcMonitor[i].SendMetrics()
+		// }
+	}
+}
+
+func (m monitor) SendMetrics() {
+
+	//Just encode to json and print
+	b, _ := json.Marshal(m)
+	fmt.Println("SendMetrics -> " + string(b))
+	var body = []byte(b)
+
+	// gauge type send
 	for key, element := range gmetricnames {
 		var url = "http://" + serverAddress + "/update/gauge/" + key + "/" + fmt.Sprint(m.Gmetrics[element])
 		fmt.Println(url)
@@ -133,16 +178,41 @@ func (m monitor) sendMetrics() {
 		}
 		request.Header.Set("Content-Type", contentType)
 
-		client := &http.Client{}
+		// client := &http.Client{}
 		// отправляем запрос
-		resp, err := client.Do(request)
+		//
+		// resp, err := client.Do(request)
+		// if err != nil {
+		// 	// обработаем ошибку
+		// 	fmt.Println(err)
+		// 	return
+		// }
+		// defer resp.Body.Close()
+		// fmt.Println(resp)
+	}
+
+	// counter type send
+	for key, element := range cmetricnames {
+		var url = "http://" + serverAddress + "/update/counter/" + key + "/" + fmt.Sprint(m.Cmetrics[element])
+		fmt.Println(url)
+
+		request, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
 		if err != nil {
 			// обработаем ошибку
 			fmt.Println(err)
-			return
 		}
-		defer resp.Body.Close()
-		fmt.Println(resp)
-	}
+		request.Header.Set("Content-Type", contentType)
 
+		// client := &http.Client{}
+		// отправляем запрос
+		//
+		// resp, err := client.Do(request)
+		// if err != nil {
+		// 	// обработаем ошибку
+		// 	fmt.Println(err)
+		// 	return
+		// }
+		// defer resp.Body.Close()
+		// fmt.Println(resp)
+	}
 }
