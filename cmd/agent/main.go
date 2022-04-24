@@ -55,22 +55,16 @@ var gmetricnames = map[string]int{
 var cmetricnames = map[string]int{
 	"PollCount": 0,
 }
-var pollInterval = time.Second * 1   // 3
-var reportInterval = time.Second * 5 //10
+var pollInterval = time.Second * 2    // 2
+var reportInterval = time.Second * 10 //10
 var bufferLength = 20
 var serverAddress = "127.0.0.1:8080"
 var contentType = "text/plain"
 
-//
-// добавить слайс для хранения monitor
-//
-
 func NewMonitor(duration time.Duration, chanmonitor chan monitor) {
 	var m monitor
 	var rtm runtime.MemStats
-	//
-	// добавить сохранение собранных данных в слайс
-	//
+
 	for {
 		<-time.After(duration)
 
