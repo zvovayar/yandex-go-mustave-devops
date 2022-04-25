@@ -98,3 +98,7 @@ func UpdateCounterMetric(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("<h1>Gauge metric</h1>" + ss[3] + ss[4]))
 }
+
+func GetAllMetrics(w http.ResponseWriter, r *http.Request) {
+
+}
