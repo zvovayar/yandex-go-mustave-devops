@@ -32,7 +32,7 @@ func NotImplemented(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// Сохранение метрики Gauge
+// Сохранение метрики  Gauge
 func UpdateGaugeMetric(w http.ResponseWriter, r *http.Request) {
 
 	ss := strings.Split(r.URL.Path, "/")
