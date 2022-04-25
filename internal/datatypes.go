@@ -65,7 +65,7 @@ func (m Monitor) SendMetrics() {
 
 	// internal.Gauge type send
 	for key, element := range Gmetricnames {
-		var url = "http://" + ServerAddress + "/update/internal.Gauge/" + key + "/" + fmt.Sprint(m.Gmetrics[element])
+		var url = "http://" + ServerAddress + "/update/gauge/" + key + "/" + fmt.Sprint(m.Gmetrics[element])
 		log.Println(url)
 
 		request, err := http.NewRequest("POST", url, bytes.NewBuffer(body))

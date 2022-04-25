@@ -21,7 +21,7 @@ func NewMonitor(duration time.Duration, chanmonitor chan internal.Monitor) {
 	for {
 		<-time.After(duration)
 
-		// Read full mem stats
+		// Read full memory stats
 		runtime.ReadMemStats(&rtm)
 
 		// Collect stats
