@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/zvovayar/yandex-go-mustave-devops/cmd/server/storage"
 	"github.com/zvovayar/yandex-go-mustave-devops/internal"
 )
 
@@ -50,6 +51,8 @@ func UpdateGaugeMetric(w http.ResponseWriter, r *http.Request) {
 	//
 	// TODO: здесь сохранять значение метрики
 	//
+	storage.StoreMonitor.Gmetrics[internal.Gmetricnames[gmname]] = internal.Gauge(gm)
+	log.Printf("Store %v = %f", gmname, gm)
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("<h1>Gauge metric</h1>" + ss[3] + ss[4]))
@@ -89,6 +92,8 @@ func UpdateCounterMetric(w http.ResponseWriter, r *http.Request) {
 	//
 	// TODO: здесь сохранять значение метрики
 	//
+	storage.StoreMonitor.Cmetrics[internal.Gmetricnames[cmname]] = internal.Counter(cm)
+	log.Printf("Store %v = %d", cmname, cm)
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("<h1>Gauge metric</h1>" + ss[3] + ss[4]))
