@@ -1,22 +1,33 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/zvovayar/yandex-go-mustave-devops/cmd/server/handlers"
 )
 
 func main() {
 	// маршрутизация запросов обработчику
+	r := chi.NewRouter()
 
-	// root
-	http.HandleFunc("/", http.NotFound)
-	// update
-	http.HandleFunc("/update/", handlers.NotImplemented)
+	// зададим встроенные middleware, чтобы улучшить стабильность приложения
+	r.Use(middleware.RequestID)
+	r.Use(middleware.RealIP)
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
 
-	http.HandleFunc("/update/gauge/", handlers.UpdateGaugeMetric)
-	http.HandleFunc("/update/counter/", handlers.UpdateCounterMetric)
+	// GET requests
+	//http.HandleFunc("/", http.NotFound)
+	r.Get("/", http.NotFound)
+
+	// POST requests update
+	r.Post("/update/", handlers.NotImplemented)
+	r.Post("/update/gauge/{GMname}/{GMvalue}", handlers.UpdateGaugeMetric)
+	r.Post("/update/counter/{CMname}/{CMvalue}", handlers.UpdateCounterMetric)
 
 	// запуск сервера с адресом localhost, порт 8080
-	http.ListenAndServe(":8080", nil)
+	log.Fatal(http.ListenAndServe(":8080", r))
 }
