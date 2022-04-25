@@ -26,6 +26,7 @@ func main() {
 	// POST requests update
 	r.Post("/update/{type}/", handlers.NotImplemented)
 	r.Post("/update/{type}/{vname}/", http.NotFound)
+	r.Post("/update/{type}/{vname}/{value}", handlers.NotImplemented)
 	r.Post("/update/gauge/", http.NotFound)
 	r.Post("/update/counter/", http.NotFound)
 	r.Post("/update/gauge/{GMname}/{GMvalue}", handlers.UpdateGaugeMetric)
