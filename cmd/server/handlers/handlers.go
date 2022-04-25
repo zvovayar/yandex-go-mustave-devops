@@ -92,7 +92,7 @@ func UpdateCounterMetric(w http.ResponseWriter, r *http.Request) {
 	//
 	// TODO: здесь сохранять значение метрики
 	//
-	storage.StoreMonitor.Cmetrics[internal.Gmetricnames[cmname]] += internal.Counter(cm)
+	storage.StoreMonitor.Cmetrics[internal.Cmetricnames[cmname]] += internal.Counter(cm)
 	log.Printf("Store %v = %d", cmname, cm)
 
 	w.WriteHeader(http.StatusOK)
@@ -100,5 +100,17 @@ func UpdateCounterMetric(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAllMetrics(w http.ResponseWriter, r *http.Request) {
+
+	htmlText := ""
+	for key, element := range internal.Gmetricnames {
+		htmlText += fmt.Sprintf("type gauge %v # %v = %f</b>", key, element, storage.StoreMonitor.Gmetrics[internal.Gmetricnames[key]])
+	}
+
+	for key, element := range internal.Cmetricnames {
+		htmlText += fmt.Sprintf("type counter %v # %v = %d</b>", key, element, storage.StoreMonitor.Cmetrics[internal.Cmetricnames[key]])
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(htmlText))
 
 }

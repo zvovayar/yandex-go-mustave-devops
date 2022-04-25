@@ -21,10 +21,12 @@ func main() {
 
 	// GET requests
 	//http.HandleFunc("/", http.NotFound)
-	r.Get("/", http.NotFound)
+	r.Get("/", handlers.GetAllMetrics)
 
 	// POST requests update
 	r.Post("/update/{type}/", handlers.NotImplemented)
+	r.Post("/update/gauge/", http.NotFound)
+	r.Post("/update/counter/", http.NotFound)
 	r.Post("/update/gauge/{GMname}/{GMvalue}", handlers.UpdateGaugeMetric)
 	r.Post("/update/counter/{CMname}/{CMvalue}", handlers.UpdateCounterMetric)
 
