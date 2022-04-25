@@ -24,7 +24,7 @@ func main() {
 	r.Get("/", http.NotFound)
 
 	// POST requests update
-	r.Post("/update/", handlers.NotImplemented)
+	r.Post("/update/{type}/", handlers.NotImplemented)
 	r.Post("/update/gauge/{GMname}/{GMvalue}", handlers.UpdateGaugeMetric)
 	r.Post("/update/counter/{CMname}/{CMvalue}", handlers.UpdateCounterMetric)
 
