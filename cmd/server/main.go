@@ -22,6 +22,8 @@ func main() {
 	// GET requests
 	//http.HandleFunc("/", http.NotFound)
 	r.Get("/", handlers.GetAllMetrics)
+	r.Get("/value/gauge/{GMname}", handlers.GetGMvalue)
+	r.Get("/value/counter/{CMname}", handlers.GetCMvalue)
 
 	// POST requests update
 	r.Post("/update/{type}/", handlers.NotImplemented)

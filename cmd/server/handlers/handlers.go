@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/zvovayar/yandex-go-mustave-devops/cmd/server/storage"
 	"github.com/zvovayar/yandex-go-mustave-devops/internal"
 )
@@ -113,4 +114,32 @@ func GetAllMetrics(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(htmlText))
 
+}
+
+func GetGMvalue(w http.ResponseWriter, r *http.Request) {
+
+	if _, ok := internal.Gmetricnames[chi.URLParam(r, "GMname")]; !ok {
+		// не нашли название метрики, были ошибки
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("<h1>Gauge metric not found</h1>"))
+		return
+	}
+
+	htmlText := fmt.Sprint(storage.StoreMonitor.Gmetrics[internal.Gmetricnames[chi.URLParam(r, "GMname")]])
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(htmlText))
+}
+
+func GetCMvalue(w http.ResponseWriter, r *http.Request) {
+
+	if _, ok := internal.Cmetricnames[chi.URLParam(r, "CMname")]; !ok {
+		// не нашли название метрики, были ошибки
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("<h1>Counter metric not found</h1>"))
+		return
+	}
+
+	htmlText := fmt.Sprint(storage.StoreMonitor.Cmetrics[internal.Cmetricnames[chi.URLParam(r, "CMname")]])
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(htmlText))
 }
