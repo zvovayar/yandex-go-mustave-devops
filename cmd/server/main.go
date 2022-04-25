@@ -81,11 +81,6 @@ func UpdateCounterMetric(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte("<h1>Counter metric URL is not valid</h1> length=" + fmt.Sprintf("%d", len(ss))))
 		return
-	} else if _, ok := internal.Cmetricnames[ss[3]]; !ok {
-		// не нашли название метрики, были ошибки
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("<h1>Counter metric not found</h1>"))
-		return
 	}
 
 	cm, err := strconv.ParseInt(ss[4], 10, 64)
@@ -95,6 +90,11 @@ func UpdateCounterMetric(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("<h1>Counter metric value not found</h1>"))
+		return
+	} else if _, ok := internal.Cmetricnames[ss[3]]; !ok {
+		// не нашли название метрики, были ошибки
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("<h1>Counter metric not found</h1>"))
 		return
 	}
 
