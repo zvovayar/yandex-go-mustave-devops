@@ -92,7 +92,7 @@ func UpdateCounterMetric(w http.ResponseWriter, r *http.Request) {
 	//
 	// TODO: здесь сохранять значение метрики
 	//
-	storage.StoreMonitor.Cmetrics[internal.Gmetricnames[cmname]] = internal.Counter(cm)
+	storage.StoreMonitor.Cmetrics[internal.Gmetricnames[cmname]] += internal.Counter(cm)
 	log.Printf("Store %v = %d", cmname, cm)
 
 	w.WriteHeader(http.StatusOK)
