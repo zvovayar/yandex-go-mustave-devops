@@ -13,8 +13,8 @@ type Gauge float64
 type Counter int64
 type Monitor struct {
 	// warning: remember about quantity metrics!
-	Gmetrics [28]Gauge
-	Cmetrics [1]Counter
+	Gmetrics [29]Gauge
+	Cmetrics [2]Counter
 }
 
 var Gmetricnames = map[string]int{
@@ -46,9 +46,11 @@ var Gmetricnames = map[string]int{
 	"Sys":           25,
 	"TotalAlloc":    26,
 	"RandomValue":   27,
+	"testSetGet134": 28,
 }
 var Cmetricnames = map[string]int{
-	"PollCount": 0,
+	"PollCount":    0,
+	"testSetGet33": 1,
 }
 var PollInterval = time.Second * 2    // 2
 var ReportInterval = time.Second * 10 //10

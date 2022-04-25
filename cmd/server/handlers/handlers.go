@@ -121,7 +121,7 @@ func GetGMvalue(w http.ResponseWriter, r *http.Request) {
 	if _, ok := internal.Gmetricnames[chi.URLParam(r, "GMname")]; !ok {
 		// не нашли название метрики, были ошибки
 		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("<h1>Gauge metric not found</h1>"))
+		w.Write([]byte("<h1>404 Gauge metric not found</h1>"))
 		return
 	}
 
@@ -135,7 +135,7 @@ func GetCMvalue(w http.ResponseWriter, r *http.Request) {
 	if _, ok := internal.Cmetricnames[chi.URLParam(r, "CMname")]; !ok {
 		// не нашли название метрики, были ошибки
 		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("<h1>Counter metric not found</h1>"))
+		w.Write([]byte("<h1>404 Counter metric not found</h1>"))
 		return
 	}
 
