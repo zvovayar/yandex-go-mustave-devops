@@ -29,7 +29,7 @@ func main() {
 func NotImplemented(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 	w.Write([]byte("<h1>Not implemented</h1> length="))
-	return
+
 }
 
 // Сохранение метрики Gauge
