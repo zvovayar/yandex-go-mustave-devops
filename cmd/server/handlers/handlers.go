@@ -103,11 +103,11 @@ func GetAllMetrics(w http.ResponseWriter, r *http.Request) {
 
 	htmlText := ""
 	for key, element := range internal.Gmetricnames {
-		htmlText += fmt.Sprintf("type gauge %v # %v = %f</b>", key, element, storage.StoreMonitor.Gmetrics[internal.Gmetricnames[key]])
+		htmlText += fmt.Sprintf("type gauge %v #%v = %f \n", key, element, storage.StoreMonitor.Gmetrics[internal.Gmetricnames[key]])
 	}
 
 	for key, element := range internal.Cmetricnames {
-		htmlText += fmt.Sprintf("type counter %v # %v = %d</b>", key, element, storage.StoreMonitor.Cmetrics[internal.Cmetricnames[key]])
+		htmlText += fmt.Sprintf("type counter %v #%v = %d \n", key, element, storage.StoreMonitor.Cmetrics[internal.Cmetricnames[key]])
 	}
 
 	w.WriteHeader(http.StatusOK)
