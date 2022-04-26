@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/zvovayar/yandex-go-mustave-devops/internal/handlers"
+	"github.com/zvovayar/yandex-go-mustave-devops/internal"
 )
 
 func TestUpdateGaugeMetric(t *testing.T) {
@@ -20,7 +20,7 @@ func TestUpdateGaugeMetric(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			handlers.UpdateGaugeMetric(tt.args.w, tt.args.r)
+			internal.UpdateGaugeMetric(tt.args.w, tt.args.r)
 		})
 	}
 }
@@ -38,7 +38,7 @@ func TestUpdateCounterMetric(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			handlers.UpdateCounterMetric(tt.args.w, tt.args.r)
+			internal.UpdateCounterMetric(tt.args.w, tt.args.r)
 		})
 	}
 }

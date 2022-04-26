@@ -6,7 +6,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/zvovayar/yandex-go-mustave-devops/internal/handlers"
+	"github.com/zvovayar/yandex-go-mustave-devops/internal"
 )
 
 func main() {
@@ -22,18 +22,18 @@ func main() {
 
 	// GET requests
 	//http.HandleFunc("/", http.NotFound)
-	r.Get("/", handlers.GetAllMetrics)
-	r.Get("/value/gauge/{GMname}", handlers.GetGMvalue)
-	r.Get("/value/counter/{CMname}", handlers.GetCMvalue)
+	r.Get("/", internal.GetAllMetrics)
+	r.Get("/value/gauge/{GMname}", internal.GetGMvalue)
+	r.Get("/value/counter/{CMname}", internal.GetCMvalue)
 
 	// POST requests update
-	r.Post("/update/{type}/", handlers.NotImplemented)
+	r.Post("/update/{type}/", internal.NotImplemented)
 	r.Post("/update/{type}/{vname}/", http.NotFound)
-	r.Post("/update/{type}/{vname}/{value}", handlers.NotImplemented)
+	r.Post("/update/{type}/{vname}/{value}", internal.NotImplemented)
 	r.Post("/update/gauge/", http.NotFound)
 	r.Post("/update/counter/", http.NotFound)
-	r.Post("/update/gauge/{GMname}/{GMvalue}", handlers.UpdateGaugeMetric)
-	r.Post("/update/counter/{CMname}/{CMvalue}", handlers.UpdateCounterMetric)
+	r.Post("/update/gauge/{GMname}/{GMvalue}", internal.UpdateGaugeMetric)
+	r.Post("/update/counter/{CMname}/{CMvalue}", internal.UpdateCounterMetric)
 
 	// запуск сервера с адресом localhost, порт 8080
 	//log.Fatal(http.ListenAndServe(":8080", r))
