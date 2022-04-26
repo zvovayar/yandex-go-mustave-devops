@@ -6,7 +6,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/zvovayar/yandex-go-mustave-devops/cmd/server/handlers"
+	"github.com/zvovayar/yandex-go-mustave-devops/internal/handlers"
 )
 
 func main() {

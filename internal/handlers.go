@@ -9,7 +9,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/zvovayar/yandex-go-mustave-devops/cmd/server/storage"
-	"github.com/zvovayar/yandex-go-mustave-devops/internal"
+	"github.com/zvovayar/yandex-go-mustave-devops/internal/internal"
 )
 
 // Не реализовано
