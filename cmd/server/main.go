@@ -18,6 +18,7 @@ func main() {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+	r.Use(middleware.StripSlashes)
 
 	// GET requests
 	//http.HandleFunc("/", http.NotFound)
@@ -35,5 +36,8 @@ func main() {
 	r.Post("/update/counter/{CMname}/{CMvalue}", handlers.UpdateCounterMetric)
 
 	// запуск сервера с адресом localhost, порт 8080
-	log.Fatal(http.ListenAndServe(":8080", r))
+	//log.Fatal(http.ListenAndServe(":8080", r))
+	if err := http.ListenAndServe(":8080", r); err != nil {
+		log.Fatal(err)
+	}
 }
