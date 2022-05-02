@@ -15,7 +15,10 @@ import (
 // Не реализовано
 func NotImplemented(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
-	w.Write([]byte("<h1>Not implemented</h1> length="))
+	_, err := w.Write([]byte("<h1>Not implemented</h1> length="))
+	if err != nil {
+		log.Fatal(err)
+	}
 
 }
 
@@ -23,13 +26,18 @@ func NotImplemented(w http.ResponseWriter, r *http.Request) {
 func UpdateGaugeMetric(w http.ResponseWriter, r *http.Request) {
 
 	ss := strings.Split(r.URL.Path, "/")
-	log.Printf("%v count=%v", r.URL.Path, len(ss))
+	gmnamechi := chi.URLParam(r, "GMname")
+	gmvaluechi := chi.URLParam(r, "GMvalue")
+	log.Printf("%v count=%v %v = %v", r.URL.Path, len(ss), gmnamechi, gmvaluechi)
 	log.Println(ss)
 
 	if len(ss) != 5 {
 		// мало или много параметров в URL
 		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("<h1>Gauge metric URL is not valid</h1> length=" + fmt.Sprintf("%d", len(ss))))
+		_, err := w.Write([]byte("<h1>Gauge metric URL is not valid</h1> length=" + fmt.Sprintf("%d", len(ss))))
+		if err != nil {
+			log.Fatal(err)
+		}
 		return
 	}
 	gm, err := strconv.ParseFloat(ss[4], 64)
@@ -37,12 +45,20 @@ func UpdateGaugeMetric(w http.ResponseWriter, r *http.Request) {
 		// значения метрики нет
 		log.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("<h1>Gauge metric value not found</h1>"))
+		_, err = w.Write([]byte("<h1>Gauge metric value not found</h1>"))
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		return
 	} else if _, ok := inst.Gmetricnames[ss[3]]; !ok {
 		// не нашли название метрики, были ошибки
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("<h1>Gauge metric not found</h1>"))
+		_, err = w.Write([]byte("<h1>Gauge metric not found</h1>"))
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		return
 	}
 
@@ -58,19 +74,28 @@ func UpdateGaugeMetric(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Store %v = %f", gmname, gm)
 
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("<h1>Gauge metric</h1>" + ss[3] + ss[4]))
+	_, err = w.Write([]byte("<h1>Gauge metric</h1>" + ss[3] + ss[4]))
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 // Сохранение метрики Counter
 func UpdateCounterMetric(w http.ResponseWriter, r *http.Request) {
 	ss := strings.Split(r.URL.Path, "/")
-	log.Printf("%v count=%v", r.URL.Path, len(ss))
+	сmnamechi := chi.URLParam(r, "CMname")
+	сmvaluechi := chi.URLParam(r, "CMvalue")
+	log.Printf("%v count=%v %v = %v", r.URL.Path, len(ss), сmnamechi, сmvaluechi)
 	log.Println(ss)
 
 	if len(ss) != 5 {
 		// мало или много параметров в URL
 		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("<h1>Counter metric URL is not valid</h1> length=" + fmt.Sprintf("%d", len(ss))))
+		_, err := w.Write([]byte("<h1>Counter metric URL is not valid</h1> length=" + fmt.Sprintf("%d", len(ss))))
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		return
 	}
 
@@ -80,12 +105,18 @@ func UpdateCounterMetric(w http.ResponseWriter, r *http.Request) {
 		// значения метрики нет
 		log.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("<h1>Counter metric value not found</h1>"))
+		_, err = w.Write([]byte("<h1>Counter metric value not found</h1>"))
+		if err != nil {
+			log.Fatal(err)
+		}
 		return
 	} else if _, ok := inst.Cmetricnames[ss[3]]; !ok {
 		// не нашли название метрики, были ошибки
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("<h1>Counter metric not found</h1>"))
+		_, err = w.Write([]byte("<h1>Counter metric not found</h1>"))
+		if err != nil {
+			log.Fatal(err)
+		}
 		return
 	}
 
@@ -101,7 +132,10 @@ func UpdateCounterMetric(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Store %v = %d", cmname, cm)
 
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("<h1>Gauge metric</h1>" + ss[3] + ss[4]))
+	_, err = w.Write([]byte("<h1>Gauge metric</h1>" + ss[3] + ss[4]))
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func GetAllMetrics(w http.ResponseWriter, r *http.Request) {
@@ -116,7 +150,10 @@ func GetAllMetrics(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(htmlText))
+	_, err := w.Write([]byte(htmlText))
+	if err != nil {
+		log.Fatal(err)
+	}
 
 }
 
@@ -125,13 +162,19 @@ func GetGMvalue(w http.ResponseWriter, r *http.Request) {
 	if _, ok := inst.Gmetricnames[chi.URLParam(r, "GMname")]; !ok {
 		// не нашли название метрики, были ошибки
 		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("<h1>404 Gauge metric not found</h1>"))
+		_, err := w.Write([]byte("<h1>404 Gauge metric not found</h1>"))
+		if err != nil {
+			log.Fatal(err)
+		}
 		return
 	}
 
 	htmlText := fmt.Sprint(inst.StoreMonitor.Gmetrics[inst.Gmetricnames[chi.URLParam(r, "GMname")]])
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(htmlText))
+	_, err := w.Write([]byte(htmlText))
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func GetCMvalue(w http.ResponseWriter, r *http.Request) {
@@ -139,11 +182,17 @@ func GetCMvalue(w http.ResponseWriter, r *http.Request) {
 	if _, ok := inst.Cmetricnames[chi.URLParam(r, "CMname")]; !ok {
 		// не нашли название метрики, были ошибки
 		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("<h1>404 Counter metric not found</h1>"))
+		_, err := w.Write([]byte("<h1>404 Counter metric not found</h1>"))
+		if err != nil {
+			log.Fatal(err)
+		}
 		return
 	}
 
 	htmlText := fmt.Sprint(inst.StoreMonitor.Cmetrics[inst.Cmetricnames[chi.URLParam(r, "CMname")]])
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(htmlText))
+	_, err := w.Write([]byte(htmlText))
+	if err != nil {
+		log.Fatal(err)
+	}
 }
