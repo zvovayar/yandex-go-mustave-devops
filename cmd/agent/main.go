@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand"
+	"net/http"
 	"os"
 	"os/signal"
 	"runtime"
@@ -68,19 +70,63 @@ func NewMonitor(duration time.Duration, chanmonitor chan inst.Monitor) {
 	}
 }
 
-func main() {
-	chanmonitor := make(chan inst.Monitor, inst.BufferLength)
-	chanOS := make(chan os.Signal, 1) // we need to reserve to buffer size 1, so the notifier are not blocked
-	signal.Notify(chanOS, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT)
+func SendMetrics(m inst.Monitor) {
 
-	go NewMonitor(inst.PollInterval, chanmonitor)
-	go runSendMetrics(inst.ReportInterval, chanmonitor)
+	//Just encode to json and print
+	b, _ := json.Marshal(m)
+	log.Println("SendMetrics -> " + string(b))
+	var body = []byte(b)
 
-	sig := <-chanOS
-	log.Printf("INFO got a signal '%v', start shutting down...\n", sig) // put breakpoint here
-	log.Printf("Shutdown complete")
+	// internal.Gauge type send
+	for key, element := range inst.Gmetricnames {
+		var url = "http://" + inst.ServerAddress + "/update/gauge/" + key + "/" + fmt.Sprint(m.Gmetrics[element])
+		log.Println(url)
+
+		request, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
+		if err != nil {
+			// обработаем ошибку
+			log.Println(err)
+		}
+		request.Header.Set("Content-Type", inst.ContentType)
+
+		client := &http.Client{}
+		// отправляем запрос
+
+		resp, err := client.Do(request)
+		if err != nil {
+			// обработаем ошибку
+			log.Println(err)
+			return
+		}
+		defer resp.Body.Close()
+		log.Println(resp)
+	}
+
+	// counter type send
+	for key, element := range inst.Cmetricnames {
+		var url = "http://" + inst.ServerAddress + "/update/counter/" + key + "/" + fmt.Sprint(m.Cmetrics[element])
+		log.Println(url)
+
+		request, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
+		if err != nil {
+			// обработаем ошибку
+			log.Println(err)
+		}
+		request.Header.Set("Content-Type", inst.ContentType)
+
+		client := &http.Client{}
+		// отправляем запрос
+
+		resp, err := client.Do(request)
+		if err != nil {
+			// обработаем ошибку
+			log.Println(err)
+			return
+		}
+		defer resp.Body.Close()
+		log.Println(resp)
+	}
 }
-
 func runSendMetrics(duration time.Duration, chanmonitor chan inst.Monitor) {
 
 	for {
@@ -95,9 +141,23 @@ func runSendMetrics(duration time.Duration, chanmonitor chan inst.Monitor) {
 				fmt.Println(err)
 				break
 			}
-			m.SendMetrics()
+			SendMetrics(m)
+			// inhttp.SendMetrics()
 
 		}
 
 	}
+}
+
+func main() {
+	chanmonitor := make(chan inst.Monitor, inst.BufferLength)
+	chanOS := make(chan os.Signal, 1) // we need to reserve to buffer size 1, so the notifier are not blocked
+	signal.Notify(chanOS, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT)
+
+	go NewMonitor(inst.PollInterval, chanmonitor)
+	go runSendMetrics(inst.ReportInterval, chanmonitor)
+
+	sig := <-chanOS
+	log.Printf("INFO got a signal '%v', start shutting down...\n", sig) // put breakpoint here
+	log.Printf("Shutdown complete")
 }

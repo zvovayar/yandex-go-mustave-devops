@@ -15,7 +15,7 @@ type StorageStruct struct {
 }
 
 func (im StorageStruct) GetMonitor() *Monitor {
-	fmt.Printf("h: %v\n", im)
-	im.ims = &StoreMonitor
+	fmt.Printf("h: %v\n", im.ims)
+	// im.ims = &StoreMonitor
 	return &StoreMonitor
 }

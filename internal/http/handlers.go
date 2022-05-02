@@ -9,7 +9,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	inst "internal/storage"
+	inst "github.com/zvovayar/yandex-go-mustave-devops/internal/storage"
 )
 
 // Не реализовано
@@ -53,7 +53,7 @@ func UpdateGaugeMetric(w http.ResponseWriter, r *http.Request) {
 	// TODO: здесь сохранять значение метрики
 	//
 	//storage.StoreMonitor.Gmetrics[Gmetricnames[gmname]] = Gauge(gm)
-	s := inst.StoreMonitor.GetMonitor()
+	s := inst.StoreMonitor //.GetMonitor()
 	s.Gmetrics[inst.Gmetricnames[gmname]] = inst.Gauge(gm)
 	log.Printf("Store %v = %f", gmname, gm)
 
@@ -96,7 +96,7 @@ func UpdateCounterMetric(w http.ResponseWriter, r *http.Request) {
 	// TODO: здесь сохранять значение метрики
 	//
 	//storage.StoreMonitor.Cmetrics[Cmetricnames[cmname]] += Counter(cm)
-	s := inst.StoreMonitor.GetMonitor()
+	s := inst.StoreMonitor //.GetMonitor()
 	s.Cmetrics[inst.Cmetricnames[cmname]] += inst.Counter(cm)
 	log.Printf("Store %v = %d", cmname, cm)
 
@@ -108,11 +108,11 @@ func GetAllMetrics(w http.ResponseWriter, r *http.Request) {
 
 	htmlText := ""
 	for key, element := range inst.Gmetricnames {
-		htmlText += fmt.Sprintf("type gauge %v #%v = %f \n", key, element, inst.StoreMonitor.GetMonitor().Gmetrics[inst.Gmetricnames[key]])
+		htmlText += fmt.Sprintf("type gauge %v #%v = %f \n", key, element, inst.StoreMonitor.Gmetrics[inst.Gmetricnames[key]])
 	}
 
 	for key, element := range inst.Cmetricnames {
-		htmlText += fmt.Sprintf("type counter %v #%v = %d \n", key, element, inst.StoreMonitor.GetMonitor().Cmetrics[inst.Cmetricnames[key]])
+		htmlText += fmt.Sprintf("type counter %v #%v = %d \n", key, element, inst.StoreMonitor.Cmetrics[inst.Cmetricnames[key]])
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -129,7 +129,7 @@ func GetGMvalue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	htmlText := fmt.Sprint(inst.StoreMonitor.GetMonitor().Gmetrics[inst.Gmetricnames[chi.URLParam(r, "GMname")]])
+	htmlText := fmt.Sprint(inst.StoreMonitor.Gmetrics[inst.Gmetricnames[chi.URLParam(r, "GMname")]])
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(htmlText))
 }
@@ -143,7 +143,7 @@ func GetCMvalue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	htmlText := fmt.Sprint(inst.StoreMonitor.GetMonitor().Cmetrics[inst.Cmetricnames[chi.URLParam(r, "CMname")]])
+	htmlText := fmt.Sprint(inst.StoreMonitor.Cmetrics[inst.Cmetricnames[chi.URLParam(r, "CMname")]])
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(htmlText))
 }
