@@ -53,7 +53,7 @@ func UpdateGaugeMetric(w http.ResponseWriter, r *http.Request) {
 	// TODO: здесь сохранять значение метрики
 	//
 	//storage.StoreMonitor.Gmetrics[Gmetricnames[gmname]] = Gauge(gm)
-	s := inst.StoreMonitor //.GetMonitor()
+	s := &inst.StoreMonitor //.GetMonitor()
 	s.Gmetrics[inst.Gmetricnames[gmname]] = inst.Gauge(gm)
 	log.Printf("Store %v = %f", gmname, gm)
 
@@ -96,7 +96,7 @@ func UpdateCounterMetric(w http.ResponseWriter, r *http.Request) {
 	// TODO: здесь сохранять значение метрики
 	//
 	//storage.StoreMonitor.Cmetrics[Cmetricnames[cmname]] += Counter(cm)
-	s := inst.StoreMonitor //.GetMonitor()
+	s := &inst.StoreMonitor //.GetMonitor()
 	s.Cmetrics[inst.Cmetricnames[cmname]] += inst.Counter(cm)
 	log.Printf("Store %v = %d", cmname, cm)
 
