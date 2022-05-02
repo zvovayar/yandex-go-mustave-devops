@@ -11,11 +11,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/zvovayar/yandex-go-mustave-devops/internal"
+	inst "github.com/zvovayar/yandex-go-mustave-devops/internal/storage"
 )
 
-func NewMonitor(duration time.Duration, chanmonitor chan internal.Monitor) {
-	var m internal.Monitor
+func NewMonitor(duration time.Duration, chanmonitor chan inst.Monitor) {
+	var m inst.Monitor
 	var rtm runtime.MemStats
 
 	for {
@@ -25,36 +25,36 @@ func NewMonitor(duration time.Duration, chanmonitor chan internal.Monitor) {
 		runtime.ReadMemStats(&rtm)
 
 		// Collect stats
-		m.Gmetrics[internal.Gmetricnames["Alloc"]] = internal.Gauge(rtm.Alloc)
-		m.Gmetrics[internal.Gmetricnames["BuckHashSys"]] = internal.Gauge(rtm.BuckHashSys)
-		m.Gmetrics[internal.Gmetricnames["Frees"]] = internal.Gauge(rtm.Frees)
-		m.Gmetrics[internal.Gmetricnames["GCCPUFraction"]] = internal.Gauge(rtm.GCCPUFraction)
-		m.Gmetrics[internal.Gmetricnames["GCSys"]] = internal.Gauge(rtm.GCSys)
-		m.Gmetrics[internal.Gmetricnames["HeapAlloc"]] = internal.Gauge(rtm.HeapAlloc)
-		m.Gmetrics[internal.Gmetricnames["HeapIdle"]] = internal.Gauge(rtm.HeapIdle)
-		m.Gmetrics[internal.Gmetricnames["HeapInuse"]] = internal.Gauge(rtm.HeapInuse)
-		m.Gmetrics[internal.Gmetricnames["HeapObjects"]] = internal.Gauge(rtm.HeapObjects)
-		m.Gmetrics[internal.Gmetricnames["HeapReleased"]] = internal.Gauge(rtm.HeapReleased)
-		m.Gmetrics[internal.Gmetricnames["HeapSys"]] = internal.Gauge(rtm.HeapSys)
-		m.Gmetrics[internal.Gmetricnames["LastGC"]] = internal.Gauge(rtm.LastGC)
-		m.Gmetrics[internal.Gmetricnames["Lookups"]] = internal.Gauge(rtm.Lookups)
-		m.Gmetrics[internal.Gmetricnames["MCacheInuse"]] = internal.Gauge(rtm.MCacheInuse)
-		m.Gmetrics[internal.Gmetricnames["MCacheSys"]] = internal.Gauge(rtm.MCacheSys)
-		m.Gmetrics[internal.Gmetricnames["MSpanInuse"]] = internal.Gauge(rtm.MSpanInuse)
-		m.Gmetrics[internal.Gmetricnames["MSpanSys"]] = internal.Gauge(rtm.MSpanSys)
-		m.Gmetrics[internal.Gmetricnames["Mallocs"]] = internal.Gauge(rtm.Mallocs)
-		m.Gmetrics[internal.Gmetricnames["NextGC"]] = internal.Gauge(rtm.NextGC)
-		m.Gmetrics[internal.Gmetricnames["NumForcedGC"]] = internal.Gauge(rtm.NumForcedGC)
-		m.Gmetrics[internal.Gmetricnames["NumGC"]] = internal.Gauge(rtm.NumGC)
-		m.Gmetrics[internal.Gmetricnames["OtherSys"]] = internal.Gauge(rtm.OtherSys)
-		m.Gmetrics[internal.Gmetricnames["PauseTotalNs"]] = internal.Gauge(rtm.PauseTotalNs)
-		m.Gmetrics[internal.Gmetricnames["StackInuse"]] = internal.Gauge(rtm.StackInuse)
-		m.Gmetrics[internal.Gmetricnames["StackSys"]] = internal.Gauge(rtm.StackSys)
-		m.Gmetrics[internal.Gmetricnames["Sys"]] = internal.Gauge(rtm.Sys)
-		m.Gmetrics[internal.Gmetricnames["TotalAlloc"]] = internal.Gauge(rtm.TotalAlloc)
-		m.Gmetrics[internal.Gmetricnames["RandomValue"]] = internal.Gauge(rand.Float64())
+		m.Gmetrics[inst.Gmetricnames["Alloc"]] = inst.Gauge(rtm.Alloc)
+		m.Gmetrics[inst.Gmetricnames["BuckHashSys"]] = inst.Gauge(rtm.BuckHashSys)
+		m.Gmetrics[inst.Gmetricnames["Frees"]] = inst.Gauge(rtm.Frees)
+		m.Gmetrics[inst.Gmetricnames["GCCPUFraction"]] = inst.Gauge(rtm.GCCPUFraction)
+		m.Gmetrics[inst.Gmetricnames["GCSys"]] = inst.Gauge(rtm.GCSys)
+		m.Gmetrics[inst.Gmetricnames["HeapAlloc"]] = inst.Gauge(rtm.HeapAlloc)
+		m.Gmetrics[inst.Gmetricnames["HeapIdle"]] = inst.Gauge(rtm.HeapIdle)
+		m.Gmetrics[inst.Gmetricnames["HeapInuse"]] = inst.Gauge(rtm.HeapInuse)
+		m.Gmetrics[inst.Gmetricnames["HeapObjects"]] = inst.Gauge(rtm.HeapObjects)
+		m.Gmetrics[inst.Gmetricnames["HeapReleased"]] = inst.Gauge(rtm.HeapReleased)
+		m.Gmetrics[inst.Gmetricnames["HeapSys"]] = inst.Gauge(rtm.HeapSys)
+		m.Gmetrics[inst.Gmetricnames["LastGC"]] = inst.Gauge(rtm.LastGC)
+		m.Gmetrics[inst.Gmetricnames["Lookups"]] = inst.Gauge(rtm.Lookups)
+		m.Gmetrics[inst.Gmetricnames["MCacheInuse"]] = inst.Gauge(rtm.MCacheInuse)
+		m.Gmetrics[inst.Gmetricnames["MCacheSys"]] = inst.Gauge(rtm.MCacheSys)
+		m.Gmetrics[inst.Gmetricnames["MSpanInuse"]] = inst.Gauge(rtm.MSpanInuse)
+		m.Gmetrics[inst.Gmetricnames["MSpanSys"]] = inst.Gauge(rtm.MSpanSys)
+		m.Gmetrics[inst.Gmetricnames["Mallocs"]] = inst.Gauge(rtm.Mallocs)
+		m.Gmetrics[inst.Gmetricnames["NextGC"]] = inst.Gauge(rtm.NextGC)
+		m.Gmetrics[inst.Gmetricnames["NumForcedGC"]] = inst.Gauge(rtm.NumForcedGC)
+		m.Gmetrics[inst.Gmetricnames["NumGC"]] = inst.Gauge(rtm.NumGC)
+		m.Gmetrics[inst.Gmetricnames["OtherSys"]] = inst.Gauge(rtm.OtherSys)
+		m.Gmetrics[inst.Gmetricnames["PauseTotalNs"]] = inst.Gauge(rtm.PauseTotalNs)
+		m.Gmetrics[inst.Gmetricnames["StackInuse"]] = inst.Gauge(rtm.StackInuse)
+		m.Gmetrics[inst.Gmetricnames["StackSys"]] = inst.Gauge(rtm.StackSys)
+		m.Gmetrics[inst.Gmetricnames["Sys"]] = inst.Gauge(rtm.Sys)
+		m.Gmetrics[inst.Gmetricnames["TotalAlloc"]] = inst.Gauge(rtm.TotalAlloc)
+		m.Gmetrics[inst.Gmetricnames["RandomValue"]] = inst.Gauge(rand.Float64())
 
-		m.Cmetrics[internal.Cmetricnames["PoolCount"]]++
+		m.Cmetrics[inst.Cmetricnames["PoolCount"]]++
 
 		// Just encode to json and print
 		b, _ := json.Marshal(m)
@@ -69,19 +69,19 @@ func NewMonitor(duration time.Duration, chanmonitor chan internal.Monitor) {
 }
 
 func main() {
-	chanmonitor := make(chan internal.Monitor, internal.BufferLength)
+	chanmonitor := make(chan inst.Monitor, inst.BufferLength)
 	chanOS := make(chan os.Signal, 1) // we need to reserve to buffer size 1, so the notifier are not blocked
 	signal.Notify(chanOS, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT)
 
-	go NewMonitor(internal.PollInterval, chanmonitor)
-	go runSendMetrics(internal.ReportInterval, chanmonitor)
+	go NewMonitor(inst.PollInterval, chanmonitor)
+	go runSendMetrics(inst.ReportInterval, chanmonitor)
 
 	sig := <-chanOS
 	log.Printf("INFO got a signal '%v', start shutting down...\n", sig) // put breakpoint here
 	log.Printf("Shutdown complete")
 }
 
-func runSendMetrics(duration time.Duration, chanmonitor chan internal.Monitor) {
+func runSendMetrics(duration time.Duration, chanmonitor chan inst.Monitor) {
 
 	for {
 		<-time.After(duration)
