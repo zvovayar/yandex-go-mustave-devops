@@ -12,6 +12,8 @@ import (
 	inst "github.com/zvovayar/yandex-go-mustave-devops/internal/storage"
 )
 
+var sm inst.Storage = &inst.StoreMonitor
+
 // Не реализовано
 func NotImplemented(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
@@ -69,8 +71,10 @@ func UpdateGaugeMetric(w http.ResponseWriter, r *http.Request) {
 	// TODO: здесь сохранять значение метрики
 	//
 	//storage.StoreMonitor.Gmetrics[Gmetricnames[gmname]] = Gauge(gm)
-	s := &inst.StoreMonitor //.GetMonitor()
-	s.Gmetrics[inst.Gmetricnames[gmname]] = inst.Gauge(gm)
+	// swq := &inst.StoreMonitor //.GetMonitor()
+	// s.Gmetrics[inst.Gmetricnames[gmname]] = inst.Gauge(gm)
+	sm.SetGMvalue(gmname, inst.Gauge(gm))
+
 	log.Printf("Store %v = %f", gmname, gm)
 
 	w.WriteHeader(http.StatusOK)
@@ -127,8 +131,10 @@ func UpdateCounterMetric(w http.ResponseWriter, r *http.Request) {
 	// TODO: здесь сохранять значение метрики
 	//
 	//storage.StoreMonitor.Cmetrics[Cmetricnames[cmname]] += Counter(cm)
-	s := &inst.StoreMonitor //.GetMonitor()
-	s.Cmetrics[inst.Cmetricnames[cmname]] += inst.Counter(cm)
+	// s := &inst.StoreMonitor //.GetMonitor()
+	// s.Cmetrics[inst.Cmetricnames[cmname]] += inst.Counter(cm)
+	sm.SetCMvalue(cmname, inst.Counter(cm))
+
 	log.Printf("Store %v = %d", cmname, cm)
 
 	w.WriteHeader(http.StatusOK)
@@ -142,11 +148,11 @@ func GetAllMetrics(w http.ResponseWriter, r *http.Request) {
 
 	htmlText := ""
 	for key, element := range inst.Gmetricnames {
-		htmlText += fmt.Sprintf("type gauge %v #%v = %f \n", key, element, inst.StoreMonitor.Gmetrics[inst.Gmetricnames[key]])
+		htmlText += fmt.Sprintf("type gauge %v #%v = %f \n", key, element, sm.GetGMvalue(key)) //inst.StoreMonitor.Gmetrics[inst.Gmetricnames[key]])
 	}
 
 	for key, element := range inst.Cmetricnames {
-		htmlText += fmt.Sprintf("type counter %v #%v = %d \n", key, element, inst.StoreMonitor.Cmetrics[inst.Cmetricnames[key]])
+		htmlText += fmt.Sprintf("type counter %v #%v = %d \n", key, element, sm.GetCMvalue(key)) //inst.StoreMonitor.Cmetrics[inst.Cmetricnames[key]])
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -169,7 +175,8 @@ func GetGMvalue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	htmlText := fmt.Sprint(inst.StoreMonitor.Gmetrics[inst.Gmetricnames[chi.URLParam(r, "GMname")]])
+	// htmlText := fmt.Sprint(inst.StoreMonitor.Gmetrics[inst.Gmetricnames[chi.URLParam(r, "GMname")]])
+	htmlText := fmt.Sprint(sm.GetGMvalue(chi.URLParam(r, "GMname")))
 	w.WriteHeader(http.StatusOK)
 	_, err := w.Write([]byte(htmlText))
 	if err != nil {
@@ -189,7 +196,8 @@ func GetCMvalue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	htmlText := fmt.Sprint(inst.StoreMonitor.Cmetrics[inst.Cmetricnames[chi.URLParam(r, "CMname")]])
+	// htmlText := fmt.Sprint(inst.StoreMonitor.Cmetrics[inst.Cmetricnames[chi.URLParam(r, "CMname")]])
+	htmlText := fmt.Sprint(sm.GetCMvalue(chi.URLParam(r, "CMname")))
 	w.WriteHeader(http.StatusOK)
 	_, err := w.Write([]byte(htmlText))
 	if err != nil {

@@ -1,21 +1,10 @@
 package storage
 
-import (
-	"fmt"
-)
-
-var StoreMonitor Monitor
+//var StoreMonitor Monitor
 
 type Storage interface {
-	GetMonitor() *Monitor
-}
-
-type StorageStruct struct {
-	ims *Monitor
-}
-
-func (im StorageStruct) GetMonitor() *Monitor {
-	fmt.Printf("h: %v\n", im.ims)
-	// im.ims = &StoreMonitor
-	return &StoreMonitor
+	GetGMvalue(gmname string) Gauge
+	GetCMvalue(cmname string) Counter
+	SetGMvalue(gmname string, gm Gauge)
+	SetCMvalue(cmname string, cm Counter)
 }
