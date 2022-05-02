@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/zvovayar/yandex-go-mustave-devops/cmd/server/storage"
-	//"github.com/zvovayar/yandex-go-mustave-devops/internal"
+
+	"github.com/zvovayar/yandex-go-mustave-devops/storage"
 )
 
 // Не реализовано
@@ -52,7 +52,9 @@ func UpdateGaugeMetric(w http.ResponseWriter, r *http.Request) {
 	//
 	// TODO: здесь сохранять значение метрики
 	//
-	storage.StoreMonitor.Gmetrics[Gmetricnames[gmname]] = Gauge(gm)
+	//storage.StoreMonitor.Gmetrics[Gmetricnames[gmname]] = Gauge(gm)
+	s := StorageStruct.GetMonitor()
+	s.Gmetrics[Gmetricnames[gmname]] = Gauge(gm)
 	log.Printf("Store %v = %f", gmname, gm)
 
 	w.WriteHeader(http.StatusOK)
@@ -93,7 +95,9 @@ func UpdateCounterMetric(w http.ResponseWriter, r *http.Request) {
 	//
 	// TODO: здесь сохранять значение метрики
 	//
-	storage.StoreMonitor.Cmetrics[Cmetricnames[cmname]] += Counter(cm)
+	//storage.StoreMonitor.Cmetrics[Cmetricnames[cmname]] += Counter(cm)
+	s := storage.GetMonitor()
+	s.Cmetrics[Cmetricnames[cmname]] += Counter(cm)
 	log.Printf("Store %v = %d", cmname, cm)
 
 	w.WriteHeader(http.StatusOK)
@@ -104,11 +108,11 @@ func GetAllMetrics(w http.ResponseWriter, r *http.Request) {
 
 	htmlText := ""
 	for key, element := range Gmetricnames {
-		htmlText += fmt.Sprintf("type gauge %v #%v = %f \n", key, element, storage.StoreMonitor.Gmetrics[Gmetricnames[key]])
+		htmlText += fmt.Sprintf("type gauge %v #%v = %f \n", key, element, storage.GetMonitor().Gmetrics[Gmetricnames[key]])
 	}
 
 	for key, element := range Cmetricnames {
-		htmlText += fmt.Sprintf("type counter %v #%v = %d \n", key, element, storage.StoreMonitor.Cmetrics[Cmetricnames[key]])
+		htmlText += fmt.Sprintf("type counter %v #%v = %d \n", key, element, storage.GetMonitor().Cmetrics[Cmetricnames[key]])
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -125,7 +129,7 @@ func GetGMvalue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	htmlText := fmt.Sprint(storage.StoreMonitor.Gmetrics[Gmetricnames[chi.URLParam(r, "GMname")]])
+	htmlText := fmt.Sprint(storage.GetMonitor().Gmetrics[Gmetricnames[chi.URLParam(r, "GMname")]])
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(htmlText))
 }
@@ -139,7 +143,7 @@ func GetCMvalue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	htmlText := fmt.Sprint(storage.StoreMonitor.Cmetrics[Cmetricnames[chi.URLParam(r, "CMname")]])
+	htmlText := fmt.Sprint(storage.GetMonitor().Cmetrics[Cmetricnames[chi.URLParam(r, "CMname")]])
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(htmlText))
 }
