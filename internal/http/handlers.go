@@ -1,4 +1,4 @@
-package internal
+package http
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/zvovayar/yandex-go-mustave-devops/storage"
+	inst "internal/storage"
 )
 
 // Не реализовано
@@ -39,7 +39,7 @@ func UpdateGaugeMetric(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("<h1>Gauge metric value not found</h1>"))
 		return
-	} else if _, ok := Gmetricnames[ss[3]]; !ok {
+	} else if _, ok := inst.Gmetricnames[ss[3]]; !ok {
 		// не нашли название метрики, были ошибки
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("<h1>Gauge metric not found</h1>"))
@@ -53,8 +53,8 @@ func UpdateGaugeMetric(w http.ResponseWriter, r *http.Request) {
 	// TODO: здесь сохранять значение метрики
 	//
 	//storage.StoreMonitor.Gmetrics[Gmetricnames[gmname]] = Gauge(gm)
-	s := StorageStruct.GetMonitor()
-	s.Gmetrics[Gmetricnames[gmname]] = Gauge(gm)
+	s := inst.StoreMonitor.GetMonitor()
+	s.Gmetrics[inst.Gmetricnames[gmname]] = inst.Gauge(gm)
 	log.Printf("Store %v = %f", gmname, gm)
 
 	w.WriteHeader(http.StatusOK)
@@ -82,7 +82,7 @@ func UpdateCounterMetric(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("<h1>Counter metric value not found</h1>"))
 		return
-	} else if _, ok := Cmetricnames[ss[3]]; !ok {
+	} else if _, ok := inst.Cmetricnames[ss[3]]; !ok {
 		// не нашли название метрики, были ошибки
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("<h1>Counter metric not found</h1>"))
@@ -96,8 +96,8 @@ func UpdateCounterMetric(w http.ResponseWriter, r *http.Request) {
 	// TODO: здесь сохранять значение метрики
 	//
 	//storage.StoreMonitor.Cmetrics[Cmetricnames[cmname]] += Counter(cm)
-	s := storage.GetMonitor()
-	s.Cmetrics[Cmetricnames[cmname]] += Counter(cm)
+	s := inst.StoreMonitor.GetMonitor()
+	s.Cmetrics[inst.Cmetricnames[cmname]] += inst.Counter(cm)
 	log.Printf("Store %v = %d", cmname, cm)
 
 	w.WriteHeader(http.StatusOK)
@@ -107,12 +107,12 @@ func UpdateCounterMetric(w http.ResponseWriter, r *http.Request) {
 func GetAllMetrics(w http.ResponseWriter, r *http.Request) {
 
 	htmlText := ""
-	for key, element := range Gmetricnames {
-		htmlText += fmt.Sprintf("type gauge %v #%v = %f \n", key, element, storage.GetMonitor().Gmetrics[Gmetricnames[key]])
+	for key, element := range inst.Gmetricnames {
+		htmlText += fmt.Sprintf("type gauge %v #%v = %f \n", key, element, inst.StoreMonitor.GetMonitor().Gmetrics[inst.Gmetricnames[key]])
 	}
 
-	for key, element := range Cmetricnames {
-		htmlText += fmt.Sprintf("type counter %v #%v = %d \n", key, element, storage.GetMonitor().Cmetrics[Cmetricnames[key]])
+	for key, element := range inst.Cmetricnames {
+		htmlText += fmt.Sprintf("type counter %v #%v = %d \n", key, element, inst.StoreMonitor.GetMonitor().Cmetrics[inst.Cmetricnames[key]])
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -122,28 +122,28 @@ func GetAllMetrics(w http.ResponseWriter, r *http.Request) {
 
 func GetGMvalue(w http.ResponseWriter, r *http.Request) {
 
-	if _, ok := Gmetricnames[chi.URLParam(r, "GMname")]; !ok {
+	if _, ok := inst.Gmetricnames[chi.URLParam(r, "GMname")]; !ok {
 		// не нашли название метрики, были ошибки
 		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte("<h1>404 Gauge metric not found</h1>"))
 		return
 	}
 
-	htmlText := fmt.Sprint(storage.GetMonitor().Gmetrics[Gmetricnames[chi.URLParam(r, "GMname")]])
+	htmlText := fmt.Sprint(inst.StoreMonitor.GetMonitor().Gmetrics[inst.Gmetricnames[chi.URLParam(r, "GMname")]])
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(htmlText))
 }
 
 func GetCMvalue(w http.ResponseWriter, r *http.Request) {
 
-	if _, ok := Cmetricnames[chi.URLParam(r, "CMname")]; !ok {
+	if _, ok := inst.Cmetricnames[chi.URLParam(r, "CMname")]; !ok {
 		// не нашли название метрики, были ошибки
 		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte("<h1>404 Counter metric not found</h1>"))
 		return
 	}
 
-	htmlText := fmt.Sprint(storage.GetMonitor().Cmetrics[Cmetricnames[chi.URLParam(r, "CMname")]])
+	htmlText := fmt.Sprint(inst.StoreMonitor.GetMonitor().Cmetrics[inst.Cmetricnames[chi.URLParam(r, "CMname")]])
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(htmlText))
 }

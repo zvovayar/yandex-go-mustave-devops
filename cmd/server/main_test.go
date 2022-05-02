@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/zvovayar/yandex-go-mustave-devops/internal"
+	internal "github.com/zvovayar/yandex-go-mustave-devops/internal/http"
 )
 
 func TestUpdateGaugeMetric(t *testing.T) {
