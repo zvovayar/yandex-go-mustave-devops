@@ -1,6 +1,7 @@
 package http
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -144,6 +145,7 @@ func UpdateCounterMetric(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Вернуть все метрики
 func GetAllMetrics(w http.ResponseWriter, r *http.Request) {
 
 	htmlText := ""
@@ -163,6 +165,7 @@ func GetAllMetrics(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// Вернуть одну метрику Gauge
 func GetGMvalue(w http.ResponseWriter, r *http.Request) {
 
 	if _, ok := inst.Gmetricnames[chi.URLParam(r, "GMname")]; !ok {
@@ -184,6 +187,7 @@ func GetGMvalue(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Вернуть одну метрику Counter
 func GetCMvalue(w http.ResponseWriter, r *http.Request) {
 
 	if _, ok := inst.Cmetricnames[chi.URLParam(r, "CMname")]; !ok {
@@ -203,4 +207,17 @@ func GetCMvalue(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+// Сохранение одной метрики из JSON
+func UpdateMetricJSON(w http.ResponseWriter, r *http.Request) {
+	var v inst.Metrics
+
+	log.Println(r.Body)
+	if err := json.NewDecoder(r.Body).Decode(&v); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Fatal(err)
+		return
+	}
+	log.Println(v)
 }

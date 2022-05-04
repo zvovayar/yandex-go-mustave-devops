@@ -27,6 +27,7 @@ func main() {
 	r.Get("/value/counter/{CMname}", inhttp.GetCMvalue)
 
 	// POST requests update
+	r.Post("/update", inhttp.UpdateMetricJSON)
 	r.Post("/update/{type}/", inhttp.NotImplemented)
 	r.Post("/update/{type}/{vname}/", http.NotFound)
 	r.Post("/update/{type}/{vname}/{value}", inhttp.NotImplemented)
