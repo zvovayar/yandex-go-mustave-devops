@@ -79,7 +79,8 @@ func SendMetrics(m inst.Monitor) {
 
 	// internal.Gauge type send
 	for key, element := range inst.Gmetricnames {
-		var url = "http://" + inst.ServerAddress + "/update/gauge/" + key + "/" + fmt.Sprint(m.Gmetrics[element])
+		var url = fmt.Sprintf("http://%v/update/gauge/%v/%f",
+			inst.ServerAddress, key, m.Gmetrics[element])
 		log.Println(url)
 
 		request, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
@@ -104,7 +105,8 @@ func SendMetrics(m inst.Monitor) {
 
 	// counter type send
 	for key, element := range inst.Cmetricnames {
-		var url = "http://" + inst.ServerAddress + "/update/counter/" + key + "/" + fmt.Sprint(m.Cmetrics[element])
+		var url = fmt.Sprintf("http://%v/update/counter/%v/%d",
+			inst.ServerAddress, key, m.Cmetrics[element])
 		log.Println(url)
 
 		request, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
