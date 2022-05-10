@@ -20,6 +20,9 @@ func NewMonitor(duration time.Duration, chanmonitor chan inst.Monitor) {
 	var m inst.Monitor
 	var rtm runtime.MemStats
 
+	m.Cmetrics = make([]inst.Counter, len(inst.Cmetricnames))
+	m.Gmetrics = make([]inst.Gauge, len(inst.Gmetricnames))
+
 	for {
 		<-time.After(duration)
 
