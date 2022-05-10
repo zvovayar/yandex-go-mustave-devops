@@ -75,25 +75,12 @@ func SendMetrics(m inst.Monitor) {
 	//Just encode to json and print
 	b, _ := json.Marshal(m)
 	log.Println("SendMetrics -> " + string(b))
-	// var body = []byte(b)
+	var body = []byte(b)
 
 	// internal.Gauge type send
 	for key, element := range inst.Gmetricnames {
-
-		var v inst.Metrics
-
-		v.ID = key
-		v.MType = "gauge"
-		v.Value = (*float64)(&m.Gmetrics[element])
-		body, err := json.Marshal(v)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		// var url = fmt.Sprintf("http://%v/update/gauge/%v/%f",
-		// 	inst.ServerAddress, key, m.Gmetrics[element])
-		var url = fmt.Sprintf("http://%v/update/",
-			inst.ServerAddress)
+		var url = fmt.Sprintf("http://%v/update/gauge/%v/%f",
+			inst.ServerAddress, key, m.Gmetrics[element])
 		log.Println(url)
 
 		request, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
@@ -118,20 +105,8 @@ func SendMetrics(m inst.Monitor) {
 
 	// counter type send
 	for key, element := range inst.Cmetricnames {
-		var v inst.Metrics
-
-		v.ID = key
-		v.MType = "gauge"
-		v.Delta = (*int64)(&m.Cmetrics[element])
-		body, err := json.Marshal(v)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		// var url = fmt.Sprintf("http://%v/update/counter/%v/%d",
-		// 	inst.ServerAddress, key, m.Cmetrics[element])
-		var url = fmt.Sprintf("http://%v/update/",
-			inst.ServerAddress)
+		var url = fmt.Sprintf("http://%v/update/counter/%v/%d",
+			inst.ServerAddress, key, m.Cmetrics[element])
 		log.Println(url)
 
 		request, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
