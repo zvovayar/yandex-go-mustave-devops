@@ -300,7 +300,7 @@ func GetMvalueJSON(w http.ResponseWriter, r *http.Request) {
 	} else {
 		log.Printf("Error unknown metric type %v", v.MType)
 		w.WriteHeader(http.StatusNotFound)
-		_, err := w.Write([]byte("<h1>404 Counter metric not found</h1>"))
+		_, err := w.Write([]byte("<h1>404 metric type not found</h1>"))
 		if err != nil {
 			log.Fatal(err)
 		}
