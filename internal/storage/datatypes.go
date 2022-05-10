@@ -15,8 +15,10 @@ type Metrics struct {
 
 type Monitor struct {
 	// warning: remember about quantity metrics! [N], N - quantity metrics
-	Gmetrics [35]Gauge
-	Cmetrics [8]Counter
+	// Gmetrics [35]Gauge
+	// Cmetrics [8]Counter
+	Gmetrics []Gauge
+	Cmetrics []Counter
 }
 
 var Gmetricnames = map[string]int{
