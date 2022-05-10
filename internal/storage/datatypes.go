@@ -15,8 +15,8 @@ type Metrics struct {
 
 type Monitor struct {
 	// warning: remember about quantity metrics! [N], N - quantity metrics
-	Gmetrics [30]Gauge
-	Cmetrics [3]Counter
+	Gmetrics [31]Gauge
+	Cmetrics [4]Counter
 }
 
 var Gmetricnames = map[string]int{
@@ -50,11 +50,13 @@ var Gmetricnames = map[string]int{
 	"RandomValue":   27,
 	"testSetGet134": 28,
 	"GetSet191":     29,
+	"GetSet238":     30,
 }
 var Cmetricnames = map[string]int{
 	"PollCount":    0,
 	"testSetGet33": 1,
 	"GetSet209":    2,
+	"GetSet199":    3,
 }
 var PollInterval = time.Second * 2    // 2
 var ReportInterval = time.Second * 10 //10
