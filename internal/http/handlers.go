@@ -139,7 +139,7 @@ func UpdateCounterMetric(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Store %v = %d", cmname, cm)
 
 	w.WriteHeader(http.StatusOK)
-	_, err = w.Write([]byte("<h1>Gauge metric</h1>" + ss[3] + ss[4]))
+	_, err = w.Write([]byte("<h1>Counter metric</h1>" + ss[3] + ss[4]))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -212,12 +212,63 @@ func GetCMvalue(w http.ResponseWriter, r *http.Request) {
 // Сохранение одной метрики из JSON
 func UpdateMetricJSON(w http.ResponseWriter, r *http.Request) {
 	var v inst.Metrics
+	var cmname string
+	var gmname string
+	var cm inst.Counter
+	var gm inst.Gauge
 
-	log.Println(r.Body)
+	// log.Println(r.Body)
 	if err := json.NewDecoder(r.Body).Decode(&v); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		log.Fatal(err)
 		return
 	}
 	log.Println(v)
+	log.Printf("*v.Delta=%d", *v.Delta)
+	log.Printf("*v.Value=%f", *v.Value)
+
+	//
+	// TODO: здесь сохранять значение метрики
+	//
+	if v.MType == "gauge" {
+
+		gmname = v.ID
+		gm = inst.Gauge(*v.Value)
+
+		sm.SetGMvalue(gmname, inst.Gauge(gm))
+
+		log.Printf("Store %v = %f", gmname, gm)
+
+		w.WriteHeader(http.StatusOK)
+		_, err := w.Write([]byte("<h1>Gauge metric</h1>" + gmname))
+		if err != nil {
+			log.Fatal(err)
+		}
+		return
+	} else if v.MType == "counter" {
+
+		cmname = v.ID
+		cm = inst.Counter(*v.Delta)
+
+		sm.SetCMvalue(cmname, inst.Counter(cm))
+
+		log.Printf("Store %v = %d", cmname, cm)
+
+		w.WriteHeader(http.StatusOK)
+		_, err := w.Write([]byte("<h1>Counter metric</h1>" + cmname))
+
+		if err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
+
+	w.WriteHeader(http.StatusBadRequest)
+	_, err := w.Write([]byte("<h1>Unknown metric type</h1>" + v.MType))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("Unknown metric type %v", v.MType)
+
 }
