@@ -59,4 +59,4 @@ var BufferLength = 30
 var ServerAddress = "127.0.0.1:8080"
 
 //var ContentType = "text/plain"
-var ContentType = "applitation/json"
+var ContentType = "applitation/jsons"
