@@ -27,8 +27,8 @@ func main() {
 	r.Get("/value/counter/{CMname}", inhttp.GetCMvalue)
 
 	// POST requests update, get
-	r.Post("/value/", inhttp.GetMvalueJSON)
-	r.Post("/update/", inhttp.UpdateMetricJSON)
+	r.Post("/value", inhttp.GetMvalueJSON)
+	r.Post("/update", inhttp.UpdateMetricJSON)
 	r.Post("/update/{type}/", inhttp.NotImplemented)
 	r.Post("/update/{type}/{vname}/", http.NotFound)
 	r.Post("/update/{type}/{vname}/{value}", inhttp.NotImplemented)
@@ -39,6 +39,8 @@ func main() {
 
 	// запуск сервера с адресом localhost, порт 8080
 	//log.Fatal(http.ListenAndServe(":8080", r))
+	log.Println("Server started")
+
 	if err := http.ListenAndServe(":8080", r); err != nil {
 		log.Fatal(err)
 	}

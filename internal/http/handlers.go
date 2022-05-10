@@ -312,8 +312,8 @@ func GetMvalueJSON(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	_, err = w.Write(buf)
 	if err != nil {
 		log.Fatal(err)

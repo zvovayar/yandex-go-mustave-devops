@@ -183,6 +183,7 @@ func runSendMetrics(duration time.Duration, chanmonitor chan inst.Monitor) {
 }
 
 func main() {
+	log.Println("Agent started")
 	chanmonitor := make(chan inst.Monitor, inst.BufferLength)
 	chanOS := make(chan os.Signal, 1) // we need to reserve to buffer size 1, so the notifier are not blocked
 	signal.Notify(chanOS, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT)
