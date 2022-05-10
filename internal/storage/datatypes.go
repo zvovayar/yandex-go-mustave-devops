@@ -6,16 +6,17 @@ import (
 
 type Gauge float64
 type Counter int64
-type Monitor struct {
-	// warning: remember about quantity metrics!
-	Gmetrics [29]Gauge
-	Cmetrics [2]Counter
-}
 type Metrics struct {
 	ID    string   `json:"id"`              // имя метрики
 	MType string   `json:"type"`            // параметр, принимающий значение gauge или counter
 	Delta *int64   `json:"delta,omitempty"` // значение метрики в случае передачи counter
 	Value *float64 `json:"value,omitempty"` // значение метрики в случае передачи gauge
+}
+
+type Monitor struct {
+	// warning: remember about quantity metrics! [N], N - quantity metrics
+	Gmetrics [30]Gauge
+	Cmetrics [3]Counter
 }
 
 var Gmetricnames = map[string]int{
@@ -48,10 +49,12 @@ var Gmetricnames = map[string]int{
 	"TotalAlloc":    26,
 	"RandomValue":   27,
 	"testSetGet134": 28,
+	"GetSet191":     29,
 }
 var Cmetricnames = map[string]int{
 	"PollCount":    0,
 	"testSetGet33": 1,
+	"GetSet209":    2,
 }
 var PollInterval = time.Second * 2    // 2
 var ReportInterval = time.Second * 10 //10
