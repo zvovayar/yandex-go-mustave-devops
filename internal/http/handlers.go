@@ -224,14 +224,13 @@ func UpdateMetricJSON(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Println(v)
-	log.Printf("*v.Delta=%d", *v.Delta)
-	log.Printf("*v.Value=%f", *v.Value)
 
 	//
 	// TODO: здесь сохранять значение метрики
 	//
 	if v.MType == "gauge" {
 
+		log.Printf("*v.Value=%f", *v.Value)
 		gmname = v.ID
 		gm = inst.Gauge(*v.Value)
 
@@ -247,6 +246,7 @@ func UpdateMetricJSON(w http.ResponseWriter, r *http.Request) {
 		return
 	} else if v.MType == "counter" {
 
+		log.Printf("*v.Delta=%d", *v.Delta)
 		cmname = v.ID
 		cm = inst.Counter(*v.Delta)
 

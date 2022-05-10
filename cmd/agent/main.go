@@ -90,6 +90,9 @@ func SendMetrics(m inst.Monitor) {
 			log.Fatal(err)
 		}
 
+		log.Printf("v=%v", v)
+		log.Printf("body=%v", string(body))
+
 		// var url = fmt.Sprintf("http://%v/update/gauge/%v/%f",
 		// 	inst.ServerAddress, key, m.Gmetrics[element])
 		var url = fmt.Sprintf("http://%v/update/",
@@ -121,12 +124,15 @@ func SendMetrics(m inst.Monitor) {
 		var v inst.Metrics
 
 		v.ID = key
-		v.MType = "gauge"
+		v.MType = "counter"
 		v.Delta = (*int64)(&m.Cmetrics[element])
 		body, err := json.Marshal(v)
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		log.Printf("v=%v", v)
+		log.Printf("body=%v", string(body))
 
 		// var url = fmt.Sprintf("http://%v/update/counter/%v/%d",
 		// 	inst.ServerAddress, key, m.Cmetrics[element])
