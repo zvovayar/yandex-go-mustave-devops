@@ -272,3 +272,65 @@ func UpdateMetricJSON(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Unknown metric type %v", v.MType)
 
 }
+
+// Вернуть одну метрику в JSON
+func GetMvalueJSON(w http.ResponseWriter, r *http.Request) {
+
+	var v inst.Metrics
+	var cmname string
+	var gmname string
+
+	// log.Println(r.Body)
+	if err := json.NewDecoder(r.Body).Decode(&v); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Fatal(err)
+		return
+	}
+	log.Println(v)
+
+	cmname, gmname = v.ID, v.ID
+
+	if v.MType == "gauge" {
+
+		*v.Value = float64(sm.GetGMvalue(gmname))
+	} else if v.MType == "counter" {
+		*v.Delta = int64(sm.GetCMvalue(cmname))
+	} else {
+		log.Printf("Error unknown metric type %v", v.MType)
+		w.WriteHeader(http.StatusNotFound)
+		_, err := w.Write([]byte("<h1>404 Counter metric not found</h1>"))
+		if err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
+
+	buf, err := json.Marshal(v)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	w.WriteHeader(http.StatusOK)
+	_, err = w.Write(buf)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// if _, ok := inst.Cmetricnames[chi.URLParam(r, "CMname")]; !ok {
+	// 	// не нашли название метрики, были ошибки
+	// 	w.WriteHeader(http.StatusNotFound)
+	// 	_, err := w.Write([]byte("<h1>404 Counter metric not found</h1>"))
+	// 	if err != nil {
+	// 		log.Fatal(err)
+	// 	}
+	// 	return
+	// }
+
+	// // htmlText := fmt.Sprint(inst.StoreMonitor.Cmetrics[inst.Cmetricnames[chi.URLParam(r, "CMname")]])
+	// htmlText := fmt.Sprint(sm.GetCMvalue(chi.URLParam(r, "CMname")))
+	// w.WriteHeader(http.StatusOK)
+	// _, err := w.Write([]byte(htmlText))
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+}
