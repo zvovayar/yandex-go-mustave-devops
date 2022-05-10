@@ -33,6 +33,9 @@ func (sm *StoreMem) SetGMvalue(gmname string, gm Gauge) {
 	if _, ok := Gmetricnames[gmname]; !ok {
 		// не нашли название метрики, были ошибки
 		log.Printf("Error Can not find gauge metric name:%v", gmname)
+		//
+		// TODO: сделать добавление новой метрики
+		//
 		return
 	}
 	sm.monitor.Gmetrics[Gmetricnames[gmname]] = gm
@@ -42,6 +45,9 @@ func (sm *StoreMem) SetCMvalue(cmname string, cm Counter) {
 	if _, ok := Cmetricnames[cmname]; !ok {
 		// не нашли название метрики, были ошибки
 		log.Printf("Error Can not find counter metric name:%v", cmname)
+		//
+		// TODO: сделать добавление новой метрики
+		//
 		return
 	}
 	sm.monitor.Cmetrics[Cmetricnames[cmname]] += cm
