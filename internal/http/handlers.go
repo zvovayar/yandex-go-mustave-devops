@@ -292,9 +292,11 @@ func GetMvalueJSON(w http.ResponseWriter, r *http.Request) {
 
 	if v.MType == "gauge" {
 
-		*v.Value = float64(sm.GetGMvalue(gmname))
+		gm := float64(sm.GetGMvalue(gmname))
+		v.Value = &gm
 	} else if v.MType == "counter" {
-		*v.Delta = int64(sm.GetCMvalue(cmname))
+		cm := int64(sm.GetCMvalue(cmname))
+		v.Delta = &cm
 	} else {
 		log.Printf("Error unknown metric type %v", v.MType)
 		w.WriteHeader(http.StatusNotFound)
