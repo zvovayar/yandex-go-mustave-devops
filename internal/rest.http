@@ -1,0 +1,9 @@
+POST http://localhost:8080/update HTTP/1.1
+content-type: application/json
+
+{
+    "id": "NextGC",
+    "type": "gauge",
+    "delta": 123424,
+    "value": 0.54321
+}
