@@ -215,7 +215,7 @@ func main() {
 	}
 
 	log.Printf("Strated with variables: address=%v, poll interval=%v, report interval=%v",
-		cfg.Address, cfg.PollInterval, cfg.ReportInterval)
+		inst.ServerAddress, inst.PollInterval, inst.ReportInterval)
 
 	chanmonitor := make(chan inst.Monitor, inst.BufferLength)
 	chanOS := make(chan os.Signal, 1) // we need to reserve to buffer size 1, so the notifier are not blocked

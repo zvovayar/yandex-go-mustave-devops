@@ -31,7 +31,7 @@ func main() {
 		inst.ServerAddress = cfg.Address
 	}
 
-	log.Printf("Strated with variables: address=%v", cfg.Address)
+	log.Printf("Strated with variables: address=%v", inst.ServerAddress)
 
 	// маршрутизация запросов обработчику
 	r := chi.NewRouter()
@@ -60,7 +60,7 @@ func main() {
 	r.Post("/update/gauge/{GMname}/{GMvalue}", inhttp.UpdateGaugeMetric)
 	r.Post("/update/counter/{CMname}/{CMvalue}", inhttp.UpdateCounterMetric)
 
-	if err := http.ListenAndServe(cfg.Address, r); err != nil {
+	if err := http.ListenAndServe(inst.ServerAddress, r); err != nil {
 		log.Fatal(err)
 	}
 }
