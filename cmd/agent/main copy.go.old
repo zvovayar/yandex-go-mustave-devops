@@ -13,22 +13,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/caarlos0/env"
 	inst "github.com/zvovayar/yandex-go-mustave-devops/internal/storage"
 )
-
-type AgentConfig struct {
-	Address        string `env:"ADDRESS"`
-	ReportInterval int    `env:"REPORT_INTERVAL"`
-	PollInterval   int    `env:"POLL_INTERVAL"`
-}
 
 func NewMonitor(duration time.Duration, chanmonitor chan inst.Monitor) {
 	var m inst.Monitor
 	var rtm runtime.MemStats
-
-	m.Cmetrics = make([]inst.Counter, len(inst.Cmetricnames))
-	m.Gmetrics = make([]inst.Gauge, len(inst.Gmetricnames))
 
 	for {
 		<-time.After(duration)
@@ -85,28 +75,12 @@ func SendMetrics(m inst.Monitor) {
 	//Just encode to json and print
 	b, _ := json.Marshal(m)
 	log.Println("SendMetrics -> " + string(b))
-	// var body = []byte(b)
+	var body = []byte(b)
 
 	// internal.Gauge type send
 	for key, element := range inst.Gmetricnames {
-
-		var v inst.Metrics
-
-		v.ID = key
-		v.MType = "gauge"
-		v.Value = (*float64)(&m.Gmetrics[element])
-		body, err := json.Marshal(v)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		log.Printf("v=%v", v)
-		log.Printf("body=%v", string(body))
-
-		// var url = fmt.Sprintf("http://%v/update/gauge/%v/%f",
-		// 	inst.ServerAddress, key, m.Gmetrics[element])
-		var url = fmt.Sprintf("http://%v/update/",
-			inst.ServerAddress)
+		var url = fmt.Sprintf("http://%v/update/gauge/%v/%f",
+			inst.ServerAddress, key, m.Gmetrics[element])
 		log.Println(url)
 
 		request, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
@@ -131,23 +105,8 @@ func SendMetrics(m inst.Monitor) {
 
 	// counter type send
 	for key, element := range inst.Cmetricnames {
-		var v inst.Metrics
-
-		v.ID = key
-		v.MType = "counter"
-		v.Delta = (*int64)(&m.Cmetrics[element])
-		body, err := json.Marshal(v)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		log.Printf("v=%v", v)
-		log.Printf("body=%v", string(body))
-
-		// var url = fmt.Sprintf("http://%v/update/counter/%v/%d",
-		// 	inst.ServerAddress, key, m.Cmetrics[element])
-		var url = fmt.Sprintf("http://%v/update/",
-			inst.ServerAddress)
+		var url = fmt.Sprintf("http://%v/update/counter/%v/%d",
+			inst.ServerAddress, key, m.Cmetrics[element])
 		log.Println(url)
 
 		request, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
@@ -193,30 +152,6 @@ func runSendMetrics(duration time.Duration, chanmonitor chan inst.Monitor) {
 }
 
 func main() {
-
-	var cfg AgentConfig
-	// загрузим переменные среды
-	err := env.Parse(&cfg)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Println("Agent started")
-	log.Printf("Config environment:%+v", cfg)
-
-	if cfg.Address != "" {
-		inst.ServerAddress = cfg.Address
-	}
-	if cfg.PollInterval > 0 {
-		inst.PollInterval = time.Duration(cfg.PollInterval) * time.Second
-	}
-	if cfg.ReportInterval > 0 {
-		inst.ReportInterval = time.Duration(cfg.ReportInterval) * time.Second
-	}
-
-	log.Printf("Strated with variables: address=%v, poll interval=%v, report interval=%v",
-		inst.ServerAddress, inst.PollInterval, inst.ReportInterval)
-
 	chanmonitor := make(chan inst.Monitor, inst.BufferLength)
 	chanOS := make(chan os.Signal, 1) // we need to reserve to buffer size 1, so the notifier are not blocked
 	signal.Notify(chanOS, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT)
