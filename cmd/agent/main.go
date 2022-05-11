@@ -13,8 +13,15 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/caarlos0/env"
 	inst "github.com/zvovayar/yandex-go-mustave-devops/internal/storage"
 )
+
+type AgentConfig struct {
+	Address        string `env:"ADDRESS"`
+	ReportInterval int    `env:"REPORT_INTERVAL"`
+	PollInterval   int    `env:"POLL_INTERVAL"`
+}
 
 func NewMonitor(duration time.Duration, chanmonitor chan inst.Monitor) {
 	var m inst.Monitor
@@ -186,7 +193,30 @@ func runSendMetrics(duration time.Duration, chanmonitor chan inst.Monitor) {
 }
 
 func main() {
+
+	var cfg AgentConfig
+	// загрузим переменные среды
+	err := env.Parse(&cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	log.Println("Agent started")
+	log.Printf("Config environment:%+v", cfg)
+
+	if cfg.Address != "" {
+		inst.ServerAddress = cfg.Address
+	}
+	if cfg.PollInterval > 0 {
+		inst.PollInterval = time.Duration(cfg.PollInterval) * time.Second
+	}
+	if cfg.ReportInterval > 0 {
+		inst.ReportInterval = time.Duration(cfg.ReportInterval) * time.Second
+	}
+
+	log.Printf("Strated with variables: address=%v, poll interval=%v, report interval=%v",
+		cfg.Address, cfg.PollInterval, cfg.ReportInterval)
+
 	chanmonitor := make(chan inst.Monitor, inst.BufferLength)
 	chanOS := make(chan os.Signal, 1) // we need to reserve to buffer size 1, so the notifier are not blocked
 	signal.Notify(chanOS, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT)

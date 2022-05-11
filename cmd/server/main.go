@@ -4,12 +4,35 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/caarlos0/env"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	inhttp "github.com/zvovayar/yandex-go-mustave-devops/internal/http"
+	inst "github.com/zvovayar/yandex-go-mustave-devops/internal/storage"
 )
 
+type ServerConfig struct {
+	Address string `env:"ADDRESS"`
+}
+
 func main() {
+
+	var cfg ServerConfig
+	// загрузим переменные среды
+	err := env.Parse(&cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("Server started")
+	log.Printf("Config environment:%+v", cfg)
+
+	if cfg.Address != "" {
+		inst.ServerAddress = cfg.Address
+	}
+
+	log.Printf("Strated with variables: address=%v", cfg.Address)
+
 	// маршрутизация запросов обработчику
 	r := chi.NewRouter()
 
@@ -37,11 +60,7 @@ func main() {
 	r.Post("/update/gauge/{GMname}/{GMvalue}", inhttp.UpdateGaugeMetric)
 	r.Post("/update/counter/{CMname}/{CMvalue}", inhttp.UpdateCounterMetric)
 
-	// запуск сервера с адресом localhost, порт 8080
-	//log.Fatal(http.ListenAndServe(":8080", r))
-	log.Println("Server started")
-
-	if err := http.ListenAndServe(":8080", r); err != nil {
+	if err := http.ListenAndServe(cfg.Address, r); err != nil {
 		log.Fatal(err)
 	}
 }
