@@ -18,9 +18,9 @@ import (
 )
 
 type AgentConfig struct {
-	Address        string `env:"ADDRESS"`
-	ReportInterval int    `env:"REPORT_INTERVAL"`
-	PollInterval   int    `env:"POLL_INTERVAL"`
+	Address        string        `env:"ADDRESS"`
+	ReportInterval time.Duration `env:"REPORT_INTERVAL"`
+	PollInterval   time.Duration `env:"POLL_INTERVAL"`
 }
 
 func NewMonitor(duration time.Duration, chanmonitor chan inst.Monitor) {
@@ -208,10 +208,10 @@ func main() {
 		inst.ServerAddress = cfg.Address
 	}
 	if cfg.PollInterval > 0 {
-		inst.PollInterval = time.Duration(cfg.PollInterval) * time.Second
+		inst.PollInterval = cfg.PollInterval
 	}
 	if cfg.ReportInterval > 0 {
-		inst.ReportInterval = time.Duration(cfg.ReportInterval) * time.Second
+		inst.ReportInterval = cfg.ReportInterval
 	}
 
 	log.Printf("Strated with variables: address=%v, poll interval=%v, report interval=%v",
