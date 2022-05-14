@@ -99,14 +99,14 @@ func (mps *MemPStorage) ClosePersistanceStorage() error {
 // mirror StoreMem interface
 func (mps *MemPStorage) GetGMvalue(gmname string) Gauge {
 
-	var g Gauge = mps.sm.GetGMvalue(gmname)
+	var g = mps.sm.GetGMvalue(gmname)
 	return g
 }
 
 // mirror StoreMem interface
 func (mps *MemPStorage) GetCMvalue(cmname string) Counter {
 
-	var c Counter = mps.sm.GetCMvalue(cmname)
+	var c = mps.sm.GetCMvalue(cmname)
 	return c
 }
 
