@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+// var chanPStoreMem chan StoreMem
+
 type MemPStorage struct {
 	sm            StoreMem
 	chanPStoreMem chan StoreMem
@@ -20,8 +22,9 @@ func (mps *MemPStorage) GetMonitor() *Monitor {
 	return &(mps.sm.monitor)
 }
 
-func (mps *MemPStorage) InitMemPStorage() chan StoreMem {
-	mps.chanPStoreMem = make(chan StoreMem, BufferLength)
+func (mps *MemPStorage) InitMemPStorage(ch chan StoreMem) chan StoreMem {
+	// ch := make(chan StoreMem, BufferLength)
+	mps.chanPStoreMem = ch
 	return mps.chanPStoreMem
 }
 
@@ -45,38 +48,39 @@ func (mps *MemPStorage) NewPersistanceStorage() error {
 	for {
 		<-time.After(StoreInterval)
 
-		c := len(mps.chanPStoreMem)
-		log.Printf("Flash data to the file %v\n", StoreFile)
-		for i := 0; i < c; i++ {
+		// c := len(chanPStoreMem)
+		log.Printf("Save data to the file %v\n", StoreFile)
+		// for i := 0; i < c; i++ {
 
-			m, ok := <-mps.chanPStoreMem
-			if !ok {
-				log.Println(err)
-				break
-			}
+		// m, ok := <-chanPStoreMem
+		// if !ok {
+		// 	log.Println(err)
+		// 	break
+		// }
 
-			data, err = json.Marshal(m.monitor)
-			if err != nil {
-				return err
-			}
+		data, err = json.Marshal(mps.sm.monitor)
+		if err != nil {
+			return err
+		}
 
-			// записываем в буфер
-			if _, err := mps.writer.Write(data); err != nil {
-				log.Fatal(err)
-				return err
-			}
+		log.Printf("Save data object: %v", mps.sm.monitor)
+		// записываем в буфер
+		if _, err := mps.writer.Write(data); err != nil {
+			log.Fatal(err)
+			return err
+		}
 
-			// добавляем перенос строки
-			if err := mps.writer.WriteByte('\n'); err != nil {
-				log.Fatal(err)
-				return err
-			}
+		// добавляем перенос строки
+		if err := mps.writer.WriteByte('\n'); err != nil {
+			log.Fatal(err)
+			return err
+		}
 
-			// записываем буфер в файл
-			if err := mps.writer.Flush(); err != nil {
-				log.Fatal(err)
-				return err
-			}
+		// }
+		// записываем буфер в файл
+		if err := mps.writer.Flush(); err != nil {
+			log.Fatal(err)
+			return err
 		}
 	}
 
@@ -107,22 +111,48 @@ func (mps *MemPStorage) GetCMvalue(cmname string) Counter {
 // mirror StoreMem interface + persistance function
 func (mps *MemPStorage) SetGMvalue(gmname string, gm Gauge) {
 	mps.sm.SetGMvalue(gmname, gm)
+	// mps.chanPStoreMem = make(chan StoreMem, BufferLength)
+	// chanPStoreMem <- mps.sm
+	// log.Printf("chanPStoreMem <-: %v", mps.sm.monitor)
 
-	mps.chanPStoreMem <- mps.sm
 }
 
 // mirror StoreMem interface + persistance function
 func (mps *MemPStorage) SetCMvalue(cmname string, cm Counter) {
 	mps.sm.SetCMvalue(cmname, cm)
 
-	mps.chanPStoreMem <- mps.sm
+	// chanPStoreMem <- mps.sm
+	// log.Printf("chanPStoreMem <-: %v", mps.sm.monitor)
 }
 
-func init() {
-	StoreMonitor.GetMonitor().Cmetrics = make([]Counter, len(Cmetricnames))
-	StoreMonitor.GetMonitor().Gmetrics = make([]Gauge, len(Gmetricnames))
-	log.Println("StoreMonitor.GetMonitor().Cmetrics = make([]Counter, len(Cmetricnames))")
-	log.Printf("%v", Cmetricnames)
-	log.Printf("%v", Gmetricnames)
-	log.Printf("%+v", StoreMonitor.GetMonitor())
+func (mps *MemPStorage) LoadData() {
+
+	//
+	var err error
+	var data []byte
+	var file *os.File
+	var scanner *bufio.Scanner
+
+	file, err = os.OpenFile(StoreFile, os.O_RDONLY, 0777)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	scanner = bufio.NewScanner(file)
+
+	// одиночное сканирование до следующей строки
+	for scanner.Scan() {
+		// читаем данные из scanner
+		data = scanner.Bytes()
+
+		err := json.Unmarshal(data, &mps.sm.monitor)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		log.Printf("Load data: %v", mps.sm.monitor)
+	}
+	log.Println(scanner.Err())
+
 }

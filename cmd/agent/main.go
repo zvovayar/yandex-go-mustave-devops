@@ -69,8 +69,8 @@ func NewMonitor(duration time.Duration, chanmonitor chan inst.Monitor) {
 		m.Cmetrics[inst.Cmetricnames["PoolCount"]]++
 
 		// Just encode to json and print
-		b, _ := json.Marshal(m)
-		log.Printf("NewMonitor - > %v Channel length %v", string(b), len(chanmonitor))
+		// b, _ := json.Marshal(m)
+		// log.Printf("NewMonitor - > %v Channel length %v", string(b), len(chanmonitor))
 
 		// Send new collected data to the channel
 		chanmonitor <- m
@@ -117,14 +117,18 @@ func SendMetrics(m inst.Monitor) {
 		client := &http.Client{}
 		// отправляем запрос
 
+		log.Println("--------------------------------------------")
 		resp, err := client.Do(request)
 		if err != nil {
 			// обработаем ошибку
 			log.Println(err)
 			return
 		}
+		log.Println("=============================================")
 		defer resp.Body.Close()
+		log.Println("+++++++++++++++++++++++++++++++++++++++++++++")
 		log.Println(resp)
+		log.Println("*********************************************")
 	}
 
 	// counter type send
@@ -179,6 +183,7 @@ func runSendMetrics(duration time.Duration, chanmonitor chan inst.Monitor) {
 		for i := 0; i < c; i++ {
 
 			m, err := <-chanmonitor
+			log.Printf("runSendMetrics i=%d, err=%v, m=%+v", i, err, m)
 			if !err {
 				fmt.Println(err)
 				break
@@ -216,12 +221,12 @@ func main() {
 	log.Printf("Strated with variables: address=%v, poll interval=%v, report interval=%v",
 		inst.ServerAddress, inst.PollInterval, inst.ReportInterval)
 
-	chanmonitor := make(chan inst.Monitor, inst.BufferLength)
+	chanm := make(chan inst.Monitor, inst.BufferLength)
 	chanOS := make(chan os.Signal, 1) // we need to reserve to buffer size 1, so the notifier are not blocked
 	signal.Notify(chanOS, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT)
 
-	go NewMonitor(inst.PollInterval, chanmonitor)
-	go runSendMetrics(inst.ReportInterval, chanmonitor)
+	go NewMonitor(inst.PollInterval, chanm)
+	go runSendMetrics(inst.ReportInterval, chanm)
 
 	sig := <-chanOS
 	log.Printf("INFO got a signal '%v', start shutting down...\n", sig) // put breakpoint here

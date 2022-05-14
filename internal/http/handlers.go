@@ -221,20 +221,20 @@ func UpdateMetricJSON(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 		return
 	}
-	log.Println(v)
+	// log.Println(v)
 
 	//
 	// TODO: здесь сохранять значение метрики
 	//
 	if v.MType == "gauge" {
 
-		log.Printf("*v.Value=%f", *v.Value)
+		// log.Printf("*v.Value=%f", *v.Value)
 		gmname = v.ID
 		gm = inst.Gauge(*v.Value)
 
 		sm.SetGMvalue(gmname, inst.Gauge(gm))
 
-		log.Printf("Store %v = %f", gmname, gm)
+		// log.Printf("Store %v = %f", gmname, gm)
 
 		w.WriteHeader(http.StatusOK)
 		_, err := w.Write([]byte("<h1>Gauge metric</h1>" + gmname))
@@ -244,13 +244,13 @@ func UpdateMetricJSON(w http.ResponseWriter, r *http.Request) {
 		return
 	} else if v.MType == "counter" {
 
-		log.Printf("*v.Delta=%d", *v.Delta)
+		// log.Printf("*v.Delta=%d", *v.Delta)
 		cmname = v.ID
 		cm = inst.Counter(*v.Delta)
 
 		sm.SetCMvalue(cmname, inst.Counter(cm))
 
-		log.Printf("Store %v = %d", cmname, cm)
+		// log.Printf("Store %v = %d", cmname, cm)
 
 		w.WriteHeader(http.StatusOK)
 		_, err := w.Write([]byte("<h1>Counter metric</h1>" + cmname))

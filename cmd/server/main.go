@@ -58,7 +58,7 @@ func main() {
 	// зададим встроенные middleware, чтобы улучшить стабильность приложения
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
+	// r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.StripSlashes)
 
@@ -78,11 +78,18 @@ func main() {
 	r.Post("/update/gauge/{GMname}/{GMvalue}", inhttp.UpdateGaugeMetric)
 	r.Post("/update/counter/{CMname}/{CMvalue}", inhttp.UpdateCounterMetric)
 
+	if inst.Restore {
+		inst.StoreMonitor.LoadData()
+	}
+
 	go ListenRutine(r)
+	go inst.StoreMonitor.NewPersistanceStorage()
 
 	chanOS := make(chan os.Signal, 1) // we need to reserve to buffer size 1, so the notifier are not blocked
 	signal.Notify(chanOS, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT)
 	sig := <-chanOS
+	inst.StoreMonitor.ClosePersistanceStorage()
+
 	log.Printf("INFO got a signal '%v', start shutting down...\n", sig) // put breakpoint here
 	log.Printf("Shutdown complete")
 }
