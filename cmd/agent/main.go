@@ -72,10 +72,8 @@ func NewMonitor(duration time.Duration, chanmonitor chan inst.Monitor) {
 		b, _ := json.Marshal(m)
 		log.Printf("NewMonitor - > %v Channel length %v", string(b), len(chanmonitor))
 
-		// Save new collected data to the slice
+		// Send new collected data to the channel
 		chanmonitor <- m
-
-		// m.sendMetrics()
 
 	}
 }
@@ -172,6 +170,7 @@ func SendMetrics(m inst.Monitor) {
 }
 func runSendMetrics(duration time.Duration, chanmonitor chan inst.Monitor) {
 
+	log.Println("Agent started gorutine for send metrics")
 	for {
 		<-time.After(duration)
 

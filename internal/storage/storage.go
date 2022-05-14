@@ -11,6 +11,10 @@ type Storage interface {
 
 type PersistanceStorage interface {
 	Storage
-	NewPersistanceStorage(s *Storage) (*PersistanceStorage, error)
+	NewPersistanceStorage() error
 	ClosePersistanceStorage() error
 }
+
+// var StoreMonitor StoreMem
+
+var StoreMonitor MemPStorage

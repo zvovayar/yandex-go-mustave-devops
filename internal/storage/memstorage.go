@@ -4,10 +4,18 @@ import (
 	"log"
 )
 
-var StoreMonitor StoreMem
-
 type StoreMem struct {
 	monitor Monitor
+}
+
+type StoreMemInt interface {
+	GetMonitor() *Monitor
+	SetMonitor(m *Monitor)
+}
+
+func (sm *StoreMem) GetMonitor() *Monitor {
+	log.Print("func (sm *StoreMem) GetMonitor() *Monitor ")
+	return &sm.monitor
 }
 
 func (sm *StoreMem) GetGMvalue(gmname string) Gauge {
@@ -37,7 +45,7 @@ func (sm *StoreMem) SetGMvalue(gmname string, gm Gauge) {
 		// TODO: сделать добавление новой метрики
 		//
 		Gmetricnames[gmname] = len(Gmetricnames)
-		StoreMonitor.monitor.Gmetrics = append(StoreMonitor.monitor.Gmetrics, gm)
+		StoreMonitor.GetMonitor().Gmetrics = append(StoreMonitor.GetMonitor().Gmetrics, gm)
 		return
 	}
 	sm.monitor.Gmetrics[Gmetricnames[gmname]] = gm
@@ -51,13 +59,8 @@ func (sm *StoreMem) SetCMvalue(cmname string, cm Counter) {
 		// TODO: сделать добавление новой метрики
 		//
 		Cmetricnames[cmname] = len(Cmetricnames)
-		StoreMonitor.monitor.Cmetrics = append(StoreMonitor.monitor.Cmetrics, cm)
+		StoreMonitor.GetMonitor().Cmetrics = append(StoreMonitor.GetMonitor().Cmetrics, cm)
 		return
 	}
 	sm.monitor.Cmetrics[Cmetricnames[cmname]] += cm
-}
-
-func init() {
-	StoreMonitor.monitor.Cmetrics = make([]Counter, len(Cmetricnames))
-	StoreMonitor.monitor.Gmetrics = make([]Gauge, len(Gmetricnames))
 }
