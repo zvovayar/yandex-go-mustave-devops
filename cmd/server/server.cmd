@@ -6,6 +6,8 @@ set REPORT_INTERVAL=10s
 set POLL_INTERVAL=2s
 set RESTORE=false
 set SHUTDOWN_TIMEOUT=5s
-
+set STORE_INTERVAL=10s
+set STORE_FILE="/tmp/devops-metrics-db.json"
+set RESTORE=true
 
 go run .\cmd\server\main.go

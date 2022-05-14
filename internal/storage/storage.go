@@ -8,3 +8,9 @@ type Storage interface {
 	SetGMvalue(gmname string, gm Gauge)
 	SetCMvalue(cmname string, cm Counter)
 }
+
+type PersistanceStorage interface {
+	Storage
+	NewPersistanceStorage(s *Storage) (*PersistanceStorage, error)
+	ClosePersistanceStorage() error
+}

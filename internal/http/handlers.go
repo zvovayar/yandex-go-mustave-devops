@@ -131,9 +131,7 @@ func UpdateCounterMetric(w http.ResponseWriter, r *http.Request) {
 	//
 	// TODO: здесь сохранять значение метрики
 	//
-	//storage.StoreMonitor.Cmetrics[Cmetricnames[cmname]] += Counter(cm)
-	// s := &inst.StoreMonitor //.GetMonitor()
-	// s.Cmetrics[inst.Cmetricnames[cmname]] += inst.Counter(cm)
+
 	sm.SetCMvalue(cmname, inst.Counter(cm))
 
 	log.Printf("Store %v = %d", cmname, cm)
@@ -319,21 +317,4 @@ func GetMvalueJSON(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	// if _, ok := inst.Cmetricnames[chi.URLParam(r, "CMname")]; !ok {
-	// 	// не нашли название метрики, были ошибки
-	// 	w.WriteHeader(http.StatusNotFound)
-	// 	_, err := w.Write([]byte("<h1>404 Counter metric not found</h1>"))
-	// 	if err != nil {
-	// 		log.Fatal(err)
-	// 	}
-	// 	return
-	// }
-
-	// // htmlText := fmt.Sprint(inst.StoreMonitor.Cmetrics[inst.Cmetricnames[chi.URLParam(r, "CMname")]])
-	// htmlText := fmt.Sprint(sm.GetCMvalue(chi.URLParam(r, "CMname")))
-	// w.WriteHeader(http.StatusOK)
-	// _, err := w.Write([]byte(htmlText))
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
 }

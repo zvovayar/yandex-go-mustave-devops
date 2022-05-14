@@ -72,6 +72,9 @@ var PollInterval = time.Second * 2    // 2
 var ReportInterval = time.Second * 10 //10
 var BufferLength = 30
 var ServerAddress = "127.0.0.1:8080"
+var StoreInterval = time.Second * 300 //300
+var StoreFile = "/tmp/devops-metrics-db.json"
+var Restore = true
 
 //var ContentType = "text/plain"
 var ContentType = "application/json"
