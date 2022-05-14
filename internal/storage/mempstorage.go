@@ -58,6 +58,48 @@ func (mps *MemPStorage) NewPersistanceStorage() error {
 		// 	break
 		// }
 
+		//
+		// save names maps
+		//
+		data, err = json.Marshal(Gmetricnames)
+		if err != nil {
+			return err
+		}
+
+		log.Printf("Save data object: %v", Gmetricnames)
+		// записываем в буфер
+		if _, err := mps.writer.Write(data); err != nil {
+			log.Fatal(err)
+			return err
+		}
+
+		// добавляем перенос строки
+		if err := mps.writer.WriteByte('\n'); err != nil {
+			log.Fatal(err)
+			return err
+		}
+
+		data, err = json.Marshal(Cmetricnames)
+		if err != nil {
+			return err
+		}
+
+		log.Printf("Save data object: %v", Cmetricnames)
+		// записываем в буфер
+		if _, err := mps.writer.Write(data); err != nil {
+			log.Fatal(err)
+			return err
+		}
+
+		// добавляем перенос строки
+		if err := mps.writer.WriteByte('\n'); err != nil {
+			log.Fatal(err)
+			return err
+		}
+
+		//
+		// save data
+		//
 		data, err = json.Marshal(mps.sm.monitor)
 		if err != nil {
 			return err
@@ -145,10 +187,31 @@ func (mps *MemPStorage) LoadData() {
 
 	// одиночное сканирование до следующей строки
 	for scanner.Scan() {
-		// читаем данные из scanner
+		// metrics names читаем данные из scanner
 		data = scanner.Bytes()
 
-		err := json.Unmarshal(data, &mps.sm.monitor)
+		err := json.Unmarshal(data, &Gmetricnames)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		log.Printf("Load Gmetricnames: %v", Gmetricnames)
+
+		scanner.Scan()
+		data = scanner.Bytes()
+
+		err = json.Unmarshal(data, &Cmetricnames)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		log.Printf("Load Cmetricnames: %v", Cmetricnames)
+
+		// читаем данные из scanner
+		scanner.Scan()
+		data = scanner.Bytes()
+
+		err = json.Unmarshal(data, &mps.sm.monitor)
 		if err != nil {
 			log.Fatal(err)
 		}
