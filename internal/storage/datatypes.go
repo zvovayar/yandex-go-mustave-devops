@@ -68,6 +68,7 @@ var Cmetricnames = map[string]int{
 	"GetSet21":     6,
 	"GetSet203":    7,
 	"GetSet190":    8,
+	"GetSet47":     9,
 }
 var PollInterval = time.Second * 2    // 2
 var ReportInterval = time.Second * 10 //10
