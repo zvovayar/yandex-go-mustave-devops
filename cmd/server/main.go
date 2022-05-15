@@ -89,6 +89,7 @@ func main() {
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.StripSlashes)
 	r.Use(middleware.AllowContentEncoding("deflate", "gzip"))
+	r.Use(middleware.Compress(5, "application/json"))
 
 	// GET requests
 	//http.HandleFunc("/", http.NotFound)
