@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"math/rand"
@@ -196,6 +197,7 @@ func runSendMetrics(duration time.Duration, chanmonitor chan inst.Monitor) {
 func main() {
 
 	var cfg AgentConfig
+	var cfgFromFlags AgentConfig
 	// загрузим переменные среды
 	err := env.Parse(&cfg)
 	if err != nil {
@@ -205,17 +207,31 @@ func main() {
 	log.Println("Agent started")
 	log.Printf("Config environment:%+v", cfg)
 
+	// load flags
+	flag.StringVar(&cfgFromFlags.Address, "a", inst.ServerAddress, "address to bind on")
+	flag.DurationVar(&cfgFromFlags.ReportInterval, "r", inst.ReportInterval, "report interval")
+	flag.DurationVar(&cfgFromFlags.PollInterval, "p", inst.PollInterval, "poll interval")
+	flag.Parse()
+	log.Printf("Agent Config flags:%+v", cfgFromFlags)
+
+	// assign work parameters
 	if cfg.Address != "" {
 		inst.ServerAddress = cfg.Address
+	} else {
+		inst.ServerAddress = cfgFromFlags.Address
 	}
 	if cfg.PollInterval > 0 {
 		inst.PollInterval = cfg.PollInterval
+	} else {
+		inst.PollInterval = cfgFromFlags.PollInterval
 	}
 	if cfg.ReportInterval > 0 {
 		inst.ReportInterval = cfg.ReportInterval
+	} else {
+		inst.ReportInterval = cfgFromFlags.ReportInterval
 	}
 
-	log.Printf("Strated with variables: address=%v, poll interval=%v, report interval=%v",
+	log.Printf("Agent Strated with variables: address=%v, poll interval=%v, report interval=%v",
 		inst.ServerAddress, inst.PollInterval, inst.ReportInterval)
 
 	chanm := make(chan inst.Monitor, inst.BufferLength)
