@@ -155,6 +155,7 @@ func GetAllMetrics(w http.ResponseWriter, r *http.Request) {
 		htmlText += fmt.Sprintf("type counter %v #%v = %d \n", key, element, sm.GetCMvalue(key)) //inst.StoreMonitor.Cmetrics[inst.Cmetricnames[key]])
 	}
 
+	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(http.StatusOK)
 	_, err := w.Write([]byte(htmlText))
 	if err != nil {
