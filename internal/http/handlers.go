@@ -158,7 +158,7 @@ func GetAllMetrics(w http.ResponseWriter, r *http.Request) {
 	}
 
 	htmlText += "</table>"
-	w.Header().Set("Content-Type", "html/text")
+	w.Header().Set("Content-Type", "html/text, text/html")
 	w.WriteHeader(http.StatusOK)
 	_, err := w.Write([]byte(htmlText))
 	if err != nil {
