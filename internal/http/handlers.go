@@ -146,16 +146,19 @@ func UpdateCounterMetric(w http.ResponseWriter, r *http.Request) {
 // Вернуть все метрики
 func GetAllMetrics(w http.ResponseWriter, r *http.Request) {
 
-	htmlText := ""
+	htmlText := "<table border=\"1\">"
 	for key, element := range inst.Gmetricnames {
-		htmlText += fmt.Sprintf("type gauge %v #%v = %f \n", key, element, sm.GetGMvalue(key)) //inst.StoreMonitor.Gmetrics[inst.Gmetricnames[key]])
+		htmlText += fmt.Sprintf("<tr><td>type gauge</td><td> %v</td><td> #%v =</td><td> %f </td></tr>",
+			key, element, sm.GetGMvalue(key))
 	}
 
 	for key, element := range inst.Cmetricnames {
-		htmlText += fmt.Sprintf("type counter %v #%v = %d \n", key, element, sm.GetCMvalue(key)) //inst.StoreMonitor.Cmetrics[inst.Cmetricnames[key]])
+		htmlText += fmt.Sprintf("<tr><td>type counter</td><td> %v</td><td> #%v =</td><td> %d</td></tr> \n",
+			key, element, sm.GetCMvalue(key))
 	}
 
-	w.Header().Set("Content-Type", "text/html")
+	htmlText += "</table>"
+	w.Header().Set("Content-Type", "html/text")
 	w.WriteHeader(http.StatusOK)
 	_, err := w.Write([]byte(htmlText))
 	if err != nil {
