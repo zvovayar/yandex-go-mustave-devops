@@ -68,7 +68,14 @@ func main() {
 	}
 	log.Printf("Server Strated with variables: StoreFile=%v", inst.StoreFile)
 
-	inst.Restore = cfg.Restore && cfgFromFlags.Restore
+	if cfg.Restore {
+		inst.Restore = true
+	} else if cfgFromFlags.Restore {
+		inst.Restore = true
+	} else {
+		inst.Restore = false
+	}
+	// inst.Restore = cfg.Restore && cfgFromFlags.Restore
 
 	log.Printf("Server Strated with variables: Restore=%v", inst.Restore)
 
