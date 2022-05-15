@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"log"
 	"math/rand"
@@ -14,22 +13,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/caarlos0/env"
 	inst "github.com/zvovayar/yandex-go-mustave-devops/internal/storage"
 )
-
-type AgentConfig struct {
-	Address        string        `env:"ADDRESS"`
-	ReportInterval time.Duration `env:"REPORT_INTERVAL"`
-	PollInterval   time.Duration `env:"POLL_INTERVAL"`
-}
 
 func NewMonitor(duration time.Duration, chanmonitor chan inst.Monitor) {
 	var m inst.Monitor
 	var rtm runtime.MemStats
-
-	m.Cmetrics = make([]inst.Counter, len(inst.Cmetricnames))
-	m.Gmetrics = make([]inst.Gauge, len(inst.Gmetricnames))
 
 	for {
 		<-time.After(duration)
@@ -70,11 +59,13 @@ func NewMonitor(duration time.Duration, chanmonitor chan inst.Monitor) {
 		m.Cmetrics[inst.Cmetricnames["PoolCount"]]++
 
 		// Just encode to json and print
-		// b, _ := json.Marshal(m)
-		// log.Printf("NewMonitor - > %v Channel length %v", string(b), len(chanmonitor))
+		b, _ := json.Marshal(m)
+		log.Printf("NewMonitor - > %v Channel length %v", string(b), len(chanmonitor))
 
-		// Send new collected data to the channel
+		// Save new collected data to the slice
 		chanmonitor <- m
+
+		// m.sendMetrics()
 
 	}
 }
@@ -84,25 +75,12 @@ func SendMetrics(m inst.Monitor) {
 	//Just encode to json and print
 	b, _ := json.Marshal(m)
 	log.Println("SendMetrics -> " + string(b))
+	var body = []byte(b)
 
 	// internal.Gauge type send
 	for key, element := range inst.Gmetricnames {
-
-		var v inst.Metrics
-
-		v.ID = key
-		v.MType = "gauge"
-		v.Value = (*float64)(&m.Gmetrics[element])
-		body, err := json.Marshal(v)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		log.Printf("v=%v", v)
-		log.Printf("body=%v", string(body))
-
-		var url = fmt.Sprintf("http://%v/update/",
-			inst.ServerAddress)
+		var url = fmt.Sprintf("http://%v/update/gauge/%v/%f",
+			inst.ServerAddress, key, m.Gmetrics[element])
 		log.Println(url)
 
 		request, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
@@ -115,39 +93,20 @@ func SendMetrics(m inst.Monitor) {
 		client := &http.Client{}
 		// отправляем запрос
 
-		// log.Println("--------------------------------------------")
 		resp, err := client.Do(request)
 		if err != nil {
 			// обработаем ошибку
 			log.Println(err)
 			return
 		}
-		// log.Println("=============================================")
 		defer resp.Body.Close()
-		// log.Println("+++++++++++++++++++++++++++++++++++++++++++++")
 		log.Println(resp)
-		// log.Println("*********************************************")
 	}
 
 	// counter type send
 	for key, element := range inst.Cmetricnames {
-		var v inst.Metrics
-
-		v.ID = key
-		v.MType = "counter"
-		v.Delta = (*int64)(&m.Cmetrics[element])
-		body, err := json.Marshal(v)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		log.Printf("v=%v", v)
-		log.Printf("body=%v", string(body))
-
-		// var url = fmt.Sprintf("http://%v/update/counter/%v/%d",
-		// 	inst.ServerAddress, key, m.Cmetrics[element])
-		var url = fmt.Sprintf("http://%v/update/",
-			inst.ServerAddress)
+		var url = fmt.Sprintf("http://%v/update/counter/%v/%d",
+			inst.ServerAddress, key, m.Cmetrics[element])
 		log.Println(url)
 
 		request, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
@@ -172,7 +131,6 @@ func SendMetrics(m inst.Monitor) {
 }
 func runSendMetrics(duration time.Duration, chanmonitor chan inst.Monitor) {
 
-	log.Println("Agent started gorutine for send metrics")
 	for {
 		<-time.After(duration)
 
@@ -181,7 +139,6 @@ func runSendMetrics(duration time.Duration, chanmonitor chan inst.Monitor) {
 		for i := 0; i < c; i++ {
 
 			m, err := <-chanmonitor
-			log.Printf("runSendMetrics i=%d, err=%v, m=%+v", i, err, m)
 			if !err {
 				fmt.Println(err)
 				break
@@ -195,51 +152,12 @@ func runSendMetrics(duration time.Duration, chanmonitor chan inst.Monitor) {
 }
 
 func main() {
-
-	var cfg AgentConfig
-	var cfgFromFlags AgentConfig
-	// загрузим переменные среды
-	err := env.Parse(&cfg)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Println("Agent started")
-	log.Printf("Config environment:%+v", cfg)
-
-	// load flags
-	flag.StringVar(&cfgFromFlags.Address, "a", inst.ServerAddress, "address to bind on")
-	flag.DurationVar(&cfgFromFlags.ReportInterval, "r", inst.ReportInterval, "report interval")
-	flag.DurationVar(&cfgFromFlags.PollInterval, "p", inst.PollInterval, "poll interval")
-	flag.Parse()
-	log.Printf("Agent Config flags:%+v", cfgFromFlags)
-
-	// assign work parameters
-	if cfg.Address != "" {
-		inst.ServerAddress = cfg.Address
-	} else {
-		inst.ServerAddress = cfgFromFlags.Address
-	}
-	if cfg.PollInterval > 0 {
-		inst.PollInterval = cfg.PollInterval
-	} else {
-		inst.PollInterval = cfgFromFlags.PollInterval
-	}
-	if cfg.ReportInterval > 0 {
-		inst.ReportInterval = cfg.ReportInterval
-	} else {
-		inst.ReportInterval = cfgFromFlags.ReportInterval
-	}
-
-	log.Printf("Agent Strated with variables: address=%v, poll interval=%v, report interval=%v",
-		inst.ServerAddress, inst.PollInterval, inst.ReportInterval)
-
-	chanm := make(chan inst.Monitor, inst.BufferLength)
+	chanmonitor := make(chan inst.Monitor, inst.BufferLength)
 	chanOS := make(chan os.Signal, 1) // we need to reserve to buffer size 1, so the notifier are not blocked
 	signal.Notify(chanOS, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT)
 
-	go NewMonitor(inst.PollInterval, chanm)
-	go runSendMetrics(inst.ReportInterval, chanm)
+	go NewMonitor(inst.PollInterval, chanmonitor)
+	go runSendMetrics(inst.ReportInterval, chanmonitor)
 
 	sig := <-chanOS
 	log.Printf("INFO got a signal '%v', start shutting down...\n", sig) // put breakpoint here
