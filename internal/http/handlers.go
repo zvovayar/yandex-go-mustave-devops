@@ -153,12 +153,12 @@ func GetAllMetrics(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for key, element := range inst.Cmetricnames {
-		htmlText += fmt.Sprintf("<tr><td>type counter</td><td> %v</td><td> #%v =</td><td> %d</td></tr> \n",
+		htmlText += fmt.Sprintf("<tr><td>type counter</td><td> %v</td><td> #%v =</td><td> %d</td></tr>",
 			key, element, sm.GetCMvalue(key))
 	}
 
 	htmlText += "</table>"
-	w.Header().Set("Content-Type", "html/text, text/html")
+	w.Header().Set("Content-Type", "html/text")
 	w.WriteHeader(http.StatusOK)
 	_, err := w.Write([]byte(htmlText))
 	if err != nil {
