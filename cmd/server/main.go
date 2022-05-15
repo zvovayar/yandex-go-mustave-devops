@@ -30,7 +30,7 @@ func main() {
 
 	log.Println("Server started")
 
-	// загрузим переменные среды
+	// load environment variables
 	err := env.Parse(&cfg)
 	if err != nil {
 		log.Fatal(err)
@@ -88,6 +88,7 @@ func main() {
 	// r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.StripSlashes)
+	r.Use(middleware.AllowContentEncoding("deflate", "gzip"))
 
 	// GET requests
 	//http.HandleFunc("/", http.NotFound)
@@ -109,15 +110,19 @@ func main() {
 		inst.StoreMonitor.LoadData()
 	}
 
+	// start listen http
 	go ListenRutine(r)
+	// start data's saver
 	go inst.StoreMonitor.NewPersistanceStorage()
 
 	chanOS := make(chan os.Signal, 1) // we need to reserve to buffer size 1, so the notifier are not blocked
 	signal.Notify(chanOS, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT)
 	sig := <-chanOS
-	inst.StoreMonitor.ClosePersistanceStorage()
 
-	log.Printf("INFO got a signal '%v', start shutting down...\n", sig) // put breakpoint here
+	log.Printf("INFO got a signal '%v', start shutting down... wait 5 seconds\n", sig) // put breakpoint here
+	inst.StoreMonitor.ClosePersistanceStorage()
+	<-time.After(time.Second * 5)
+
 	log.Printf("Shutdown complete")
 }
 
