@@ -85,7 +85,7 @@ func main() {
 	// зададим встроенные middleware, чтобы улучшить стабильность приложения
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
-	// r.Use(middleware.Logger)
+	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.StripSlashes)
 	r.Use(middleware.AllowContentEncoding("deflate", "gzip"))
@@ -113,7 +113,7 @@ func main() {
 
 	// start listen http
 	go ListenRutine(r)
-	// start data's saver
+	// start data's saver persistance
 	go inst.StoreMonitor.NewPersistanceStorage()
 
 	chanOS := make(chan os.Signal, 1) // we need to reserve to buffer size 1, so the notifier are not blocked

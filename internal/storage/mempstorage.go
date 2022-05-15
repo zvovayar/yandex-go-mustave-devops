@@ -18,7 +18,7 @@ type MemPStorage struct {
 }
 
 func (mps *MemPStorage) GetMonitor() *Monitor {
-	log.Printf("func (mps MemPStorage) GetMonitor() *Monitor ")
+	// log.Printf("func (mps MemPStorage) GetMonitor() *Monitor ")
 	return &(mps.sm.monitor)
 }
 
@@ -48,15 +48,7 @@ func (mps *MemPStorage) NewPersistanceStorage() error {
 	for {
 		<-time.After(StoreInterval)
 
-		// c := len(chanPStoreMem)
-		log.Printf("Save data to the file %v\n", StoreFile)
-		// for i := 0; i < c; i++ {
-
-		// m, ok := <-chanPStoreMem
-		// if !ok {
-		// 	log.Println(err)
-		// 	break
-		// }
+		// log.Printf("Save data to the file %v\n", StoreFile)
 
 		//
 		// save names maps
@@ -66,7 +58,7 @@ func (mps *MemPStorage) NewPersistanceStorage() error {
 			return err
 		}
 
-		log.Printf("Save data object: %v", Gmetricnames)
+		// log.Printf("Save data object: %v", Gmetricnames)
 		// записываем в буфер
 		if _, err := mps.writer.Write(data); err != nil {
 			log.Fatal(err)
@@ -84,7 +76,7 @@ func (mps *MemPStorage) NewPersistanceStorage() error {
 			return err
 		}
 
-		log.Printf("Save data object: %v", Cmetricnames)
+		// log.Printf("Save data object: %v", Cmetricnames)
 		// записываем в буфер
 		if _, err := mps.writer.Write(data); err != nil {
 			log.Fatal(err)
@@ -105,7 +97,7 @@ func (mps *MemPStorage) NewPersistanceStorage() error {
 			return err
 		}
 
-		log.Printf("Save data object: %v", mps.sm.monitor)
+		// log.Printf("Save data object: %v", mps.sm.monitor)
 		// записываем в буфер
 		if _, err := mps.writer.Write(data); err != nil {
 			log.Fatal(err)
@@ -195,7 +187,7 @@ func (mps *MemPStorage) LoadData() {
 			log.Fatal(err)
 		}
 
-		log.Printf("Load Gmetricnames: %v", Gmetricnames)
+		// log.Printf("Load Gmetricnames: %v", Gmetricnames)
 
 		scanner.Scan()
 		data = scanner.Bytes()
@@ -205,7 +197,7 @@ func (mps *MemPStorage) LoadData() {
 			log.Fatal(err)
 		}
 
-		log.Printf("Load Cmetricnames: %v", Cmetricnames)
+		// log.Printf("Load Cmetricnames: %v", Cmetricnames)
 
 		// читаем данные из scanner
 		scanner.Scan()
@@ -216,8 +208,8 @@ func (mps *MemPStorage) LoadData() {
 			log.Fatal(err)
 		}
 
-		log.Printf("Load data: %v", mps.sm.monitor)
+		// log.Printf("Load data: %v", mps.sm.monitor)
 	}
-	log.Println(scanner.Err())
+	// log.Println(scanner.Err())
 
 }
