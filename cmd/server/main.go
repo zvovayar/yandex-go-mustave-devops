@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"net/http"
 	"os"
@@ -25,31 +26,50 @@ type ServerConfig struct {
 func main() {
 
 	var cfg ServerConfig
+	var cfgFromFlags ServerConfig
+
+	log.Println("Server started")
+
 	// загрузим переменные среды
 	err := env.Parse(&cfg)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Println("Server started")
 	log.Printf("Server Config environment:%+v", cfg)
 
+	// load flags
+	flag.StringVar(&cfgFromFlags.Address, "a", inst.ServerAddress, "address to listen on")
+	flag.DurationVar(&cfgFromFlags.StoreInterval, "i", inst.StoreInterval, "store interval")
+	flag.StringVar(&cfgFromFlags.StoreFile, "f", inst.StoreFile, "store file")
+	flag.BoolVar(&cfgFromFlags.Restore, "r", inst.Restore, "restore from file on start")
+	flag.Parse()
+	log.Printf("Server Config flags:%+v", cfgFromFlags)
+
+	// assign work parameters
 	if cfg.Address != "" {
 		inst.ServerAddress = cfg.Address
+	} else {
+		inst.ServerAddress = cfgFromFlags.Address
 	}
 	log.Printf("Server Strated with variables: address=%v", inst.ServerAddress)
 
 	if cfg.StoreInterval > 0 {
 		inst.StoreInterval = cfg.StoreInterval
+	} else {
+		inst.StoreInterval = cfgFromFlags.StoreInterval
 	}
 	log.Printf("Server Strated with variables: StoreInterval=%v", inst.StoreInterval)
 
 	if len(cfg.StoreFile) > 0 {
 		inst.StoreFile = cfg.StoreFile
+	} else {
+		inst.StoreFile = cfgFromFlags.StoreFile
 	}
 	log.Printf("Server Strated with variables: StoreFile=%v", inst.StoreFile)
 
-	inst.Restore = cfg.Restore
+	inst.Restore = cfg.Restore && cfgFromFlags.Restore
+
 	log.Printf("Server Strated with variables: Restore=%v", inst.Restore)
 
 	// маршрутизация запросов обработчику

@@ -83,7 +83,6 @@ func SendMetrics(m inst.Monitor) {
 	//Just encode to json and print
 	b, _ := json.Marshal(m)
 	log.Println("SendMetrics -> " + string(b))
-	// var body = []byte(b)
 
 	// internal.Gauge type send
 	for key, element := range inst.Gmetricnames {
@@ -101,8 +100,6 @@ func SendMetrics(m inst.Monitor) {
 		log.Printf("v=%v", v)
 		log.Printf("body=%v", string(body))
 
-		// var url = fmt.Sprintf("http://%v/update/gauge/%v/%f",
-		// 	inst.ServerAddress, key, m.Gmetrics[element])
 		var url = fmt.Sprintf("http://%v/update/",
 			inst.ServerAddress)
 		log.Println(url)
@@ -117,18 +114,18 @@ func SendMetrics(m inst.Monitor) {
 		client := &http.Client{}
 		// отправляем запрос
 
-		log.Println("--------------------------------------------")
+		// log.Println("--------------------------------------------")
 		resp, err := client.Do(request)
 		if err != nil {
 			// обработаем ошибку
 			log.Println(err)
 			return
 		}
-		log.Println("=============================================")
+		// log.Println("=============================================")
 		defer resp.Body.Close()
-		log.Println("+++++++++++++++++++++++++++++++++++++++++++++")
+		// log.Println("+++++++++++++++++++++++++++++++++++++++++++++")
 		log.Println(resp)
-		log.Println("*********************************************")
+		// log.Println("*********************************************")
 	}
 
 	// counter type send
