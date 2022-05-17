@@ -24,3 +24,4 @@ vendor/
 .idea
 .vscode
 devops-metrics-db.json
+internal/tools
