@@ -17,6 +17,7 @@ type AgentConfig struct {
 	Address        string        `env:"ADDRESS"`
 	ReportInterval time.Duration `env:"REPORT_INTERVAL"`
 	PollInterval   time.Duration `env:"POLL_INTERVAL"`
+	Key            string        `env:"KEY"`
 }
 
 func main() {
@@ -34,6 +35,7 @@ func main() {
 
 	// load flags
 	flag.StringVar(&cfgFromFlags.Address, "a", inst.ServerAddress, "address to bind on")
+	flag.StringVar(&cfgFromFlags.Key, "k", "", "key for hash calculate")
 	flag.DurationVar(&cfgFromFlags.ReportInterval, "r", inst.ReportInterval, "report interval")
 	flag.DurationVar(&cfgFromFlags.PollInterval, "p", inst.PollInterval, "poll interval")
 	flag.Parse()
@@ -44,6 +46,11 @@ func main() {
 		inst.ServerAddress = cfg.Address
 	} else {
 		inst.ServerAddress = cfgFromFlags.Address
+	}
+	if cfg.Key != "" {
+		inst.Key = cfg.Key
+	} else {
+		inst.Key = cfgFromFlags.Key
 	}
 	if cfg.PollInterval > 0 {
 		inst.PollInterval = cfg.PollInterval
@@ -56,8 +63,8 @@ func main() {
 		inst.ReportInterval = cfgFromFlags.ReportInterval
 	}
 
-	log.Printf("Agent Strated with variables: address=%v, poll interval=%v, report interval=%v",
-		inst.ServerAddress, inst.PollInterval, inst.ReportInterval)
+	log.Printf("Agent Strated with variables: address=%v, poll interval=%v, report interval=%v, key=%v",
+		inst.ServerAddress, inst.PollInterval, inst.ReportInterval, inst.Key)
 
 	chanm := make(chan inst.Monitor, inst.BufferLength)
 	chanOS := make(chan os.Signal, 1) // we need to reserve to buffer size 1, so the notifier are not blocked

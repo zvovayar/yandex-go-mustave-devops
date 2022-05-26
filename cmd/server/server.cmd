@@ -9,5 +9,6 @@ set SHUTDOWN_TIMEOUT=5s
 set STORE_INTERVAL=10s
 set STORE_FILE=.\devops-metrics-db.json
 set RESTORE=true
+set KEY=/tmp/zK3deX0
 
 go run .\cmd\server\main.go

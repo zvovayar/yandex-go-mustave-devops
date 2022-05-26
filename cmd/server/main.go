@@ -21,6 +21,7 @@ type ServerConfig struct {
 	StoreInterval time.Duration `env:"STORE_INTERVAL"`
 	StoreFile     string        `env:"STORE_FILE"`
 	Restore       bool          `env:"RESTORE"`
+	Key           string        `env:"KEY"`
 }
 
 func main() {
@@ -40,6 +41,7 @@ func main() {
 
 	// load flags
 	flag.StringVar(&cfgFromFlags.Address, "a", inst.ServerAddress, "address to listen on")
+	flag.StringVar(&cfgFromFlags.Key, "k", "", "key for hash calculate")
 	flag.DurationVar(&cfgFromFlags.StoreInterval, "i", inst.StoreInterval, "store interval")
 	flag.StringVar(&cfgFromFlags.StoreFile, "f", inst.StoreFile, "store file")
 	flag.BoolVar(&cfgFromFlags.Restore, "r", inst.Restore, "restore from file on start")
@@ -67,6 +69,13 @@ func main() {
 		inst.StoreFile = cfgFromFlags.StoreFile
 	}
 	log.Printf("Server Strated with variables: StoreFile=%v", inst.StoreFile)
+
+	if cfg.Key != "" {
+		inst.Key = cfg.Key
+	} else {
+		inst.Key = cfgFromFlags.Key
+	}
+	log.Printf("Server Strated with variables: Key=%v", inst.Key)
 
 	if cfg.Restore {
 		inst.Restore = true

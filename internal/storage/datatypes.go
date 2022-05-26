@@ -78,6 +78,7 @@ var ServerAddress = "127.0.0.1:8080"
 var StoreInterval = time.Second * 300 //300
 var StoreFile = "/tmp/devops-metrics-db.json"
 var Restore = true
+var Key = ""
 
 //var ContentType = "text/plain"
 var ContentType = "application/json"
