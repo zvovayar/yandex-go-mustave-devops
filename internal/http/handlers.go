@@ -243,7 +243,7 @@ func UpdateMetricJSON(w http.ResponseWriter, r *http.Request) {
 				log.Fatal(err)
 			}
 			log.Printf("Bad hash actual=%v expected=%v", v.Hash, mc.M.Hash)
-
+			return
 		}
 	}
 
