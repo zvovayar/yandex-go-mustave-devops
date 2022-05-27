@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	"github.com/zvovayar/yandex-go-mustave-devops/internal/crypt"
 	inst "github.com/zvovayar/yandex-go-mustave-devops/internal/storage"
 )
 
@@ -226,6 +227,25 @@ func UpdateMetricJSON(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// log.Println(v)
+
+	//
+	// check hash if key exist
+	//
+	if inst.Key != "" {
+		var mc crypt.MetricsCrypt
+
+		mc.M = v
+		if !mc.ControlHashMetrics(inst.Key) {
+			w.WriteHeader(http.StatusBadRequest)
+			_, err := w.Write([]byte("<h1>Bad hash</h1>" + v.MType))
+
+			if err != nil {
+				log.Fatal(err)
+			}
+			log.Printf("Bad hash actual=%v expected=%v", v.Hash, mc.M.Hash)
+
+		}
+	}
 
 	//
 	// TODO: здесь сохранять значение метрики
