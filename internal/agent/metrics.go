@@ -10,6 +10,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/zvovayar/yandex-go-mustave-devops/internal/crypt"
 	inst "github.com/zvovayar/yandex-go-mustave-devops/internal/storage"
 )
 
@@ -76,6 +77,8 @@ func SendMetrics(m inst.Monitor) {
 	b, _ := json.Marshal(m)
 	log.Println("SendMetrics -> " + string(b))
 
+	var mc crypt.MetricsCrypt
+
 	// internal.Gauge type send
 	for key, element := range inst.Gmetricnames {
 
@@ -84,6 +87,14 @@ func SendMetrics(m inst.Monitor) {
 		v.ID = key
 		v.MType = "gauge"
 		v.Value = (*float64)(&m.Gmetrics[element])
+
+		if inst.Key != "" {
+			mc.M = v
+			v.Hash = mc.MakeHashMetrics(inst.Key)
+		}
+
+		log.Printf("agent.SendMetrics v.Hash=%v", v.Hash)
+
 		body, err := json.Marshal(v)
 		if err != nil {
 			log.Fatal(err)
@@ -127,6 +138,14 @@ func SendMetrics(m inst.Monitor) {
 		v.ID = key
 		v.MType = "counter"
 		v.Delta = (*int64)(&m.Cmetrics[element])
+
+		if inst.Key != "" {
+			mc.M = v
+			v.Hash = mc.MakeHashMetrics(inst.Key)
+		}
+
+		log.Printf("agent.SendMetrics v.Hash=%v", v.Hash)
+
 		body, err := json.Marshal(v)
 		if err != nil {
 			log.Fatal(err)
