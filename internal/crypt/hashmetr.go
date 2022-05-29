@@ -26,7 +26,7 @@ func (mc *MetricsCrypt) MakeHashMetrics(key string) string {
 	var msg string
 
 	if mc.M.MType == "counter" {
-		msg = fmt.Sprintf("%s:counter:%d", mc.M.ID, mc.M.Delta)
+		msg = fmt.Sprintf("%s:counter:%d", mc.M.ID, *mc.M.Delta)
 	} else if mc.M.MType == "gauge" {
 		msg = fmt.Sprintf("%s:gauge:%f", mc.M.ID, *mc.M.Value)
 	} else {
@@ -54,7 +54,7 @@ func (mc *MetricsCrypt) ControlHashMetrics(key string) bool {
 	var msg string
 
 	if mc.M.MType == "counter" {
-		msg = fmt.Sprintf("%s:counter:%d", mc.M.ID, mc.M.Delta)
+		msg = fmt.Sprintf("%s:counter:%d", mc.M.ID, *mc.M.Delta)
 	} else if mc.M.MType == "gauge" {
 		msg = fmt.Sprintf("%s:gauge:%f", mc.M.ID, *mc.M.Value)
 	} else {
