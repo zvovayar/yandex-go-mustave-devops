@@ -72,9 +72,14 @@ func (mc *MetricsCrypt) ControlHashMetrics(key string) bool {
 	h.Write([]byte(msg))
 	sign := h.Sum(nil)
 
-	if mc.M.Hash == hex.EncodeToString(sign) {
+	data, err := hex.DecodeString(mc.M.Hash)
+	if err != nil {
+		panic(err)
+	}
+
+	if hmac.Equal(sign, data) {
 		return true
 	}
-	mc.M.Hash = hex.EncodeToString(sign)
+	// mc.M.Hash = hex.EncodeToString(sign)
 	return false
 }
