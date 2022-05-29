@@ -35,16 +35,19 @@ func (mc *MetricsCrypt) MakeHashMetrics(key string) string {
 
 	mc.Msg = msg
 
-	log.Printf("crypt.MakeHashMetrics msg=%v", msg)
+	log.Printf("crypt.MakeHashMetrics msg=%v\nmc=%v", msg, mc)
 
-	// keysha256 := sha256.Sum256([]byte(key))
-	// keysga256S := keysha256[:]
-
-	h := hmac.New(sha256.New, []byte(mc.key))
-	h.Write([]byte(msg))
-	sign := h.Sum(nil)
+	// h := hmac.New(sha256.New, []byte(mc.key))
+	// h.Write([]byte(msg))
+	// sign := h.Sum(nil)
+	m := []byte(msg)
+	k := []byte(key)
+	sign := MakeMAC(m, k)
 
 	mc.M.Hash = hex.EncodeToString(sign)
+	log.Printf("MakeHashMetrics. sign=%v ", sign)
+	log.Printf("crypt.MakeHashMetrics msg=%v\nmc=%v", msg, mc)
+
 	return mc.M.Hash
 }
 
@@ -63,23 +66,50 @@ func (mc *MetricsCrypt) ControlHashMetrics(key string) bool {
 
 	mc.Msg = msg
 
-	log.Printf("crypt.ControlHashMetrics msg=%v", msg)
+	log.Printf("crypt.ControlHashMetrics msg=%v\nmc=%v", msg, mc)
 
-	// keysha256 := sha256.Sum256([]byte(key))
-	// keysga256S := keysha256[:]
-
-	h := hmac.New(sha256.New, []byte(mc.key))
-	h.Write([]byte(msg))
-	sign := h.Sum(nil)
-
-	data, err := hex.DecodeString(mc.M.Hash)
+	m := []byte(msg)
+	mMAC, err := hex.DecodeString(mc.M.Hash)
 	if err != nil {
 		panic(err)
 	}
+	k := []byte(key)
 
-	if hmac.Equal(sign, data) {
-		return true
-	}
-	// mc.M.Hash = hex.EncodeToString(sign)
-	return false
+	//	mc.M.Hash = "hash" //hex.EncodeToString(sign)
+	return ValidMAC(m, mMAC, k)
+
+	// h := hmac.New(sha256.New, []byte(mc.key))
+	// h.Write([]byte(msg))
+	// sign := h.Sum(nil)
+
+	// data, err := hex.DecodeString(mc.M.Hash)
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// log.Printf("ControlHashMetrics. sign=%v data=%v", sign, data)
+	// return hmac.Equal(sign, data)
+
+}
+
+// ValidMAC reports whether messageMAC is a valid HMAC tag for message.
+func ValidMAC(message, messageMAC, key []byte) bool {
+	mac := hmac.New(sha256.New, key)
+	mac.Write(message)
+	expectedMAC := mac.Sum(nil)
+	log.Printf("ValidMAC messageMAC=%v\nexpectedMAC=%v", messageMAC, expectedMAC)
+	log.Printf("ValidMAC (str)messageMAC=%v\n(str)expectedMAC=%v",
+		hex.EncodeToString(messageMAC),
+		hex.EncodeToString(expectedMAC))
+
+	return hmac.Equal(messageMAC, expectedMAC)
+}
+
+func MakeMAC(message, key []byte) []byte {
+	mac := hmac.New(sha256.New, key)
+	mac.Write(message)
+	MAC := mac.Sum(nil)
+	log.Printf("MakeMAC expectedMAC=%v", MAC)
+	return MAC
+
 }
