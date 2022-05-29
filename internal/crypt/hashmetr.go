@@ -37,15 +37,12 @@ func (mc *MetricsCrypt) MakeHashMetrics(key string) string {
 
 	log.Printf("crypt.MakeHashMetrics msg=%v\nmc=%v", msg, mc)
 
-	// h := hmac.New(sha256.New, []byte(mc.key))
-	// h.Write([]byte(msg))
-	// sign := h.Sum(nil)
 	m := []byte(msg)
 	k := []byte(key)
 	sign := MakeMAC(m, k)
 
 	mc.M.Hash = hex.EncodeToString(sign)
-	log.Printf("MakeHashMetrics. sign=%v ", sign)
+	log.Printf("crypt.MakeHashMetrics sign=%v ", sign)
 	log.Printf("crypt.MakeHashMetrics msg=%v\nmc=%v", msg, mc)
 
 	return mc.M.Hash
@@ -75,20 +72,7 @@ func (mc *MetricsCrypt) ControlHashMetrics(key string) bool {
 	}
 	k := []byte(key)
 
-	//	mc.M.Hash = "hash" //hex.EncodeToString(sign)
 	return ValidMAC(m, mMAC, k)
-
-	// h := hmac.New(sha256.New, []byte(mc.key))
-	// h.Write([]byte(msg))
-	// sign := h.Sum(nil)
-
-	// data, err := hex.DecodeString(mc.M.Hash)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// log.Printf("ControlHashMetrics. sign=%v data=%v", sign, data)
-	// return hmac.Equal(sign, data)
 
 }
 

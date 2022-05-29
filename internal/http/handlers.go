@@ -245,6 +245,7 @@ func UpdateMetricJSON(w http.ResponseWriter, r *http.Request) {
 			log.Printf("Bad hash actual=%v expected=%v", v.Hash, mc.M.Hash)
 			return
 		}
+		log.Printf("Good hash actual=%v expected=%v", v.Hash, mc.M.Hash)
 	}
 
 	//
@@ -328,6 +329,18 @@ func GetMvalueJSON(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+
+	//
+	// compute hash if key exist
+	//
+	if inst.Key != "" {
+		var mc crypt.MetricsCrypt
+
+		mc.M = v
+		v.Hash = mc.MakeHashMetrics(inst.Key)
+	}
+
+	log.Printf("GetMValueJSON v=%v", v)
 
 	buf, err := json.Marshal(v)
 	if err != nil {
