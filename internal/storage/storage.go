@@ -18,17 +18,30 @@ type PersistanceStorage interface {
 	ClosePersistanceStorage() error
 }
 
+//
+// Uncomment if you want memory storage
+//
 // var StoreMonitor StoreMem
 
-var StoreMonitor MemPStorage
+//
+// Uncomment if you want text/json file storage
+//
+// var StoreMonitor MemPStorage
+
+//
+// Ucomment if you want SQL databse storage
+//
+var StoreMonitor MemSQLStorage
 
 func init() {
 	StoreMonitor.GetMonitor().Cmetrics = make([]Counter, len(Cmetricnames))
 	StoreMonitor.GetMonitor().Gmetrics = make([]Gauge, len(Gmetricnames))
-	log.Println("StoreMonitor.GetMonitor().Cmetrics = make([]Counter, len(Cmetricnames))")
-	log.Printf("%v", Cmetricnames)
-	log.Printf("%v", Gmetricnames)
-	log.Printf("%+v", StoreMonitor.GetMonitor())
+
+	log.Printf("Storage init\n")
+
+	// log.Printf("%v", Cmetricnames)
+	// log.Printf("%v", Gmetricnames)
+	// log.Printf("%+v", StoreMonitor.GetMonitor())
 
 	log.Printf("Storage type:%s", reflect.TypeOf(StoreMonitor).Name())
 	// if reflect.TypeOf(StoreMonitor).Name() == "MemStorage" {

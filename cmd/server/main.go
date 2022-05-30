@@ -22,6 +22,7 @@ type ServerConfig struct {
 	StoreFile     string        `env:"STORE_FILE"`
 	Restore       bool          `env:"RESTORE"`
 	Key           string        `env:"KEY"`
+	DatabaseDSN   string        `env:"DATABASE_DSN"`
 }
 
 func main() {
@@ -45,6 +46,7 @@ func main() {
 	flag.DurationVar(&cfgFromFlags.StoreInterval, "i", inst.StoreInterval, "store interval")
 	flag.StringVar(&cfgFromFlags.StoreFile, "f", inst.StoreFile, "store file")
 	flag.BoolVar(&cfgFromFlags.Restore, "r", inst.Restore, "restore from file on start")
+	flag.StringVar(&cfgFromFlags.DatabaseDSN, "d", inst.DatabaseDSN, "Database DSN")
 	flag.Parse()
 	log.Printf("Server Config flags:%+v", cfgFromFlags)
 
@@ -84,9 +86,17 @@ func main() {
 	} else {
 		inst.Restore = false
 	}
-	// inst.Restore = cfg.Restore && cfgFromFlags.Restore
+
+	if cfgFromFlags.DatabaseDSN != "" {
+		inst.DatabaseDSN = cfgFromFlags.DatabaseDSN
+		inst.Restore = false
+	} else if cfg.DatabaseDSN != "" {
+		inst.DatabaseDSN = cfg.DatabaseDSN
+		inst.Restore = false
+	}
 
 	log.Printf("Server Strated with variables: Restore=%v", inst.Restore)
+	log.Printf("Server Strated with variables: DatabaseDSN=%v", inst.DatabaseDSN)
 
 	// маршрутизация запросов обработчику
 	r := chi.NewRouter()
@@ -106,6 +116,7 @@ func main() {
 	r.Get("/", inhttp.GetAllMetrics)
 	r.Get("/value/gauge/{GMname}", inhttp.GetGMvalue)
 	r.Get("/value/counter/{CMname}", inhttp.GetCMvalue)
+	r.Get("/ping", inhttp.PingStorage)
 	// POST requests update, get
 	r.Post("/value", inhttp.GetMvalueJSON)
 	r.Post("/update", inhttp.UpdateMetricJSON)

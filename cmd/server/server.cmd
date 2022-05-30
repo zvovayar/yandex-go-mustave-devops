@@ -10,5 +10,6 @@ set STORE_INTERVAL=10s
 set STORE_FILE=.\devops-metrics-db.json
 set RESTORE=true
 set KEY=/tmp/zK3deX0
+set DATABASE_DSN=postgres://postgres:qweasd@localhost:5432/go-yandex-practicum?sslmode=disable
 
-go run .\cmd\server\main.go
+go run .\cmd\server\main.go 

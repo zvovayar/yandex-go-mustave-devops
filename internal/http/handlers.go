@@ -26,6 +26,26 @@ func NotImplemented(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// Ping Storage
+func PingStorage(w http.ResponseWriter, r *http.Request) {
+
+	if errp := inst.StoreMonitor.PingSQLserver(r.Context()); errp == nil {
+		w.WriteHeader(http.StatusOK)
+		_, err := w.Write([]byte("<h1>Ping database OK</h1>DSN=" + inst.DatabaseDSN))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+	} else {
+		w.WriteHeader(http.StatusInternalServerError)
+		_, err := w.Write([]byte("<h1>Ping database fail</h1>DSN=" + inst.DatabaseDSN + "<br>" + errp.Error()))
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+}
+
 // Сохранение метрики  Gauge
 func UpdateGaugeMetric(w http.ResponseWriter, r *http.Request) {
 
