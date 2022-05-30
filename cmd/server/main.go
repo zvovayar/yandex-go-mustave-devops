@@ -87,11 +87,11 @@ func main() {
 		inst.Restore = false
 	}
 
-	if cfgFromFlags.DatabaseDSN != "" {
-		inst.DatabaseDSN = cfgFromFlags.DatabaseDSN
-		inst.Restore = false
-	} else if cfg.DatabaseDSN != "" {
+	if cfg.DatabaseDSN != "" {
 		inst.DatabaseDSN = cfg.DatabaseDSN
+		inst.Restore = false
+	} else if cfgFromFlags.DatabaseDSN != "" {
+		inst.DatabaseDSN = cfgFromFlags.DatabaseDSN
 		inst.Restore = false
 	}
 
