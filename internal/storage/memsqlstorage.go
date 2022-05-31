@@ -36,14 +36,51 @@ func (mps *MemSQLStorage) NewPersistanceStorage() error {
 	//
 
 	//
-	// TODO: open database
+	// open database
 	//
-	mps.CheckAndCreateMDatabase(context.Background(), DatabaseDSN)
+	if err := mps.CheckAndCreateMDatabase(context.Background(), DatabaseDSN); err != nil {
+		panic(err)
+	}
 
-	// infinity loop for{} flash data to file
+	db, err := sql.Open("postgres", DatabaseDSN)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	// infinity loop for{} save data to SQL database
 	for {
 		<-time.After(StoreInterval)
 
+		for key := range Gmetricnames {
+
+			log.Printf("INSERT INTO gmetrics (gauge, name ) VALUES(%f, '%v')", mps.sm.GetGMvalue(key), key)
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+			_, err = db.ExecContext(ctx,
+				"INSERT INTO gmetrics (gauge, name ) VALUES($1, $2)", mps.sm.GetGMvalue(key), key)
+
+			if err != nil {
+				log.Println("NewPersistanceStorage " + err.Error())
+				return err
+			}
+			log.Printf("NewPersistanceStorage value %v=%f saved", key, mps.sm.GetGMvalue(key))
+		}
+
+		for key := range Cmetricnames {
+
+			log.Printf("INSERT INTO cmetrics (counter, name ) VALUES(%d, '%v')", mps.sm.GetCMvalue(key), key)
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+			_, err = db.ExecContext(ctx,
+				"INSERT INTO cmetrics (counter, name ) VALUES($1, $2)", mps.sm.GetCMvalue(key), key)
+
+			if err != nil {
+				log.Println("NewPersistanceStorage " + err.Error())
+				return err
+			}
+			log.Printf("NewPersistanceStorage value %v=%d saved", key, mps.sm.GetCMvalue(key))
+		}
 	}
 
 	// return nil
@@ -57,11 +94,9 @@ func (mps *MemSQLStorage) PingSQLserver(ctx context.Context) error {
 		panic(err)
 	}
 	defer db.Close()
-	// работаем с базой
-	// ...
-	// можем продиагностировать соединение
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
+
 	if err = db.PingContext(ctx); err != nil {
 		log.Println(err)
 		return err
@@ -132,16 +167,16 @@ func (mps *MemSQLStorage) CheckAndCreateMDatabase(ctx context.Context, DSN strin
 		"CREATE TABLE IF NOT EXISTS gmetrics (id BIGSERIAL, gauge NUMERIC, name VARCHAR(50))")
 
 	if err != nil {
-		log.Println(err)
+		log.Println("CheckAndCreateMDatabase " + err.Error())
 		return err
 	}
 	log.Printf("CheckAndCreateMDatabase table gmetrics created")
 
 	_, err = db.ExecContext(ctx,
-		"CREATE TABLE IF NOT EXISTS cmetrics (id BIGSERIAL, gauge BIGINT, name VARCHAR(50))")
+		"CREATE TABLE IF NOT EXISTS cmetrics (id BIGSERIAL, counter BIGINT, name VARCHAR(50))")
 
 	if err != nil {
-		log.Println(err)
+		log.Println("CheckAndCreateMDatabase " + err.Error())
 		return err
 	}
 	log.Printf("CheckAndCreateMDatabase table cmetrics created")

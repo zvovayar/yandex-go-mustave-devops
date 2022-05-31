@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"log"
 
 	inst "github.com/zvovayar/yandex-go-mustave-devops/internal/storage"
 )
@@ -35,15 +34,15 @@ func (mc *MetricsCrypt) MakeHashMetrics(key string) string {
 
 	mc.Msg = msg
 
-	log.Printf("crypt.MakeHashMetrics msg=%v\nmc=%v", msg, mc)
+	// log.Printf("crypt.MakeHashMetrics msg=%v\nmc=%v", msg, mc)
 
 	m := []byte(msg)
 	k := []byte(key)
 	sign := MakeMAC(m, k)
 
 	mc.M.Hash = hex.EncodeToString(sign)
-	log.Printf("crypt.MakeHashMetrics sign=%v ", sign)
-	log.Printf("crypt.MakeHashMetrics msg=%v\nmc=%v", msg, mc)
+	// log.Printf("crypt.MakeHashMetrics sign=%v ", sign)
+	// log.Printf("crypt.MakeHashMetrics msg=%v\nmc=%v", msg, mc)
 
 	return mc.M.Hash
 }
@@ -63,7 +62,7 @@ func (mc *MetricsCrypt) ControlHashMetrics(key string) bool {
 
 	mc.Msg = msg
 
-	log.Printf("crypt.ControlHashMetrics msg=%v\nmc=%v", msg, mc)
+	// log.Printf("crypt.ControlHashMetrics msg=%v\nmc=%v", msg, mc)
 
 	m := []byte(msg)
 	mMAC, err := hex.DecodeString(mc.M.Hash)
@@ -81,10 +80,10 @@ func ValidMAC(message, messageMAC, key []byte) bool {
 	mac := hmac.New(sha256.New, key)
 	mac.Write(message)
 	expectedMAC := mac.Sum(nil)
-	log.Printf("ValidMAC messageMAC=%v\nexpectedMAC=%v", messageMAC, expectedMAC)
-	log.Printf("ValidMAC (str)messageMAC=%v\n(str)expectedMAC=%v",
-		hex.EncodeToString(messageMAC),
-		hex.EncodeToString(expectedMAC))
+	// log.Printf("ValidMAC messageMAC=%v\nexpectedMAC=%v", messageMAC, expectedMAC)
+	// log.Printf("ValidMAC (str)messageMAC=%v\n(str)expectedMAC=%v",
+	// hex.EncodeToString(messageMAC),
+	// hex.EncodeToString(expectedMAC))
 
 	return hmac.Equal(messageMAC, expectedMAC)
 }
@@ -93,7 +92,7 @@ func MakeMAC(message, key []byte) []byte {
 	mac := hmac.New(sha256.New, key)
 	mac.Write(message)
 	MAC := mac.Sum(nil)
-	log.Printf("MakeMAC expectedMAC=%v", MAC)
+	// log.Printf("MakeMAC expectedMAC=%v", MAC)
 	return MAC
 
 }
