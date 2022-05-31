@@ -58,7 +58,7 @@ func main() {
 	}
 	log.Printf("Server Strated with variables: address=%v", inst.ServerAddress)
 
-	if cfg.StoreInterval > 0 {
+	if cfg.StoreInterval >= 0 {
 		inst.StoreInterval = cfg.StoreInterval
 	} else {
 		inst.StoreInterval = cfgFromFlags.StoreInterval
