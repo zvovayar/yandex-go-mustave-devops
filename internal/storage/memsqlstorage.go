@@ -38,6 +38,7 @@ func (mps *MemSQLStorage) NewPersistanceStorage() error {
 	//
 	// TODO: open database
 	//
+	mps.CheckAndCreateMDatabase(context.Background(), DatabaseDSN)
 
 	// infinity loop for{} flash data to file
 	for {
@@ -50,7 +51,7 @@ func (mps *MemSQLStorage) NewPersistanceStorage() error {
 
 func (mps *MemSQLStorage) PingSQLserver(ctx context.Context) error {
 
-	log.Print(sql.Drivers())
+	log.Printf("SQL drivers available:%v", sql.Drivers())
 	db, err := sql.Open("postgres", DatabaseDSN)
 	if err != nil {
 		panic(err)
@@ -65,7 +66,7 @@ func (mps *MemSQLStorage) PingSQLserver(ctx context.Context) error {
 		log.Println(err)
 		return err
 	}
-
+	log.Printf("PingSQLserver success DSN=%v", DatabaseDSN)
 	return nil
 }
 
@@ -103,4 +104,47 @@ func (mps *MemSQLStorage) SetCMvalue(cmname string, cm Counter) {
 }
 
 func (mps *MemSQLStorage) LoadData() {
+	//
+	// TODO load data from SQL database
+	//
+}
+
+func (mps *MemSQLStorage) CheckAndCreateMDatabase(ctx context.Context, DSN string) error {
+
+	err := mps.PingSQLserver(ctx)
+	if err != nil {
+		return err
+	}
+
+	//
+	// TODO create database and tables
+	//
+	db, err := sql.Open("postgres", DatabaseDSN)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	_, err = db.ExecContext(ctx,
+		"CREATE TABLE IF NOT EXISTS gmetrics (id BIGSERIAL, gauge NUMERIC, name VARCHAR(50))")
+
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	log.Printf("CheckAndCreateMDatabase table gmetrics created")
+
+	_, err = db.ExecContext(ctx,
+		"CREATE TABLE IF NOT EXISTS cmetrics (id BIGSERIAL, gauge BIGINT, name VARCHAR(50))")
+
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	log.Printf("CheckAndCreateMDatabase table cmetrics created")
+
+	return nil
 }
