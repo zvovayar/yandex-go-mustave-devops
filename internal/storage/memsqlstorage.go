@@ -16,6 +16,7 @@ type MemSQLStorage struct {
 	sm            StoreMem
 	chanPStoreMem chan StoreMem
 	DatabaseDSN   string
+	db            *sql.DB
 }
 
 func (mps *MemSQLStorage) GetMonitor() *Monitor {
@@ -42,45 +43,46 @@ func (mps *MemSQLStorage) NewPersistanceStorage() error {
 		panic(err)
 	}
 
-	db, err := sql.Open("postgres", DatabaseDSN)
+	var err error
+	mps.db, err = sql.Open("postgres", DatabaseDSN)
 	if err != nil {
 		panic(err)
 	}
-	defer db.Close()
+	defer mps.db.Close()
 
 	// infinity loop for{} save data to SQL database
 	for {
 		<-time.After(StoreInterval)
 
-		for key := range Gmetricnames {
+		// for key := range Gmetricnames {
 
-			log.Printf("INSERT INTO gmetrics (gauge, name ) VALUES(%f, '%v')", mps.sm.GetGMvalue(key), key)
-			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-			defer cancel()
-			_, err = db.ExecContext(ctx,
-				"INSERT INTO gmetrics (gauge, name ) VALUES($1, $2)", mps.sm.GetGMvalue(key), key)
+		// 	log.Printf("INSERT INTO gmetrics (gauge, name ) VALUES(%f, '%v')", mps.sm.GetGMvalue(key), key)
+		// 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		// 	defer cancel()
+		// 	_, err = mps.db.ExecContext(ctx,
+		// 		"INSERT INTO gmetrics (gauge, name ) VALUES($1, $2)", mps.sm.GetGMvalue(key), key)
 
-			if err != nil {
-				log.Println("NewPersistanceStorage " + err.Error())
-				return err
-			}
-			log.Printf("NewPersistanceStorage value %v=%f saved", key, mps.sm.GetGMvalue(key))
-		}
+		// 	if err != nil {
+		// 		log.Println("NewPersistanceStorage " + err.Error())
+		// 		return err
+		// 	}
+		// 	log.Printf("NewPersistanceStorage value %v=%f saved", key, mps.sm.GetGMvalue(key))
+		// }
 
-		for key := range Cmetricnames {
+		// for key := range Cmetricnames {
 
-			log.Printf("INSERT INTO cmetrics (counter, name ) VALUES(%d, '%v')", mps.sm.GetCMvalue(key), key)
-			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-			defer cancel()
-			_, err = db.ExecContext(ctx,
-				"INSERT INTO cmetrics (counter, name ) VALUES($1, $2)", mps.sm.GetCMvalue(key), key)
+		// 	log.Printf("INSERT INTO cmetrics (counter, name ) VALUES(%d, '%v')", mps.sm.GetCMvalue(key), key)
+		// 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		// 	defer cancel()
+		// 	_, err = mps.db.ExecContext(ctx,
+		// 		"INSERT INTO cmetrics (counter, name ) VALUES($1, $2)", mps.sm.GetCMvalue(key), key)
 
-			if err != nil {
-				log.Println("NewPersistanceStorage " + err.Error())
-				return err
-			}
-			log.Printf("NewPersistanceStorage value %v=%d saved", key, mps.sm.GetCMvalue(key))
-		}
+		// 	if err != nil {
+		// 		log.Println("NewPersistanceStorage " + err.Error())
+		// 		return err
+		// 	}
+		// 	log.Printf("NewPersistanceStorage value %v=%d saved", key, mps.sm.GetCMvalue(key))
+		// }
 	}
 
 	// return nil
@@ -131,11 +133,36 @@ func (mps *MemSQLStorage) GetCMvalue(cmname string) Counter {
 // mirror StoreMem interface + persistance function
 func (mps *MemSQLStorage) SetGMvalue(gmname string, gm Gauge) {
 	mps.sm.SetGMvalue(gmname, gm)
+
+	var err error
+	log.Printf("INSERT INTO gmetrics (gauge, name ) VALUES(%f, '%v')", mps.sm.GetGMvalue(gmname), gmname)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	_, err = mps.db.ExecContext(ctx,
+		"INSERT INTO gmetrics (gauge, name ) VALUES($1, $2)", mps.sm.GetGMvalue(gmname), gmname)
+
+	if err != nil {
+		log.Println("NewPersistanceStorage " + err.Error())
+		return
+	}
+	log.Printf("NewPersistanceStorage value %v=%f saved", gmname, mps.sm.GetGMvalue(gmname))
 }
 
 // mirror StoreMem interface + persistance function
 func (mps *MemSQLStorage) SetCMvalue(cmname string, cm Counter) {
 	mps.sm.SetCMvalue(cmname, cm)
+	var err error
+	log.Printf("INSERT INTO cmetrics (counter, name ) VALUES(%d, '%v')", mps.sm.GetCMvalue(cmname), cmname)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	_, err = mps.db.ExecContext(ctx,
+		"INSERT INTO cmetrics (counter, name ) VALUES($1, $2)", mps.sm.GetCMvalue(cmname), cmname)
+
+	if err != nil {
+		log.Println("NewPersistanceStorage " + err.Error())
+		return
+	}
+	log.Printf("NewPersistanceStorage value %v=%d saved", cmname, mps.sm.GetCMvalue(cmname))
 }
 
 func (mps *MemSQLStorage) LoadData() {

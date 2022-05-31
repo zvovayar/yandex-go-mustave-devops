@@ -265,7 +265,7 @@ func UpdateMetricJSON(w http.ResponseWriter, r *http.Request) {
 			log.Printf("Bad hash actual=%v expected=%v", v.Hash, mc.M.Hash)
 			return
 		}
-		log.Printf("Good hash actual=%v expected=%v", v.Hash, mc.M.Hash)
+		// log.Printf("Good hash actual=%v expected=%v", v.Hash, mc.M.Hash)
 	}
 
 	//
