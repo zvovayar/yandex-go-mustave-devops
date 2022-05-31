@@ -375,3 +375,7 @@ func GetMvalueJSON(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
+
+// Сохранение пакета метрик
+func UpdateMetricBatch(w http.ResponseWriter, r *http.Request) {
+}
