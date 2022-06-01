@@ -43,13 +43,13 @@ func (mps *MemSQLStorage) NewPersistanceStorage() error {
 	// open database
 	//
 	if err := mps.CheckAndCreateMDatabase(context.Background(), DatabaseDSN); err != nil {
-		panic(err)
+		log.Println(err)
 	}
 
 	var err error
 	mps.db, err = sqlx.Open("postgres", DatabaseDSN)
 	if err != nil {
-		panic(err)
+		log.Println(err)
 	}
 	defer mps.db.Close()
 
@@ -99,7 +99,7 @@ func (mps *MemSQLStorage) PingSQLserver(ctx context.Context) error {
 	}
 	db, err := sql.Open("postgres", DatabaseDSN)
 	if err != nil {
-		panic(err)
+		log.Println(err)
 	}
 	defer db.Close()
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)

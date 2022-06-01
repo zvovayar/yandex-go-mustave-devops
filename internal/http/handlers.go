@@ -395,7 +395,7 @@ func UpdateMetricBatch(w http.ResponseWriter, r *http.Request) {
 	// save batch
 	if err := sm.SaveBatch(r.Context(), mbatch); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		log.Fatal(err)
+		log.Println(err)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
