@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -93,6 +94,9 @@ func (mps *MemSQLStorage) NewPersistanceStorage() error {
 func (mps *MemSQLStorage) PingSQLserver(ctx context.Context) error {
 
 	log.Printf("SQL drivers available:%v", sql.Drivers())
+	if DatabaseDSN == "" {
+		return errors.New("PingSQLserver -> DatabaseDSN empty")
+	}
 	db, err := sql.Open("postgres", DatabaseDSN)
 	if err != nil {
 		panic(err)

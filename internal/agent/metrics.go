@@ -191,7 +191,7 @@ func RunSendMetrics(duration time.Duration, chanmonitor chan inst.Monitor) {
 			m, err := <-chanmonitor
 			log.Printf("runSendMetrics i=%d, err=%v, m=%+v", i, err, m)
 			if !err {
-				fmt.Println(err)
+				log.Println(err)
 				break
 			}
 			if inst.BatchSend {
@@ -211,7 +211,7 @@ func RunSendMetrics(duration time.Duration, chanmonitor chan inst.Monitor) {
 }
 
 //
-// TODO create slices []Metrics and send they POST /uodates/
+// create slices []Metrics and send they POST /uodates/
 //
 func SendBatchMetrics(monitorb []inst.Monitor) {
 
