@@ -379,6 +379,24 @@ func GetMvalueJSON(w http.ResponseWriter, r *http.Request) {
 // Сохранение пакета метрик
 func UpdateMetricBatch(w http.ResponseWriter, r *http.Request) {
 	//
-	// TODO like UpdateMetricJSON, but with slice json
+	// like UpdateMetricJSON, but with slice json
 	//
+	var mbatch []inst.Metrics
+
+	// decode json form r.Body and init v
+	if err := json.NewDecoder(r.Body).Decode(&mbatch); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Fatal(err)
+		return
+	}
+	log.Printf("UpdateMetricBatch mbatch=%v", mbatch)
+
+	// save batch
+	if err := sm.SaveBatch(r.Context(), mbatch); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Fatal(err)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+
 }

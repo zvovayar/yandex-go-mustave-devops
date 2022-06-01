@@ -7,6 +7,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/jmoiron/sqlx"
+
 	_ "github.com/lib/pq"
 )
 
@@ -16,7 +18,7 @@ type MemSQLStorage struct {
 	sm            StoreMem
 	chanPStoreMem chan StoreMem
 	DatabaseDSN   string
-	db            *sql.DB
+	db            *sqlx.DB
 }
 
 func (mps *MemSQLStorage) GetMonitor() *Monitor {
@@ -44,7 +46,7 @@ func (mps *MemSQLStorage) NewPersistanceStorage() error {
 	}
 
 	var err error
-	mps.db, err = sql.Open("postgres", DatabaseDSN)
+	mps.db, err = sqlx.Open("postgres", DatabaseDSN)
 	if err != nil {
 		panic(err)
 	}
@@ -208,6 +210,15 @@ func (mps *MemSQLStorage) CheckAndCreateMDatabase(ctx context.Context, DSN strin
 	}
 	log.Printf("CheckAndCreateMDatabase table cmetrics created")
 
+	_, err = db.ExecContext(ctx,
+		"CREATE TABLE IF NOT EXISTS metrics (idrec BIGSERIAL, id VARCHAR(50), mtype VARCHAR(50), delta BIGINT, value NUMERIC)")
+
+	if err != nil {
+		log.Println("CheckAndCreateMDatabase " + err.Error())
+		return err
+	}
+	log.Printf("CheckAndCreateMDatabase table metrics created")
+
 	return nil
 }
 
@@ -217,8 +228,11 @@ func (mps *MemSQLStorage) SaveBatch(ctx context.Context, batchM []Metrics) error
 	// cars := []Cars{
 	// 	{},
 	// }
-	// _, err = db.NamedExec(`INSERT INTO cars (brand, model, is_available)
-	// 		VALUES (:brand, :model, :is_available)`, cars)
-	//
+	if _, err := mps.db.NamedExec(`INSERT INTO metrics (id, mtype, delta, value)
+			VALUES (:id, :mtype, :delta, :value)`, batchM); err != nil {
+		log.Println("SaveBatch " + err.Error())
+		return err
+	}
+
 	return nil
 }

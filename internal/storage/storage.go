@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"log"
 	"reflect"
 )
@@ -10,6 +11,7 @@ type Storage interface {
 	GetCMvalue(cmname string) Counter
 	SetGMvalue(gmname string, gm Gauge)
 	SetCMvalue(cmname string, cm Counter)
+	SaveBatch(ctx context.Context, batchM []Metrics) error
 }
 
 type PersistanceStorage interface {

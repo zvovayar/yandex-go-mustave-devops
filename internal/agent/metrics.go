@@ -218,6 +218,9 @@ func SendBatchMetrics(monitorb []inst.Monitor) {
 	var mc crypt.MetricsCrypt
 	var metricsb []inst.Metrics
 	c := len(monitorb)
+	if c == 0 {
+		return
+	}
 	for i := 0; i < c; i++ {
 		// Gauge type add to []Metrics
 		for key, element := range inst.Gmetricnames {
@@ -249,13 +252,35 @@ func SendBatchMetrics(monitorb []inst.Monitor) {
 			metricsb = append(metricsb, v)
 		}
 	}
-	if c == 0 {
-		return
+	body, err := json.Marshal(metricsb)
+	if err != nil {
+		log.Fatal(err)
 	}
-	b, _ := json.Marshal(metricsb)
-	log.Printf("SendBatchMetrics -> count=%d metricsb=%v", c, string(b))
+	log.Printf("SendBatchMetrics -> count=%d metricsb=%v", c, string(body))
 
 	//
-	// TODO send json via POST
+	// send json via POST
 	//
+	var url = fmt.Sprintf("http://%v/updates/",
+		inst.ServerAddress)
+	log.Println(url)
+
+	request, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
+	if err != nil {
+		// обработаем ошибку
+		log.Println(err)
+	}
+	request.Header.Set("Content-Type", inst.ContentType)
+
+	client := &http.Client{}
+	// отправляем запрос
+
+	resp, err := client.Do(request)
+	if err != nil {
+		// обработаем ошибку
+		log.Println(err)
+		return
+	}
+	defer resp.Body.Close()
+	log.Println(resp)
 }
