@@ -189,7 +189,7 @@ func RunSendMetrics(duration time.Duration, chanmonitor chan inst.Monitor) {
 		for i := 0; i < c; i++ {
 
 			m, err := <-chanmonitor
-			log.Printf("runSendMetrics i=%d, err=%v, m=%+v", i, err, m)
+			// log.Printf("runSendMetrics i=%d, err=%v, m=%+v", i, err, m)
 			if !err {
 				log.Println(err)
 				break

@@ -89,10 +89,10 @@ func main() {
 		inst.Restore = false
 	}
 
-	if cfgFromFlags.DatabaseDSN != "" {
-		inst.DatabaseDSN = cfgFromFlags.DatabaseDSN
-	} else if cfg.DatabaseDSN != "" {
+	if cfg.DatabaseDSN != "" {
 		inst.DatabaseDSN = cfg.DatabaseDSN
+	} else if cfgFromFlags.DatabaseDSN != "" {
+		inst.DatabaseDSN = cfgFromFlags.DatabaseDSN
 	}
 
 	log.Printf("Server Strated with variables: Restore=%v", inst.Restore)
