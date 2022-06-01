@@ -28,12 +28,12 @@ type PersistanceStorage interface {
 //
 // Uncomment if you want text/json file storage
 //
-// var StoreMonitor MemPStorage
+var StoreMonitor MemPStorage
 
 //
 // Ucomment if you want SQL databse storage
 //
-var StoreMonitor MemSQLStorage
+// var StoreMonitor MemSQLStorage
 
 func init() {
 	StoreMonitor.GetMonitor().Cmetrics = make([]Counter, len(Cmetricnames))

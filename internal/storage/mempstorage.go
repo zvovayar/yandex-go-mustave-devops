@@ -2,6 +2,7 @@ package storage
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"log"
 	"os"
@@ -212,4 +213,12 @@ func (mps *MemPStorage) LoadData() {
 	}
 	// log.Println(scanner.Err())
 
+}
+
+func (mps *MemPStorage) SaveBatch(ctx context.Context, batchM []Metrics) error {
+	return nil
+}
+
+func (mps *MemPStorage) PingSQLserver(ctx context.Context) error {
+	return nil
 }
