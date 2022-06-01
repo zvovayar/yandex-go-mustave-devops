@@ -100,14 +100,14 @@ func (mps *MemSQLStorage) PingSQLserver(ctx context.Context) error {
 	log.Printf("PingSQLserver try for DSN=%v", DatabaseDSN)
 	db, err := sql.Open("postgres", DatabaseDSN)
 	if err != nil {
-		log.Println("PingSQLserver Open error" + err.Error())
+		log.Println("PingSQLserver Open error " + err.Error())
 	}
 	defer db.Close()
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
 	if err = db.PingContext(ctx); err != nil {
-		log.Println("PingSQLserver PingContext error" + err.Error())
+		log.Println("PingSQLserver PingContext error " + err.Error())
 		return err
 	}
 	log.Printf("PingSQLserver success DSN=%v", DatabaseDSN)
