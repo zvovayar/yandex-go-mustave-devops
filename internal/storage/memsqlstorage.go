@@ -97,6 +97,7 @@ func (mps *MemSQLStorage) PingSQLserver(ctx context.Context) error {
 	if DatabaseDSN == "" {
 		return errors.New("PingSQLserver -> DatabaseDSN empty")
 	}
+	log.Printf("PingSQLserver try for DSN=%v", DatabaseDSN)
 	db, err := sql.Open("postgres", DatabaseDSN)
 	if err != nil {
 		log.Println(err)
@@ -182,6 +183,7 @@ func (mps *MemSQLStorage) LoadData() {
 	//
 	// load data from SQL database
 	//
+	log.Printf("LoadData from DSN=%v", DatabaseDSN)
 	db, err := sqlx.Open("postgres", DatabaseDSN)
 	if err != nil {
 		panic(err)
