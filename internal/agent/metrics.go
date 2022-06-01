@@ -253,5 +253,9 @@ func SendBatchMetrics(monitorb []inst.Monitor) {
 		return
 	}
 	b, _ := json.Marshal(metricsb)
-	log.Printf("SendBatchMetrics -> count=%d metricsb=%v", c, b)
+	log.Printf("SendBatchMetrics -> count=%d metricsb=%v", c, string(b))
+
+	//
+	// TODO send json via POST
+	//
 }
