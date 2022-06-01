@@ -389,7 +389,7 @@ func UpdateMetricBatch(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 		return
 	}
-	log.Printf("UpdateMetricBatch mbatch=%v", mbatch)
+	//log.Printf("UpdateMetricBatch mbatch=%v", mbatch)
 
 	// save batch
 	if err := sm.SaveBatch(r.Context(), mbatch); err != nil {
