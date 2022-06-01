@@ -204,3 +204,10 @@ func RunSendMetrics(duration time.Duration, chanmonitor chan inst.Monitor) {
 
 	}
 }
+
+//
+// TODO create slice []Metrics and send it POST /uodates/
+//
+func SendBatchMetrics(mb []inst.Metrics) {
+
+}

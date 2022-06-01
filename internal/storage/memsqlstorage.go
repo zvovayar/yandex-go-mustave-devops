@@ -210,3 +210,15 @@ func (mps *MemSQLStorage) CheckAndCreateMDatabase(ctx context.Context, DSN strin
 
 	return nil
 }
+
+func (mps *MemSQLStorage) SaveBatch(ctx context.Context, batchM []Metrics) error {
+	//
+	// use: sqlx
+	// cars := []Cars{
+	// 	{},
+	// }
+	// _, err = db.NamedExec(`INSERT INTO cars (brand, model, is_available)
+	// 		VALUES (:brand, :model, :is_available)`, cars)
+	//
+	return nil
+}
