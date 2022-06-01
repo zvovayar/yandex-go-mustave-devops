@@ -32,7 +32,7 @@ func (mps *MemPStorage) InitMemPStorage(ch chan StoreMem) chan StoreMem {
 func (mps *MemPStorage) NewPersistanceStorage() error {
 
 	//
-	// TODO open file and start gorutine saving data
+	// open file and start gorutine saving data
 	//
 	var err error
 	var data []byte

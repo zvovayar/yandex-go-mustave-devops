@@ -140,11 +140,8 @@ func (mps *MemSQLStorage) GetCMvalue(cmname string) Counter {
 func (mps *MemSQLStorage) SetGMvalue(gmname string, gm Gauge) {
 	mps.sm.SetGMvalue(gmname, gm)
 
-	log.Printf("INSERT INTO gmetrics (gauge, name ) VALUES(%f, '%v')", mps.sm.GetGMvalue(gmname), gmname)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	// _, err = mps.db.ExecContext(ctx,
-	// 	"INSERT INTO gmetrics (gauge, name ) VALUES($1, $2)", mps.sm.GetGMvalue(gmname), gmname)
 
 	var m Metrics
 	g := float64(gm)
@@ -154,21 +151,18 @@ func (mps *MemSQLStorage) SetGMvalue(gmname string, gm Gauge) {
 
 	if _, err := mps.db.NamedExecContext(ctx, `INSERT INTO metrics (id, mtype, delta, value)
 		VALUES (:id, :mtype, :delta, :value)`, m); err != nil {
-		log.Println("NewPersistanceStorage " + err.Error())
+		log.Println("SetGMvalue " + err.Error())
 		return
 	}
-	log.Printf("NewPersistanceStorage value %v=%f saved", gmname, mps.sm.GetGMvalue(gmname))
+	log.Printf("SetGMvalue value %v=%f saved", gmname, mps.sm.GetGMvalue(gmname))
 }
 
 // mirror StoreMem interface + persistance function
 func (mps *MemSQLStorage) SetCMvalue(cmname string, cm Counter) {
 	mps.sm.SetCMvalue(cmname, cm)
 
-	log.Printf("INSERT INTO cmetrics (counter, name ) VALUES(%d, '%v')", mps.sm.GetCMvalue(cmname), cmname)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	// _, err = mps.db.ExecContext(ctx,
-	// 	"INSERT INTO cmetrics (counter, name ) VALUES($1, $2)", mps.sm.GetCMvalue(cmname), cmname)
 
 	var m Metrics
 	c := int64(cm)
@@ -178,15 +172,15 @@ func (mps *MemSQLStorage) SetCMvalue(cmname string, cm Counter) {
 
 	if _, err := mps.db.NamedExecContext(ctx, `INSERT INTO metrics (id, mtype, delta, value)
 		VALUES (:id, :mtype, :delta, :value)`, m); err != nil {
-		log.Println("NewPersistanceStorage " + err.Error())
+		log.Println("SetCMvalue " + err.Error())
 		return
 	}
-	log.Printf("NewPersistanceStorage value %v=%d saved", cmname, mps.sm.GetCMvalue(cmname))
+	log.Printf("SetCMvalue value %v=%d saved", cmname, mps.sm.GetCMvalue(cmname))
 }
 
 func (mps *MemSQLStorage) LoadData() {
 	//
-	// TODO load data from SQL database
+	// load data from SQL database
 	//
 	db, err := sqlx.Open("postgres", DatabaseDSN)
 	if err != nil {

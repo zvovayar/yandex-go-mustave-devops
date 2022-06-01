@@ -40,9 +40,9 @@ func (sm *StoreMem) SetGMvalue(gmname string, gm Gauge) {
 
 	if _, ok := Gmetricnames[gmname]; !ok {
 		// не нашли название метрики, были ошибки
-		log.Printf("SetGMvalue Error Can not find gauge metric, add new name:%v", gmname)
+		log.Printf("SetGMvalue Can not find gauge metric, add new name:%v", gmname)
 		//
-		// TODO: сделать добавление новой метрики
+		// сделать добавление новой метрики
 		//
 		Gmetricnames[gmname] = len(Gmetricnames)
 		StoreMonitor.GetMonitor().Gmetrics = append(StoreMonitor.GetMonitor().Gmetrics, gm)
@@ -54,9 +54,9 @@ func (sm *StoreMem) SetGMvalue(gmname string, gm Gauge) {
 func (sm *StoreMem) SetCMvalue(cmname string, cm Counter) {
 	if _, ok := Cmetricnames[cmname]; !ok {
 		// не нашли название метрики, были ошибки
-		log.Printf("SetCMvalue Error Can not find counter metric, add new name:%v", cmname)
+		log.Printf("SetCMvalue Can not find counter metric, add new name:%v", cmname)
 		//
-		// TODO: сделать добавление новой метрики
+		// сделать добавление новой метрики
 		//
 		Cmetricnames[cmname] = len(Cmetricnames)
 		StoreMonitor.GetMonitor().Cmetrics = append(StoreMonitor.GetMonitor().Cmetrics, cm)
