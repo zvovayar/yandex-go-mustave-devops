@@ -216,6 +216,16 @@ func (mps *MemPStorage) LoadData() {
 }
 
 func (mps *MemPStorage) SaveBatch(ctx context.Context, batchM []Metrics) error {
+
+	c := len(batchM)
+	for i := 0; i < c; i++ {
+		if batchM[i].MType == "gauge" {
+			mps.sm.SetGMvalue(batchM[i].ID, Gauge(*batchM[i].Value))
+		} else if batchM[i].MType == "counter" {
+			mps.sm.SetCMvalue(batchM[i].ID, Counter(*batchM[i].Delta))
+		}
+	}
+
 	return nil
 }
 

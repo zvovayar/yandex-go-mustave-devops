@@ -38,6 +38,7 @@ func main() {
 	flag.StringVar(&cfgFromFlags.Key, "k", "", "key for hash calculate")
 	flag.DurationVar(&cfgFromFlags.ReportInterval, "r", inst.ReportInterval, "report interval")
 	flag.DurationVar(&cfgFromFlags.PollInterval, "p", inst.PollInterval, "poll interval")
+	flag.BoolVar(&inst.BatchSend, "B", inst.BatchSend, "batch send data")
 	flag.Parse()
 	log.Printf("Agent Config flags:%+v", cfgFromFlags)
 
@@ -63,8 +64,8 @@ func main() {
 		inst.ReportInterval = cfgFromFlags.ReportInterval
 	}
 
-	log.Printf("Agent Strated with variables: address=%v, poll interval=%v, report interval=%v, key=%v",
-		inst.ServerAddress, inst.PollInterval, inst.ReportInterval, inst.Key)
+	log.Printf("Agent Strated with variables: address=%v, poll interval=%v, report interval=%v, key=%v, batch send=%v",
+		inst.ServerAddress, inst.PollInterval, inst.ReportInterval, inst.Key, inst.BatchSend)
 
 	chanm := make(chan inst.Monitor, inst.BufferLength)
 	chanOS := make(chan os.Signal, 1) // we need to reserve to buffer size 1, so the notifier are not blocked

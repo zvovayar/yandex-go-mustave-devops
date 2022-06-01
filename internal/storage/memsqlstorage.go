@@ -163,6 +163,7 @@ func (mps *MemSQLStorage) SetGMvalue(gmname string, gm Gauge) {
 // mirror StoreMem interface + persistance function
 func (mps *MemSQLStorage) SetCMvalue(cmname string, cm Counter) {
 	mps.sm.SetCMvalue(cmname, cm)
+
 	log.Printf("INSERT INTO cmetrics (counter, name ) VALUES(%d, '%v')", mps.sm.GetCMvalue(cmname), cmname)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -272,12 +273,6 @@ func (mps *MemSQLStorage) SaveBatch(ctx context.Context, batchM []Metrics) error
 	// cars := []Cars{
 	// 	{},
 	// }
-	if _, err := mps.db.NamedExec(`INSERT INTO metrics (id, mtype, delta, value)
-			VALUES (:id, :mtype, :delta, :value)`, batchM); err != nil {
-		log.Println("SaveBatch " + err.Error())
-		return err
-	}
-
 	c := len(batchM)
 	for i := 0; i < c; i++ {
 		if batchM[i].MType == "gauge" {
@@ -285,6 +280,12 @@ func (mps *MemSQLStorage) SaveBatch(ctx context.Context, batchM []Metrics) error
 		} else if batchM[i].MType == "counter" {
 			mps.sm.SetCMvalue(batchM[i].ID, Counter(*batchM[i].Delta))
 		}
+	}
+
+	if _, err := mps.db.NamedExec(`INSERT INTO metrics (id, mtype, delta, value)
+			VALUES (:id, :mtype, :delta, :value)`, batchM); err != nil {
+		log.Println("SaveBatch " + err.Error())
+		return err
 	}
 
 	return nil
