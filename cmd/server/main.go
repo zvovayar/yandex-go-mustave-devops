@@ -32,7 +32,9 @@ func main() {
 
 	log.Println("Server started")
 
+	cfg.StoreInterval = time.Second * 300
 	// load environment variables
+
 	err := env.Parse(&cfg)
 	if err != nil {
 		log.Fatal(err)
