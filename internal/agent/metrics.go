@@ -256,7 +256,7 @@ func SendBatchMetrics(monitorb []inst.Monitor) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("SendBatchMetrics -> count=%d metricsb=%v", c, string(body))
+	// log.Printf("SendBatchMetrics -> count=%d metricsb=%v", c, string(body))
 
 	//
 	// send json via POST
