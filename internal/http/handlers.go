@@ -373,6 +373,7 @@ func GetMvalueJSON(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Printf("GetMValueJSON string(buf)=%v", string(buf))
 
 }
 

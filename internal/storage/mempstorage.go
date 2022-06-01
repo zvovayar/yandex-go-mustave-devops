@@ -125,7 +125,7 @@ func (mps *MemPStorage) NewPersistanceStorage() error {
 func (mps *MemPStorage) ClosePersistanceStorage() error {
 
 	//
-	// TODO close file
+	// close file
 	//
 
 	return mps.file.Close()
