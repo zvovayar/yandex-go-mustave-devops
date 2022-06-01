@@ -15,9 +15,6 @@ type Metrics struct {
 }
 
 type Monitor struct {
-	// warning: remember about quantity metrics! [N], N - quantity metrics
-	// Gmetrics [35]Gauge
-	// Cmetrics [8]Counter
 	Gmetrics []Gauge
 	Cmetrics []Counter
 }
@@ -80,6 +77,7 @@ var StoreFile = "/tmp/devops-metrics-db.json"
 var Restore = true
 var Key = ""
 var DatabaseDSN = ""
+var BatchSend = true
 
 //var ContentType = "text/plain"
 var ContentType = "application/json"

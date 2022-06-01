@@ -90,7 +90,7 @@ func UpdateGaugeMetric(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Gauge metric %v = %f", gmname, gm)
 
 	//
-	// TODO: здесь сохранять значение метрики
+	// сохранять значение метрики
 	//
 	//storage.StoreMonitor.Gmetrics[Gmetricnames[gmname]] = Gauge(gm)
 	// swq := &inst.StoreMonitor //.GetMonitor()
@@ -150,7 +150,7 @@ func UpdateCounterMetric(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Counter metric %v = %d", cmname, cm)
 
 	//
-	// TODO: здесь сохранять значение метрики
+	// сохранять значение метрики
 	//
 
 	sm.SetCMvalue(cmname, inst.Counter(cm))
@@ -269,7 +269,7 @@ func UpdateMetricJSON(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//
-	// TODO: здесь сохранять значение метрики
+	// сохранять значение метрики
 	//
 	if v.MType == "gauge" {
 
@@ -379,6 +379,6 @@ func GetMvalueJSON(w http.ResponseWriter, r *http.Request) {
 // Сохранение пакета метрик
 func UpdateMetricBatch(w http.ResponseWriter, r *http.Request) {
 	//
-	// like UpdateMetricJSON, but with slice json
+	// TODO like UpdateMetricJSON, but with slice json
 	//
 }

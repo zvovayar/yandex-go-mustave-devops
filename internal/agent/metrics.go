@@ -73,9 +73,9 @@ func NewMonitor(duration time.Duration, chanmonitor chan inst.Monitor) {
 // send collected metrics to the web API
 func SendMetrics(m inst.Monitor) {
 
-	//Just encode to json and print
-	b, _ := json.Marshal(m)
-	log.Println("SendMetrics -> " + string(b))
+	//Just encode to json and print for test log
+	// b, _ := json.Marshal(m)
+	// log.Println("SendMetrics -> " + string(b))
 
 	var mc crypt.MetricsCrypt
 
@@ -115,20 +115,16 @@ func SendMetrics(m inst.Monitor) {
 		request.Header.Set("Content-Type", inst.ContentType)
 
 		client := &http.Client{}
-		// отправляем запрос
 
-		// log.Println("--------------------------------------------")
+		// отправляем запрос
 		resp, err := client.Do(request)
 		if err != nil {
 			// обработаем ошибку
 			log.Println(err)
 			return
 		}
-		// log.Println("=============================================")
 		defer resp.Body.Close()
-		// log.Println("+++++++++++++++++++++++++++++++++++++++++++++")
 		log.Println(resp)
-		// log.Println("*********************************************")
 	}
 
 	// counter type send
@@ -154,8 +150,6 @@ func SendMetrics(m inst.Monitor) {
 		log.Printf("v=%v", v)
 		log.Printf("body=%v", string(body))
 
-		// var url = fmt.Sprintf("http://%v/update/counter/%v/%d",
-		// 	inst.ServerAddress, key, m.Cmetrics[element])
 		var url = fmt.Sprintf("http://%v/update/",
 			inst.ServerAddress)
 		log.Println(url)
@@ -189,6 +183,8 @@ func RunSendMetrics(duration time.Duration, chanmonitor chan inst.Monitor) {
 		<-time.After(duration)
 
 		c := len(chanmonitor)
+		mslice := make([]inst.Monitor, c)
+
 		log.Printf("runSendMetrics -> quantity new elements %v\n", c)
 		for i := 0; i < c; i++ {
 
@@ -198,16 +194,64 @@ func RunSendMetrics(duration time.Duration, chanmonitor chan inst.Monitor) {
 				fmt.Println(err)
 				break
 			}
-			SendMetrics(m)
+			if inst.BatchSend {
+				//
+				// add Metrics to the slice of Monitors
+				//
+				mslice[i] = m
+			} else {
+				SendMetrics(m)
+			}
 
 		}
-
+		if inst.BatchSend && c > 0 {
+			SendBatchMetrics(mslice)
+		}
 	}
 }
 
 //
-// TODO create slice []Metrics and send it POST /uodates/
+// TODO create slices []Metrics and send they POST /uodates/
 //
-func SendBatchMetrics(mb []inst.Metrics) {
+func SendBatchMetrics(monitorb []inst.Monitor) {
 
+	var mc crypt.MetricsCrypt
+	var metricsb []inst.Metrics
+	c := len(monitorb)
+	for i := 0; i < c; i++ {
+		// Gauge type add to []Metrics
+		for key, element := range inst.Gmetricnames {
+			var v inst.Metrics
+
+			v.ID = key
+			v.MType = "gauge"
+			v.Value = (*float64)(&(monitorb[i].Gmetrics[element]))
+
+			if inst.Key != "" {
+				mc.M = v
+				v.Hash = mc.MakeHashMetrics(inst.Key)
+			}
+			metricsb = append(metricsb, v)
+		}
+
+		// counter type send
+		for key, element := range inst.Cmetricnames {
+			var v inst.Metrics
+
+			v.ID = key
+			v.MType = "counter"
+			v.Delta = (*int64)(&(monitorb[i].Cmetrics[element]))
+
+			if inst.Key != "" {
+				mc.M = v
+				v.Hash = mc.MakeHashMetrics(inst.Key)
+			}
+			metricsb = append(metricsb, v)
+		}
+	}
+	if c == 0 {
+		return
+	}
+	b, _ := json.Marshal(metricsb)
+	log.Printf("SendBatchMetrics -> count=%d metricsb=%v", c, b)
 }

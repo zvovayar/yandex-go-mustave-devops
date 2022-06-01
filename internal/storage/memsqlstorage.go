@@ -179,7 +179,7 @@ func (mps *MemSQLStorage) CheckAndCreateMDatabase(ctx context.Context, DSN strin
 	}
 
 	//
-	// TODO create database and tables
+	// create database and tables
 	//
 	db, err := sql.Open("postgres", DatabaseDSN)
 	if err != nil {
