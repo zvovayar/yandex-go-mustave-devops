@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"time"
@@ -40,7 +41,7 @@ func (mps *MemSQLStorage) NewPersistanceStorage() error {
 	//
 	// open database
 	//
-
+	log.Printf("Drivers available: %v", sql.Drivers())
 	var err error
 	mps.db, err = sqlx.Open("postgres", DatabaseDSN)
 	if err != nil {
