@@ -106,7 +106,7 @@ func (mps *MemSQLStorage) SetGMvalue(gmname string, gm Gauge) {
 	defer cancel()
 
 	var m Metrics
-	g := float64(gm)
+	g := float64(mps.sm.GetGMvalue(gmname))
 	m.Value = &g
 	m.ID = gmname
 	m.MType = "gauge"
@@ -127,7 +127,7 @@ func (mps *MemSQLStorage) SetCMvalue(cmname string, cm Counter) {
 	defer cancel()
 
 	var m Metrics
-	c := int64(cm)
+	c := int64(mps.sm.GetCMvalue(cmname))
 	m.Delta = &c
 	m.ID = cmname
 	m.MType = "counter"

@@ -343,7 +343,7 @@ func GetMvalueJSON(w http.ResponseWriter, r *http.Request) {
 		cm := int64(sm.GetCMvalue(cmname))
 		v.Delta = &cm
 	} else {
-		log.Printf("Error unknown metric type or name %v", v.MType)
+		log.Printf("Error unknown metric type or name %v, %v", v.MType, v.ID)
 		w.WriteHeader(http.StatusNotFound)
 		_, err := w.Write([]byte("<h1>404 metric type or name not found</h1>"))
 		if err != nil {
