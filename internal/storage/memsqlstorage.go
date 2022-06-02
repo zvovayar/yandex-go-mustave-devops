@@ -106,7 +106,7 @@ func (mps *MemSQLStorage) PingSQLserver(ctx context.Context) error {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	if err = db.PingContext(ctx); err != nil {
+	if err = db.Ping(); err != nil {
 		log.Println("PingSQLserver PingContext error " + err.Error())
 		return err
 	}
