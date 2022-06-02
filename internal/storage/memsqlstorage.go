@@ -109,7 +109,7 @@ func (mps *MemSQLStorage) SetGMvalue(gmname string, gm Gauge) {
 	g := float64(gm)
 	m.Value = &g
 	m.ID = gmname
-	m.MType = "counter"
+	m.MType = "gauge"
 
 	if _, err := mps.db.NamedExecContext(ctx, `INSERT INTO metrics (id, mtype, delta, value)
 		VALUES (:id, :mtype, :delta, :value)`, m); err != nil {
@@ -159,7 +159,7 @@ func (mps *MemSQLStorage) LoadData() {
 						from metrics
 						where idrec in (select max(idrec)  
 						from metrics
-						group by id, mtype)`)
+						group by id)`)
 	if err != nil {
 		log.Println("LoadData " + err.Error())
 		return

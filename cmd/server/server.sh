@@ -8,7 +8,7 @@ export STORE_INTERVAL=10s
 export STORE_FILE=.\devops-metrics-db.json
 export RESTORE=true
 export KEY=/tmp/zK3deX0
-#export DATABASE_DSN=postgres://postgres:qweasd@localhost:5432/yandex?sslmode=disable
-export DATABASE_DSN="'***postgres:9999/praktikum?easter_egg_msg=you_must_prefer_this_incorrect_settings_to_those_obtained_through_arguments'"
+export DATABASE_DSN=postgres://postgres:qweasd@localhost:5432/yandex?sslmode=disable
+#export DATABASE_DSN="'***postgres:9999/praktikum?easter_egg_msg=you_must_prefer_this_incorrect_settings_to_those_obtained_through_arguments'"
 
 go run ./cmd/server/main.go 
