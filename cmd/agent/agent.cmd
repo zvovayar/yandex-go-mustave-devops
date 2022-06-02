@@ -8,5 +8,5 @@ set RESTORE=false
 set SHUTDOWN_TIMEOUT=5s
 set KEY=/tmp/zK3deX0
 
-go run .\cmd\agent\main.go
+go run .\cmd\agent\main.go -B=false
 

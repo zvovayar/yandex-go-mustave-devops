@@ -93,7 +93,7 @@ func SendMetrics(m inst.Monitor) {
 			v.Hash = mc.MakeHashMetrics(inst.Key)
 		}
 
-		log.Printf("agent.SendMetrics v.Hash=%v", v.Hash)
+		// log.Printf("agent.SendMetrics v.Hash=%v", v.Hash)
 
 		body, err := json.Marshal(v)
 		if err != nil {
@@ -140,7 +140,7 @@ func SendMetrics(m inst.Monitor) {
 			v.Hash = mc.MakeHashMetrics(inst.Key)
 		}
 
-		log.Printf("agent.SendMetrics v.Hash=%v", v.Hash)
+		// log.Printf("agent.SendMetrics v.Hash=%v", v.Hash)
 
 		body, err := json.Marshal(v)
 		if err != nil {
@@ -256,6 +256,7 @@ func SendBatchMetrics(monitorb []inst.Monitor) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Printf("SendBatchMetrics -> count=%d metricsb=%v", c, metricsb)
 	// log.Printf("SendBatchMetrics -> count=%d metricsb=%v", c, string(body))
 
 	//

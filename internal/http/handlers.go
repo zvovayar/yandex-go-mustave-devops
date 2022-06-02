@@ -364,14 +364,14 @@ func GetMvalueJSON(w http.ResponseWriter, r *http.Request) {
 
 	buf, err := json.Marshal(v)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("GetMValueJSON marshal error: %v", err)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	_, err = w.Write(buf)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("GetMValueJSON Write error: %v", err)
 	}
 	log.Printf("GetMValueJSON string(buf)=%v", string(buf))
 

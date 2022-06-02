@@ -38,7 +38,7 @@ func main() {
 	flag.StringVar(&cfgFromFlags.Key, "k", "", "key for hash calculate")
 	flag.DurationVar(&cfgFromFlags.ReportInterval, "r", inst.ReportInterval, "report interval")
 	flag.DurationVar(&cfgFromFlags.PollInterval, "p", inst.PollInterval, "poll interval")
-	flag.BoolVar(&inst.BatchSend, "B", inst.BatchSend, "batch send data")
+	flag.BoolVar(&inst.BatchSend, "B", true, "batch send data")
 	flag.Parse()
 	log.Printf("Agent Config flags:%+v", cfgFromFlags)
 
