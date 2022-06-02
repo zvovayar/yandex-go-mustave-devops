@@ -62,6 +62,6 @@ func (sm *StoreMem) SetCMvalue(cmname string, cm Counter) {
 		StoreMonitor.GetMonitor().Cmetrics = append(StoreMonitor.GetMonitor().Cmetrics, cm)
 		return
 	}
-	// sm.monitor.Cmetrics[Cmetricnames[cmname]] += cm
-	sm.monitor.Cmetrics[Cmetricnames[cmname]] = cm
+	sm.monitor.Cmetrics[Cmetricnames[cmname]] += cm
+	// sm.monitor.Cmetrics[Cmetricnames[cmname]] = cm
 }
