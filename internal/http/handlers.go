@@ -333,17 +333,19 @@ func GetMvalueJSON(w http.ResponseWriter, r *http.Request) {
 
 	cmname, gmname = v.ID, v.ID
 
-	if v.MType == "gauge" {
+	_, okg := inst.Gmetricnames[gmname]
+	_, okc := inst.Cmetricnames[cmname]
 
+	if v.MType == "gauge" && okg {
 		gm := float64(sm.GetGMvalue(gmname))
 		v.Value = &gm
-	} else if v.MType == "counter" {
+	} else if v.MType == "counter" && okc {
 		cm := int64(sm.GetCMvalue(cmname))
 		v.Delta = &cm
 	} else {
-		log.Printf("Error unknown metric type %v", v.MType)
+		log.Printf("Error unknown metric type or name %v", v.MType)
 		w.WriteHeader(http.StatusNotFound)
-		_, err := w.Write([]byte("<h1>404 metric type not found</h1>"))
+		_, err := w.Write([]byte("<h1>404 metric type or name not found</h1>"))
 		if err != nil {
 			log.Fatal(err)
 		}
