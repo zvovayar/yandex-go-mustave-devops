@@ -60,10 +60,6 @@ func NewMonitor(duration time.Duration, chanmonitor chan inst.Monitor) {
 
 		m.Cmetrics[inst.Cmetricnames["PoolCount"]]++
 
-		// Just encode to json and print
-		// b, _ := json.Marshal(m)
-		// log.Printf("NewMonitor - > %v Channel length %v", string(b), len(chanmonitor))
-
 		// Send new collected data to the channel
 		chanmonitor <- m
 
@@ -72,10 +68,6 @@ func NewMonitor(duration time.Duration, chanmonitor chan inst.Monitor) {
 
 // send collected metrics to the web API
 func SendMetrics(m inst.Monitor) {
-
-	//Just encode to json and print for test log
-	// b, _ := json.Marshal(m)
-	// log.Println("SendMetrics -> " + string(b))
 
 	var mc crypt.MetricsCrypt
 
