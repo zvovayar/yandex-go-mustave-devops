@@ -19,7 +19,7 @@ type MemPStorage struct {
 }
 
 func (mps *MemPStorage) GetMonitor() *Monitor {
-	// log.Printf("func (mps MemPStorage) GetMonitor() *Monitor ")
+	// inst.Sugar.Infof("func (mps MemPStorage) GetMonitor() *Monitor ")
 	return &(mps.sm.monitor)
 }
 
@@ -49,7 +49,7 @@ func (mps *MemPStorage) NewPersistanceStorage() error {
 	for {
 		<-time.After(StoreInterval)
 
-		// log.Printf("Save data to the file %v\n", StoreFile)
+		// inst.Sugar.Infof("Save data to the file %v\n", StoreFile)
 
 		//
 		// save names maps
@@ -59,7 +59,7 @@ func (mps *MemPStorage) NewPersistanceStorage() error {
 			return err
 		}
 
-		// log.Printf("Save data object: %v", Gmetricnames)
+		// inst.Sugar.Infof("Save data object: %v", Gmetricnames)
 		// записываем в буфер
 		if _, err := mps.writer.Write(data); err != nil {
 			log.Fatal(err)
@@ -77,7 +77,7 @@ func (mps *MemPStorage) NewPersistanceStorage() error {
 			return err
 		}
 
-		// log.Printf("Save data object: %v", Cmetricnames)
+		// inst.Sugar.Infof("Save data object: %v", Cmetricnames)
 		// записываем в буфер
 		if _, err := mps.writer.Write(data); err != nil {
 			log.Fatal(err)
@@ -98,7 +98,7 @@ func (mps *MemPStorage) NewPersistanceStorage() error {
 			return err
 		}
 
-		// log.Printf("Save data object: %v", mps.sm.monitor)
+		// inst.Sugar.Infof("Save data object: %v", mps.sm.monitor)
 		// записываем в буфер
 		if _, err := mps.writer.Write(data); err != nil {
 			log.Fatal(err)
@@ -148,9 +148,7 @@ func (mps *MemPStorage) GetCMvalue(cmname string) Counter {
 // mirror StoreMem interface + persistance function
 func (mps *MemPStorage) SetGMvalue(gmname string, gm Gauge) {
 	mps.sm.SetGMvalue(gmname, gm)
-	// mps.chanPStoreMem = make(chan StoreMem, BufferLength)
-	// chanPStoreMem <- mps.sm
-	// log.Printf("chanPStoreMem <-: %v", mps.sm.monitor)
+	// inst.Sugar.Infof("chanPStoreMem <-: %v", mps.sm.monitor)
 
 }
 
@@ -158,8 +156,7 @@ func (mps *MemPStorage) SetGMvalue(gmname string, gm Gauge) {
 func (mps *MemPStorage) SetCMvalue(cmname string, cm Counter) {
 	mps.sm.SetCMvalue(cmname, cm)
 
-	// chanPStoreMem <- mps.sm
-	// log.Printf("chanPStoreMem <-: %v", mps.sm.monitor)
+	// inst.Sugar.Infof("chanPStoreMem <-: %v", mps.sm.monitor)
 }
 
 func (mps *MemPStorage) LoadData() {
@@ -172,7 +169,7 @@ func (mps *MemPStorage) LoadData() {
 
 	file, err = os.OpenFile(StoreFile, os.O_RDONLY, 0777)
 	if err != nil {
-		log.Println(err)
+		Sugar.Infow(err.Error())
 		return
 	}
 
@@ -188,7 +185,7 @@ func (mps *MemPStorage) LoadData() {
 			log.Fatal(err)
 		}
 
-		// log.Printf("Load Gmetricnames: %v", Gmetricnames)
+		// inst.Sugar.Infof("Load Gmetricnames: %v", Gmetricnames)
 
 		scanner.Scan()
 		data = scanner.Bytes()
@@ -198,7 +195,7 @@ func (mps *MemPStorage) LoadData() {
 			log.Fatal(err)
 		}
 
-		// log.Printf("Load Cmetricnames: %v", Cmetricnames)
+		// inst.Sugar.Infof("Load Cmetricnames: %v", Cmetricnames)
 
 		// читаем данные из scanner
 		scanner.Scan()
@@ -209,9 +206,9 @@ func (mps *MemPStorage) LoadData() {
 			log.Fatal(err)
 		}
 
-		// log.Printf("Load data: %v", mps.sm.monitor)
+		// inst.Sugar.Infof("Load data: %v", mps.sm.monitor)
 	}
-	// log.Println(scanner.Err())
+	// inst.Sugar.Infow(scanner.Err())
 
 }
 

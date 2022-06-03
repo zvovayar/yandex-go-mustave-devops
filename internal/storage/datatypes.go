@@ -2,6 +2,8 @@ package storage
 
 import (
 	"time"
+
+	"go.uber.org/zap"
 )
 
 type Gauge float64
@@ -81,3 +83,5 @@ var BatchSend = true
 
 //var ContentType = "text/plain"
 var ContentType = "application/json"
+
+var Sugar *zap.SugaredLogger

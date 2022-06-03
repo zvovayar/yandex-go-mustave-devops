@@ -85,24 +85,24 @@ func SendMetrics(m inst.Monitor) {
 			v.Hash = mc.MakeHashMetrics(inst.Key)
 		}
 
-		// log.Printf("agent.SendMetrics v.Hash=%v", v.Hash)
+		// inst.Sugar.Infof("agent.SendMetrics v.Hash=%v", v.Hash)
 
 		body, err := json.Marshal(v)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		log.Printf("v=%v", v)
-		log.Printf("body=%v", string(body))
+		inst.Sugar.Infof("v=%v", v)
+		inst.Sugar.Infof("body=%v", string(body))
 
 		var url = fmt.Sprintf("http://%v/update/",
 			inst.ServerAddress)
-		log.Println(url)
+		inst.Sugar.Infow(url)
 
 		request, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
 		if err != nil {
 			// обработаем ошибку
-			log.Println(err)
+			inst.Sugar.Infow(err.Error())
 		}
 		request.Header.Set("Content-Type", inst.ContentType)
 
@@ -112,11 +112,11 @@ func SendMetrics(m inst.Monitor) {
 		resp, err := client.Do(request)
 		if err != nil {
 			// обработаем ошибку
-			log.Println(err)
+			inst.Sugar.Infow(err.Error())
 			return
 		}
 		defer resp.Body.Close()
-		log.Println(resp)
+		inst.Sugar.Infow(resp.Status)
 	}
 
 	// counter type send
@@ -132,24 +132,24 @@ func SendMetrics(m inst.Monitor) {
 			v.Hash = mc.MakeHashMetrics(inst.Key)
 		}
 
-		// log.Printf("agent.SendMetrics v.Hash=%v", v.Hash)
+		// inst.Sugar.Infof("agent.SendMetrics v.Hash=%v", v.Hash)
 
 		body, err := json.Marshal(v)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		log.Printf("v=%v", v)
-		log.Printf("body=%v", string(body))
+		inst.Sugar.Infof("v=%v", v)
+		inst.Sugar.Infof("body=%v", string(body))
 
 		var url = fmt.Sprintf("http://%v/update/",
 			inst.ServerAddress)
-		log.Println(url)
+		inst.Sugar.Infow(url)
 
 		request, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
 		if err != nil {
 			// обработаем ошибку
-			log.Println(err)
+			inst.Sugar.Infow(err.Error())
 		}
 		request.Header.Set("Content-Type", inst.ContentType)
 
@@ -159,31 +159,30 @@ func SendMetrics(m inst.Monitor) {
 		resp, err := client.Do(request)
 		if err != nil {
 			// обработаем ошибку
-			log.Println(err)
+			inst.Sugar.Infow(err.Error())
 			return
 		}
 		defer resp.Body.Close()
-		log.Println(resp)
+		inst.Sugar.Infow(resp.Status)
 	}
 }
 
 // begin waiting metrics from channel and send they to the web APIs
 func RunSendMetrics(duration time.Duration, chanmonitor chan inst.Monitor) {
 
-	log.Println("Agent started gorutine for send metrics")
+	inst.Sugar.Infow("Agent started gorutine for send metrics")
 	for {
 		<-time.After(duration)
 
 		c := len(chanmonitor)
 		mslice := make([]inst.Monitor, c)
 
-		log.Printf("runSendMetrics -> quantity new elements %v\n", c)
+		inst.Sugar.Infof("runSendMetrics -> quantity new elements %v\n", c)
 		for i := 0; i < c; i++ {
 
 			m, err := <-chanmonitor
-			// log.Printf("runSendMetrics i=%d, err=%v, m=%+v", i, err, m)
 			if !err {
-				log.Println(err)
+				inst.Sugar.Infow("chan ended... why?")
 				break
 			}
 			if inst.BatchSend {
@@ -248,20 +247,20 @@ func SendBatchMetrics(monitorb []inst.Monitor) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("SendBatchMetrics -> count=%d metricsb=%v", c, metricsb)
-	// log.Printf("SendBatchMetrics -> count=%d metricsb=%v", c, string(body))
+	inst.Sugar.Infof("SendBatchMetrics -> count=%d metricsb=%v", c, metricsb)
+	// inst.Sugar.Infof("SendBatchMetrics -> count=%d metricsb=%v", c, string(body))
 
 	//
 	// send json via POST
 	//
 	var url = fmt.Sprintf("http://%v/updates/",
 		inst.ServerAddress)
-	log.Println(url)
+	inst.Sugar.Infow(url)
 
 	request, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
 	if err != nil {
 		// обработаем ошибку
-		log.Println(err)
+		inst.Sugar.Infow(err.Error())
 	}
 	request.Header.Set("Content-Type", inst.ContentType)
 
@@ -271,9 +270,9 @@ func SendBatchMetrics(monitorb []inst.Monitor) {
 	resp, err := client.Do(request)
 	if err != nil {
 		// обработаем ошибку
-		log.Println(err)
+		inst.Sugar.Infow(err.Error())
 		return
 	}
 	defer resp.Body.Close()
-	log.Println(resp)
+	inst.Sugar.Infow(resp.Status)
 }

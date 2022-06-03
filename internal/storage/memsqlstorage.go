@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -22,7 +21,7 @@ type MemSQLStorage struct {
 }
 
 func (mps *MemSQLStorage) GetMonitor() *Monitor {
-	// log.Printf("func (mps MemSQLStorage) GetMonitor() *Monitor ")
+	// inst.Sugar.Infof("func (mps MemSQLStorage) GetMonitor() *Monitor ")
 	return &(mps.sm.monitor)
 }
 
@@ -41,16 +40,16 @@ func (mps *MemSQLStorage) NewPersistanceStorage() error {
 	//
 	// open database
 	//
-	log.Printf("Drivers available: %v", sql.Drivers())
+	Sugar.Infof("Drivers available: %v", sql.Drivers())
 	var err error
 	mps.db, err = sqlx.Open("postgres", DatabaseDSN)
 	if err != nil {
-		log.Println(err)
+		Sugar.Infow(err.Error())
 	}
 	defer mps.db.Close()
 
 	if err := mps.CheckAndCreateMDatabase(context.Background()); err != nil {
-		log.Println(err)
+		Sugar.Infow(err.Error())
 	}
 
 	// infinity loop for{} save data to SQL database
@@ -64,15 +63,15 @@ func (mps *MemSQLStorage) NewPersistanceStorage() error {
 
 func (mps *MemSQLStorage) PingSQLserver(ctx context.Context) error {
 
-	log.Printf("PingSQLserver try for open connections=%v", mps.db.DB.Stats().OpenConnections)
+	Sugar.Infof("PingSQLserver try for open connections=%v", mps.db.DB.Stats().OpenConnections)
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
 	if err := mps.db.PingContext(ctx); err != nil {
-		log.Println("PingSQLserver PingContext error " + err.Error())
+		Sugar.Infow("PingSQLserver PingContext error " + err.Error())
 		return err
 	}
-	log.Printf("PingSQLserver success DSN=%v", DatabaseDSN)
+	Sugar.Infof("PingSQLserver success DSN=%v", DatabaseDSN)
 	return nil
 }
 
@@ -114,10 +113,10 @@ func (mps *MemSQLStorage) SetGMvalue(gmname string, gm Gauge) {
 
 	if _, err := mps.db.NamedExecContext(ctx, `INSERT INTO metrics (id, mtype, delta, value)
 		VALUES (:id, :mtype, :delta, :value)`, m); err != nil {
-		log.Println("SetGMvalue " + err.Error())
+		Sugar.Infow("SetGMvalue " + err.Error())
 		return
 	}
-	log.Printf("SetGMvalue value %v=%f saved", gmname, mps.sm.GetGMvalue(gmname))
+	Sugar.Infof("SetGMvalue value %v=%f saved", gmname, mps.sm.GetGMvalue(gmname))
 }
 
 // mirror StoreMem interface + persistance function
@@ -135,20 +134,20 @@ func (mps *MemSQLStorage) SetCMvalue(cmname string, cm Counter) {
 
 	if _, err := mps.db.NamedExecContext(ctx, `INSERT INTO metrics (id, mtype, delta, value)
 		VALUES (:id, :mtype, :delta, :value)`, m); err != nil {
-		log.Println("SetCMvalue " + err.Error())
+		Sugar.Infow("SetCMvalue " + err.Error())
 		return
 	}
-	log.Printf("SetCMvalue value %v=%d saved", cmname, mps.sm.GetCMvalue(cmname))
+	Sugar.Infof("SetCMvalue value %v=%d saved", cmname, mps.sm.GetCMvalue(cmname))
 }
 
 func (mps *MemSQLStorage) LoadData() {
 	//
 	// load data from SQL database
 	//
-	log.Printf("LoadData from DSN=%v", DatabaseDSN)
+	Sugar.Infof("LoadData from DSN=%v", DatabaseDSN)
 	db, err := sqlx.Open("postgres", DatabaseDSN)
 	if err != nil {
-		log.Println("LoadData " + err.Error())
+		Sugar.Infow("LoadData " + err.Error())
 		return
 	}
 	defer db.Close()
@@ -162,7 +161,7 @@ func (mps *MemSQLStorage) LoadData() {
 						from metrics
 						group by id)`)
 	if err != nil {
-		log.Println("LoadData " + err.Error())
+		Sugar.Infow("LoadData " + err.Error())
 		return
 	}
 
@@ -174,7 +173,7 @@ func (mps *MemSQLStorage) LoadData() {
 			mps.sm.SetCMvalue(m[i].ID, Counter(*m[i].Delta))
 		}
 	}
-	log.Printf("LoadData loaded %d metrics", c)
+	Sugar.Infof("LoadData loaded %d metrics", c)
 }
 
 func (mps *MemSQLStorage) CheckAndCreateMDatabase(ctx context.Context) error {
@@ -186,10 +185,10 @@ func (mps *MemSQLStorage) CheckAndCreateMDatabase(ctx context.Context) error {
 		"CREATE TABLE IF NOT EXISTS metrics (idrec BIGSERIAL, id VARCHAR(50), mtype VARCHAR(50), delta BIGINT, value NUMERIC)")
 
 	if err != nil {
-		log.Println("CheckAndCreateMDatabase " + err.Error())
+		Sugar.Infow("CheckAndCreateMDatabase " + err.Error())
 		return err
 	}
-	log.Printf("CheckAndCreateMDatabase table metrics created")
+	Sugar.Infof("CheckAndCreateMDatabase table metrics created")
 
 	return nil
 }
@@ -211,7 +210,7 @@ func (mps *MemSQLStorage) SaveBatch(ctx context.Context, batchM []Metrics) error
 
 	if _, err := mps.db.NamedExec(`INSERT INTO metrics (id, mtype, delta, value)
 			VALUES (:id, :mtype, :delta, :value)`, batchM); err != nil {
-		log.Println("SaveBatch " + err.Error())
+		Sugar.Infow("SaveBatch " + err.Error())
 		return err
 	}
 

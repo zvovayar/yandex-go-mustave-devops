@@ -1,9 +1,5 @@
 package storage
 
-import (
-	"log"
-)
-
 type StoreMem struct {
 	monitor Monitor
 }
@@ -14,14 +10,14 @@ type StoreMemInt interface {
 }
 
 func (sm *StoreMem) GetMonitor() *Monitor {
-	log.Print("func (sm *StoreMem) GetMonitor() *Monitor ")
+	Sugar.Infow("func (sm *StoreMem) GetMonitor() *Monitor ")
 	return &sm.monitor
 }
 
 func (sm *StoreMem) GetGMvalue(gmname string) Gauge {
 	if _, ok := Gmetricnames[gmname]; !ok {
 		// не нашли название метрики, были ошибки
-		log.Printf("GetGMvalue Error Can not find gauge metric name:%v", gmname)
+		Sugar.Infof("GetGMvalue Error Can not find gauge metric name:%v", gmname)
 		return 0
 	}
 	return sm.monitor.Gmetrics[Gmetricnames[gmname]]
@@ -30,7 +26,7 @@ func (sm *StoreMem) GetGMvalue(gmname string) Gauge {
 func (sm *StoreMem) GetCMvalue(cmname string) Counter {
 	if _, ok := Cmetricnames[cmname]; !ok {
 		// не нашли название метрики, были ошибки
-		log.Printf("GetCMvalue Error Can not find counter metric name:%v", cmname)
+		Sugar.Infof("GetCMvalue Error Can not find counter metric name:%v", cmname)
 		return 0
 	}
 	return sm.monitor.Cmetrics[Cmetricnames[cmname]]
@@ -40,7 +36,7 @@ func (sm *StoreMem) SetGMvalue(gmname string, gm Gauge) {
 
 	if _, ok := Gmetricnames[gmname]; !ok {
 		// не нашли название метрики, были ошибки
-		log.Printf("SetGMvalue Can not find gauge metric, add new name:%v", gmname)
+		Sugar.Infof("SetGMvalue Can not find gauge metric, add new name:%v", gmname)
 		//
 		// сделать добавление новой метрики
 		//
@@ -54,7 +50,7 @@ func (sm *StoreMem) SetGMvalue(gmname string, gm Gauge) {
 func (sm *StoreMem) SetCMvalue(cmname string, cm Counter) {
 	if _, ok := Cmetricnames[cmname]; !ok {
 		// не нашли название метрики, были ошибки
-		log.Printf("SetCMvalue Can not find counter metric, add new name:%v", cmname)
+		Sugar.Infof("SetCMvalue Can not find counter metric, add new name:%v", cmname)
 		//
 		// сделать добавление новой метрики
 		//

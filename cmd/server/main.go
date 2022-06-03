@@ -13,9 +13,12 @@ import (
 	"github.com/zvovayar/yandex-go-mustave-devops/internal/config"
 	inhttp "github.com/zvovayar/yandex-go-mustave-devops/internal/http"
 	inst "github.com/zvovayar/yandex-go-mustave-devops/internal/storage"
+	"go.uber.org/zap"
 )
 
 func main() {
+	inst.Sugar = zap.NewExample().Sugar()
+	defer inst.Sugar.Sync()
 
 	config.ConfigServerInit()
 	// маршрутизация запросов обработчику
@@ -62,11 +65,11 @@ func main() {
 	signal.Notify(chanOS, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT)
 	sig := <-chanOS
 
-	log.Printf("INFO got a signal '%v', start shutting down... wait 5 seconds\n", sig) // put breakpoint here
+	inst.Sugar.Infof("INFO got a signal '%v', start shutting down... wait 5 seconds\n", sig) // put breakpoint here
 	inst.StoreMonitor.ClosePersistanceStorage()
 	<-time.After(time.Second * 5)
 
-	log.Printf("Shutdown complete")
+	inst.Sugar.Infof("Shutdown complete")
 }
 
 func ListenRutine(r *chi.Mux) {

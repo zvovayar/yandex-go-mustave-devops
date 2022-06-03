@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -9,9 +8,14 @@ import (
 	"github.com/zvovayar/yandex-go-mustave-devops/internal/agent"
 	"github.com/zvovayar/yandex-go-mustave-devops/internal/config"
 	inst "github.com/zvovayar/yandex-go-mustave-devops/internal/storage"
+
+	"go.uber.org/zap"
 )
 
 func main() {
+
+	inst.Sugar = zap.NewExample().Sugar()
+	defer inst.Sugar.Sync()
 
 	config.ConfigAgentInit()
 
@@ -23,6 +27,7 @@ func main() {
 	go agent.RunSendMetrics(inst.ReportInterval, chanm)
 
 	sig := <-chanOS
-	log.Printf("INFO got a signal '%v', start shutting down...\n", sig) // put breakpoint here
-	log.Printf("Shutdown complete")
+	inst.Sugar.Infof("INFO got a signal '%v', start shutting down...", sig) // put breakpoint here
+	inst.Sugar.Infow("Shutdown complete")
+
 }

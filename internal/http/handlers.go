@@ -52,8 +52,7 @@ func UpdateGaugeMetric(w http.ResponseWriter, r *http.Request) {
 	ss := strings.Split(r.URL.Path, "/")
 	gmnamechi := chi.URLParam(r, "GMname")
 	gmvaluechi := chi.URLParam(r, "GMvalue")
-	log.Printf("%v count=%v %v = %v", r.URL.Path, len(ss), gmnamechi, gmvaluechi)
-	log.Println(ss)
+	inst.Sugar.Infof("%v count=%v %v = %v", r.URL.Path, len(ss), gmnamechi, gmvaluechi)
 
 	if len(ss) != 5 {
 		// мало или много параметров в URL
@@ -67,7 +66,7 @@ func UpdateGaugeMetric(w http.ResponseWriter, r *http.Request) {
 	gm, err := strconv.ParseFloat(ss[4], 64)
 	if err != nil {
 		// значения метрики нет
-		log.Println(err)
+		inst.Sugar.Infow(err.Error())
 		w.WriteHeader(http.StatusBadRequest)
 		_, err = w.Write([]byte("<h1>Gauge metric value not found</h1>"))
 		if err != nil {
@@ -87,17 +86,14 @@ func UpdateGaugeMetric(w http.ResponseWriter, r *http.Request) {
 	}
 
 	gmname := ss[3]
-	log.Printf("Gauge metric %v = %f", gmname, gm)
+	inst.Sugar.Infof("Gauge metric %v = %f", gmname, gm)
 
 	//
 	// сохранять значение метрики
 	//
-	//storage.StoreMonitor.Gmetrics[Gmetricnames[gmname]] = Gauge(gm)
-	// swq := &inst.StoreMonitor //.GetMonitor()
-	// s.Gmetrics[inst.Gmetricnames[gmname]] = inst.Gauge(gm)
 	sm.SetGMvalue(gmname, inst.Gauge(gm))
 
-	log.Printf("Store %v = %f", gmname, gm)
+	inst.Sugar.Infof("Store %v = %f", gmname, gm)
 
 	w.WriteHeader(http.StatusOK)
 	_, err = w.Write([]byte("<h1>Gauge metric</h1>" + ss[3] + ss[4]))
@@ -109,10 +105,9 @@ func UpdateGaugeMetric(w http.ResponseWriter, r *http.Request) {
 // Сохранение метрики Counter
 func UpdateCounterMetric(w http.ResponseWriter, r *http.Request) {
 	ss := strings.Split(r.URL.Path, "/")
-	сmnamechi := chi.URLParam(r, "CMname")
-	сmvaluechi := chi.URLParam(r, "CMvalue")
-	log.Printf("%v count=%v %v = %v", r.URL.Path, len(ss), сmnamechi, сmvaluechi)
-	log.Println(ss)
+	cmnamechi := chi.URLParam(r, "CMname")
+	cmvaluechi := chi.URLParam(r, "CMvalue")
+	inst.Sugar.Infof("%v count=%v %v = %v", r.URL.Path, len(ss), cmnamechi, cmvaluechi)
 
 	if len(ss) != 5 {
 		// мало или много параметров в URL
@@ -129,7 +124,7 @@ func UpdateCounterMetric(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		// значения метрики нет
-		log.Println(err)
+		inst.Sugar.Infow(err.Error())
 		w.WriteHeader(http.StatusBadRequest)
 		_, err = w.Write([]byte("<h1>Counter metric value not found</h1>"))
 		if err != nil {
@@ -147,7 +142,7 @@ func UpdateCounterMetric(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cmname := ss[3]
-	log.Printf("Counter metric %v = %d", cmname, cm)
+	inst.Sugar.Infof("Counter metric %v = %d", cmname, cm)
 
 	//
 	// сохранять значение метрики
@@ -155,7 +150,7 @@ func UpdateCounterMetric(w http.ResponseWriter, r *http.Request) {
 
 	sm.SetCMvalue(cmname, inst.Counter(cm))
 
-	log.Printf("Store %v = %d", cmname, cm)
+	inst.Sugar.Infof("Store %v = %d", cmname, cm)
 
 	w.WriteHeader(http.StatusOK)
 	_, err = w.Write([]byte("<h1>Counter metric</h1>" + ss[3] + ss[4]))
@@ -201,7 +196,6 @@ func GetGMvalue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// htmlText := fmt.Sprint(inst.StoreMonitor.Gmetrics[inst.Gmetricnames[chi.URLParam(r, "GMname")]])
 	htmlText := fmt.Sprint(sm.GetGMvalue(chi.URLParam(r, "GMname")))
 	w.WriteHeader(http.StatusOK)
 	_, err := w.Write([]byte(htmlText))
@@ -223,7 +217,6 @@ func GetCMvalue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// htmlText := fmt.Sprint(inst.StoreMonitor.Cmetrics[inst.Cmetricnames[chi.URLParam(r, "CMname")]])
 	htmlText := fmt.Sprint(sm.GetCMvalue(chi.URLParam(r, "CMname")))
 	w.WriteHeader(http.StatusOK)
 	_, err := w.Write([]byte(htmlText))
@@ -246,7 +239,7 @@ func UpdateMetricJSON(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 		return
 	}
-	// log.Println(v)
+	// inst.Sugar.Infow(v)
 
 	//
 	// check hash if key exist
@@ -262,10 +255,10 @@ func UpdateMetricJSON(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				log.Fatal(err)
 			}
-			log.Printf("Bad hash actual=%v expected=%v", v.Hash, mc.M.Hash)
+			inst.Sugar.Infof("Bad hash actual=%v expected=%v", v.Hash, mc.M.Hash)
 			return
 		}
-		// log.Printf("Good hash actual=%v expected=%v", v.Hash, mc.M.Hash)
+		// inst.Sugar.Infof("Good hash actual=%v expected=%v", v.Hash, mc.M.Hash)
 	}
 
 	//
@@ -273,13 +266,13 @@ func UpdateMetricJSON(w http.ResponseWriter, r *http.Request) {
 	//
 	if v.MType == "gauge" {
 
-		// log.Printf("*v.Value=%f", *v.Value)
+		// inst.Sugar.Infof("*v.Value=%f", *v.Value)
 		gmname = v.ID
 		gm = inst.Gauge(*v.Value)
 
 		sm.SetGMvalue(gmname, inst.Gauge(gm))
 
-		// log.Printf("Store %v = %f", gmname, gm)
+		// inst.Sugar.Infof("Store %v = %f", gmname, gm)
 
 		w.WriteHeader(http.StatusOK)
 		_, err := w.Write([]byte("<h1>Gauge metric</h1>" + gmname))
@@ -289,13 +282,13 @@ func UpdateMetricJSON(w http.ResponseWriter, r *http.Request) {
 		return
 	} else if v.MType == "counter" {
 
-		// log.Printf("*v.Delta=%d", *v.Delta)
+		// inst.Sugar.Infof("*v.Delta=%d", *v.Delta)
 		cmname = v.ID
 		cm = inst.Counter(*v.Delta)
 
 		sm.SetCMvalue(cmname, inst.Counter(cm))
 
-		// log.Printf("Store %v = %d", cmname, cm)
+		// inst.Sugar.Infof("Store %v = %d", cmname, cm)
 
 		w.WriteHeader(http.StatusOK)
 		_, err := w.Write([]byte("<h1>Counter metric</h1>" + cmname))
@@ -312,7 +305,7 @@ func UpdateMetricJSON(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("Unknown metric type %v", v.MType)
+	inst.Sugar.Infof("Unknown metric type %v", v.MType)
 
 }
 
@@ -323,13 +316,13 @@ func GetMvalueJSON(w http.ResponseWriter, r *http.Request) {
 	var cmname string
 	var gmname string
 
-	// log.Println(r.Body)
+	// inst.Sugar.Infow(r.Body)
 	if err := json.NewDecoder(r.Body).Decode(&v); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		log.Fatal(err)
 		return
 	}
-	log.Println(v)
+	inst.Sugar.Infof("v=%v", v)
 
 	cmname, gmname = v.ID, v.ID
 
@@ -343,7 +336,7 @@ func GetMvalueJSON(w http.ResponseWriter, r *http.Request) {
 		cm := int64(sm.GetCMvalue(cmname))
 		v.Delta = &cm
 	} else {
-		log.Printf("Error unknown metric type or name %v, %v", v.MType, v.ID)
+		inst.Sugar.Infof("Error unknown metric type or name %v, %v", v.MType, v.ID)
 		w.WriteHeader(http.StatusNotFound)
 		_, err := w.Write([]byte("<h1>404 metric type or name not found</h1>"))
 		if err != nil {
@@ -362,20 +355,20 @@ func GetMvalueJSON(w http.ResponseWriter, r *http.Request) {
 		v.Hash = mc.MakeHashMetrics(inst.Key)
 	}
 
-	log.Printf("GetMValueJSON v=%v", v)
+	inst.Sugar.Infof("GetMValueJSON v=%v", v)
 
 	buf, err := json.Marshal(v)
 	if err != nil {
-		log.Printf("GetMValueJSON marshal error: %v", err)
+		inst.Sugar.Infof("GetMValueJSON marshal error: %v", err)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	_, err = w.Write(buf)
 	if err != nil {
-		log.Printf("GetMValueJSON Write error: %v", err)
+		inst.Sugar.Infof("GetMValueJSON Write error: %v", err)
 	}
-	log.Printf("GetMValueJSON string(buf)=%v", string(buf))
+	inst.Sugar.Infof("GetMValueJSON string(buf)=%v", string(buf))
 
 }
 
@@ -392,12 +385,12 @@ func UpdateMetricBatch(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 		return
 	}
-	//log.Printf("UpdateMetricBatch mbatch=%v", mbatch)
+	//inst.Sugar.Infof("UpdateMetricBatch mbatch=%v", mbatch)
 
 	// save batch
 	if err := sm.SaveBatch(r.Context(), mbatch); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		log.Println(err)
+		inst.Sugar.Infow(err.Error())
 		return
 	}
 	w.WriteHeader(http.StatusOK)

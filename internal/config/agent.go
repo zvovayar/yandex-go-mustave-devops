@@ -25,8 +25,8 @@ func ConfigAgentInit() {
 		log.Fatal(err)
 	}
 
-	log.Println("Agent started")
-	log.Printf("Config environment:%+v", cfg)
+	inst.Sugar.Infow("Agent started")
+	inst.Sugar.Infof("Config environment:%+v", cfg)
 
 	// load flags
 	flag.StringVar(&cfgFromFlags.Address, "a", inst.ServerAddress, "address to bind on")
@@ -35,7 +35,7 @@ func ConfigAgentInit() {
 	flag.DurationVar(&cfgFromFlags.PollInterval, "p", inst.PollInterval, "poll interval")
 	flag.BoolVar(&inst.BatchSend, "B", true, "batch send data")
 	flag.Parse()
-	log.Printf("Agent Config flags:%+v", cfgFromFlags)
+	inst.Sugar.Infof("Agent Config flags:%+v", cfgFromFlags)
 
 	// assign work parameters
 	if cfg.Address != "" {
@@ -59,6 +59,6 @@ func ConfigAgentInit() {
 		inst.ReportInterval = cfgFromFlags.ReportInterval
 	}
 
-	log.Printf("Agent Strated with variables: address=%v, poll interval=%v, report interval=%v, key=%v, batch send=%v",
+	inst.Sugar.Infof("Agent Strated with variables: address=%v, poll interval=%v, report interval=%v, key=%v, batch send=%v",
 		inst.ServerAddress, inst.PollInterval, inst.ReportInterval, inst.Key, inst.BatchSend)
 }

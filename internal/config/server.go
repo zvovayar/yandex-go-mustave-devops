@@ -22,7 +22,7 @@ func ConfigServerInit() {
 	var cfg ServerConfig
 	var cfgFromFlags ServerConfig
 
-	log.Println("Server started")
+	inst.Sugar.Infow("Server started")
 
 	cfg.StoreInterval = time.Second * 300
 	// load environment variables
@@ -32,7 +32,7 @@ func ConfigServerInit() {
 		log.Fatal(err)
 	}
 
-	log.Printf("Server Config environment:%+v", cfg)
+	inst.Sugar.Infof("Server Config environment:%+v", cfg)
 
 	// load flags
 	flag.StringVar(&cfgFromFlags.Address, "a", inst.ServerAddress, "address to listen on")
@@ -42,7 +42,7 @@ func ConfigServerInit() {
 	flag.BoolVar(&cfgFromFlags.Restore, "r", inst.Restore, "restore from file on start")
 	flag.StringVar(&cfgFromFlags.DatabaseDSN, "d", inst.DatabaseDSN, "Database DSN")
 	flag.Parse()
-	log.Printf("Server Config flags:%+v", cfgFromFlags)
+	inst.Sugar.Infof("Server Config flags:%+v", cfgFromFlags)
 
 	// assign work parameters
 	if cfg.Address != "" {
@@ -50,28 +50,28 @@ func ConfigServerInit() {
 	} else {
 		inst.ServerAddress = cfgFromFlags.Address
 	}
-	log.Printf("Server Strated with variables: address=%v", inst.ServerAddress)
+	inst.Sugar.Infof("Server Strated with variables: address=%v", inst.ServerAddress)
 
 	if cfg.StoreInterval >= 0 {
 		inst.StoreInterval = cfg.StoreInterval
 	} else {
 		inst.StoreInterval = cfgFromFlags.StoreInterval
 	}
-	log.Printf("Server Strated with variables: StoreInterval=%v", inst.StoreInterval)
+	inst.Sugar.Infof("Server Strated with variables: StoreInterval=%v", inst.StoreInterval)
 
 	if len(cfg.StoreFile) > 0 {
 		inst.StoreFile = cfg.StoreFile
 	} else {
 		inst.StoreFile = cfgFromFlags.StoreFile
 	}
-	log.Printf("Server Strated with variables: StoreFile=%v", inst.StoreFile)
+	inst.Sugar.Infof("Server Strated with variables: StoreFile=%v", inst.StoreFile)
 
 	if cfg.Key != "" {
 		inst.Key = cfg.Key
 	} else {
 		inst.Key = cfgFromFlags.Key
 	}
-	log.Printf("Server Strated with variables: Key=%v", inst.Key)
+	inst.Sugar.Infof("Server Strated with variables: Key=%v", inst.Key)
 
 	if cfg.Restore {
 		inst.Restore = true
@@ -87,7 +87,7 @@ func ConfigServerInit() {
 		inst.DatabaseDSN = cfgFromFlags.DatabaseDSN
 	}
 
-	log.Printf("Server Strated with variables: Restore=%v", inst.Restore)
-	log.Printf("Server Strated with variables: DatabaseDSN=%v", inst.DatabaseDSN)
+	inst.Sugar.Infof("Server Strated with variables: Restore=%v", inst.Restore)
+	inst.Sugar.Infof("Server Strated with variables: DatabaseDSN=%v", inst.DatabaseDSN)
 
 }

@@ -2,8 +2,9 @@ package storage
 
 import (
 	"context"
-	"log"
 	"reflect"
+
+	"go.uber.org/zap"
 )
 
 type Storage interface {
@@ -36,16 +37,20 @@ type PersistanceStorage interface {
 var StoreMonitor MemSQLStorage
 
 func init() {
+
+	Sugar = zap.NewExample().Sugar()
+	defer Sugar.Sync()
+
 	StoreMonitor.GetMonitor().Cmetrics = make([]Counter, len(Cmetricnames))
 	StoreMonitor.GetMonitor().Gmetrics = make([]Gauge, len(Gmetricnames))
 
-	log.Printf("Storage init\n")
+	Sugar.Infof("Storage init\n")
 
-	// log.Printf("%v", Cmetricnames)
-	// log.Printf("%v", Gmetricnames)
-	// log.Printf("%+v", StoreMonitor.GetMonitor())
+	// inst.Sugar.Infof("%v", Cmetricnames)
+	// inst.Sugar.Infof("%v", Gmetricnames)
+	// inst.Sugar.Infof("%+v", StoreMonitor.GetMonitor())
 
-	log.Printf("Storage type:%s", reflect.TypeOf(StoreMonitor).Name())
+	Sugar.Infof("Storage type:%s", reflect.TypeOf(StoreMonitor).Name())
 	// if reflect.TypeOf(StoreMonitor).Name() == "MemStorage" {
 	// 	StoreMonitor.InitMemPStorage(make(chan StoreMem, BufferLength))
 	// }
