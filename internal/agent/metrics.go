@@ -10,9 +10,20 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/shirou/gopsutil/v3/cpu"
+	"github.com/shirou/gopsutil/v3/mem"
 	"github.com/zvovayar/yandex-go-mustave-devops/internal/crypt"
 	inst "github.com/zvovayar/yandex-go-mustave-devops/internal/storage"
 )
+
+//
+// plan B increment #14
+//
+// type MonitorAgent struct {
+// 	M        inst.Monitor
+// 	GMetrics []string // названия метрик Gauge
+// 	CMetrics []string // газвания метрик Counter
+// }
 
 // begin collect metrics infinitly and send they to the channel
 func NewMonitor(duration time.Duration, chanmonitor chan inst.Monitor) {
@@ -61,6 +72,55 @@ func NewMonitor(duration time.Duration, chanmonitor chan inst.Monitor) {
 		m.Cmetrics[inst.Cmetricnames["PoolCount"]]++
 
 		// Send new collected data to the channel
+
+		//
+		// TODO: make MonitorAgent struct and send it
+		//
+		chanmonitor <- m
+
+	}
+}
+
+// begin collect metrics infinitly and send they to the channel
+func NewMonitorGopsutil(duration time.Duration, chanmonitor chan inst.Monitor) {
+	var m inst.Monitor
+	vmem, _ := mem.VirtualMemory()
+	cpuCounts, _ := cpu.Counts(false)
+
+	m.Cmetrics = make([]inst.Counter, len(inst.Cmetricnames))
+
+	// fill CPUs metrics names
+	for i := 0; i < cpuCounts; i++ {
+		inst.Gmetricnames["CPUutilization"+fmt.Sprint(i)] = len(m.Gmetrics) + i
+	}
+	m.Gmetrics = make([]inst.Gauge, len(inst.Gmetricnames)+cpuCounts)
+
+	inst.Sugar.Info(inst.Gmetricnames)
+
+	for {
+		<-time.After(duration)
+
+		// Collect stats
+		m.Gmetrics[inst.Gmetricnames["TotalMemory"]] = inst.Gauge(vmem.Total)
+		m.Gmetrics[inst.Gmetricnames["FreeMemory"]] = inst.Gauge(vmem.Free)
+
+		// Collect cpu utilization stats for all CPUs
+		cpuutil, err := cpu.Percent(duration, true)
+		if err != nil {
+			inst.Sugar.Error(err.Error())
+		}
+
+		for i := 0; i < cpuCounts; i++ {
+
+			onecpuutil := cpuutil[i]
+			// inst.Gmetricnames["CPUutilization"+fmt.Sprint(i)] =
+			m.Gmetrics[inst.Gmetricnames["CPUutilization"+fmt.Sprint(i)]] = inst.Gauge(onecpuutil)
+		}
+		// Send new collected data to the channel
+
+		//
+		// TODO for plan B: make MonitorAgent struct and send it
+		//
 		chanmonitor <- m
 
 	}
@@ -168,27 +228,27 @@ func SendMetrics(m inst.Monitor) {
 }
 
 // begin waiting metrics from channel and send they to the web APIs
-func RunSendMetrics(duration time.Duration, chanmonitor chan inst.Monitor) {
+func RunSendMetrics(duration time.Duration, chanmonitor1 chan inst.Monitor, chanmonitor2 chan inst.Monitor) {
 
 	inst.Sugar.Infow("Agent started gorutine for send metrics")
 	for {
 		<-time.After(duration)
 
-		c := len(chanmonitor)
+		// read first chan
+		c := len(chanmonitor1)
 		mslice := make([]inst.Monitor, c)
 
 		inst.Sugar.Infof("runSendMetrics -> quantity new elements %v\n", c)
 		for i := 0; i < c; i++ {
 
-			m, err := <-chanmonitor
+			// read next Monitor from channel
+			m, err := <-chanmonitor1
 			if !err {
 				inst.Sugar.Infow("chan ended... why?")
 				break
 			}
 			if inst.BatchSend {
-				//
 				// add Metrics to the slice of Monitors
-				//
 				mslice[i] = m
 			} else {
 				SendMetrics(m)
@@ -198,11 +258,37 @@ func RunSendMetrics(duration time.Duration, chanmonitor chan inst.Monitor) {
 		if inst.BatchSend && c > 0 {
 			SendBatchMetrics(mslice)
 		}
+
+		// read first chan
+		c = len(chanmonitor2)
+		mslice = make([]inst.Monitor, c)
+
+		inst.Sugar.Infof("runSendMetrics -> quantity new elements %v\n", c)
+		for i := 0; i < c; i++ {
+
+			// read next Monitor from channel
+			m, err := <-chanmonitor2
+			if !err {
+				inst.Sugar.Infow("chan ended... why?")
+				break
+			}
+			if inst.BatchSend {
+				// add Metrics to the slice of Monitors
+				mslice[i] = m
+			} else {
+				SendMetrics(m)
+			}
+
+		}
+		if inst.BatchSend && c > 0 {
+			SendBatchMetrics(mslice)
+		}
+
 	}
 }
 
 //
-// create slices []Metrics and send they POST /uodates/
+// create slices []Metrics and send they POST /updates/
 //
 func SendBatchMetrics(monitorb []inst.Monitor) {
 
@@ -248,7 +334,6 @@ func SendBatchMetrics(monitorb []inst.Monitor) {
 		log.Fatal(err)
 	}
 	inst.Sugar.Infof("SendBatchMetrics -> count=%d metricsb=%v", c, metricsb)
-	// inst.Sugar.Infof("SendBatchMetrics -> count=%d metricsb=%v", c, string(body))
 
 	//
 	// send json via POST

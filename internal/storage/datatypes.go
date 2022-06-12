@@ -50,25 +50,11 @@ var Gmetricnames = map[string]int{
 	"Sys":           25,
 	"TotalAlloc":    26,
 	"RandomValue":   27,
-	"testSetGet134": 28,
-	"GetSet191":     29,
-	"GetSet238":     30,
-	"GetSet180":     31,
-	"GetSet88":      32,
-	"GetSet217":     33,
-	"GetSet16":      34,
+	"TotalMemory":   28,
+	"FreeMemory":    29,
 }
 var Cmetricnames = map[string]int{
-	"PollCount":    0,
-	"testSetGet33": 1,
-	"GetSet209":    2,
-	"GetSet199":    3,
-	"GetSet201":    4,
-	"GetSet127":    5,
-	"GetSet21":     6,
-	"GetSet203":    7,
-	"GetSet190":    8,
-	"GetSet47":     9,
+	"PollCount": 0,
 }
 var PollInterval = time.Second * 2    // 2
 var ReportInterval = time.Second * 10 //10

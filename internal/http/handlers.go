@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -162,15 +163,35 @@ func UpdateCounterMetric(w http.ResponseWriter, r *http.Request) {
 // Вернуть все метрики
 func GetAllMetrics(w http.ResponseWriter, r *http.Request) {
 
+	// sort Gnames
+	keysG := make([]string, 0, len(inst.Gmetricnames))
+	for k := range inst.Gmetricnames {
+		keysG = append(keysG, k)
+	}
+	sort.Strings(keysG)
+
+	// sort Cnames
+	keysC := make([]string, 0, len(inst.Cmetricnames))
+	for k := range inst.Cmetricnames {
+		keysC = append(keysC, k)
+	}
+	sort.Strings(keysG)
+	sort.Strings(keysC)
+
 	htmlText := "<table border=\"1\">"
-	for key, element := range inst.Gmetricnames {
+	// for key, element := range inst.Gmetricnames {
+	// 	htmlText += fmt.Sprintf("<tr><td>type gauge</td><td> %v</td><td> #%v =</td><td> %f </td></tr>",
+	// 		key, element, sm.GetGMvalue(key))
+	// }
+	for _, key := range keysG {
 		htmlText += fmt.Sprintf("<tr><td>type gauge</td><td> %v</td><td> #%v =</td><td> %f </td></tr>",
-			key, element, sm.GetGMvalue(key))
+			key, inst.Gmetricnames[key], sm.GetGMvalue(key))
 	}
 
-	for key, element := range inst.Cmetricnames {
+	// for key, element := range inst.Cmetricnames {
+	for _, key := range keysC {
 		htmlText += fmt.Sprintf("<tr><td>type counter</td><td> %v</td><td> #%v =</td><td> %d</td></tr>",
-			key, element, sm.GetCMvalue(key))
+			key, inst.Cmetricnames[key], sm.GetCMvalue(key))
 	}
 
 	htmlText += "</table>"
