@@ -92,7 +92,7 @@ func NewMonitorGopsutil(duration time.Duration, chanmonitor chan inst.Monitor) {
 	startLenGmetricnames := len(inst.Gmetricnames)
 	// fill CPUs metrics names
 	for i := 0; i < cpuCounts; i++ {
-		inst.Gmetricnames["CPUutilization"+fmt.Sprint(i)] = startLenGmetricnames + i
+		inst.Gmetricnames["CPUutilization"+fmt.Sprint(i+1)] = startLenGmetricnames + i
 	}
 	m.Gmetrics = make([]inst.Gauge, len(inst.Gmetricnames)+cpuCounts)
 
@@ -116,7 +116,7 @@ func NewMonitorGopsutil(duration time.Duration, chanmonitor chan inst.Monitor) {
 		for i := 0; i < cpuCounts; i++ {
 
 			onecpuutil := cpuutil[i]
-			m.Gmetrics[inst.Gmetricnames["CPUutilization"+fmt.Sprint(i)]] = inst.Gauge(onecpuutil)
+			m.Gmetrics[inst.Gmetricnames["CPUutilization"+fmt.Sprint(i+1)]] = inst.Gauge(onecpuutil)
 		}
 		// Send new collected data to the channel
 
