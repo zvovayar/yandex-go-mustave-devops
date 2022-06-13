@@ -140,6 +140,9 @@ func SendMetrics(m inst.Monitor) {
 
 		v.ID = key
 		v.MType = "gauge"
+		if len(m.Gmetrics) < element+1 {
+			break
+		}
 		v.Value = (*float64)(&m.Gmetrics[element])
 
 		if inst.Key != "" {
@@ -184,6 +187,10 @@ func SendMetrics(m inst.Monitor) {
 	// counter type send
 	for key, element := range inst.Cmetricnames {
 		var v inst.Metrics
+
+		if len(m.Cmetrics) < element+1 {
+			break
+		}
 
 		v.ID = key
 		v.MType = "counter"
@@ -354,6 +361,9 @@ func SendBatchMetrics(monitorb []inst.Monitor) {
 		for key, element := range inst.Gmetricnames {
 			var v inst.Metrics
 
+			if len(monitorb[i].Gmetrics) < element+1 {
+				break
+			}
 			v.ID = key
 			v.MType = "gauge"
 			v.Value = (*float64)(&(monitorb[i].Gmetrics[element]))
@@ -369,6 +379,9 @@ func SendBatchMetrics(monitorb []inst.Monitor) {
 		for key, element := range inst.Cmetricnames {
 			var v inst.Metrics
 
+			if len(monitorb[i].Cmetrics) < element+1 {
+				break
+			}
 			v.ID = key
 			v.MType = "counter"
 			v.Delta = (*int64)(&(monitorb[i].Cmetrics[element]))

@@ -60,7 +60,7 @@ var Cmetricnames = map[string]int{
 }
 var PollInterval = time.Second * 2    // 2
 var ReportInterval = time.Second * 10 //10
-var BufferLength = 10
+var BufferLength = 1
 var ServerAddress = "127.0.0.1:8080"
 var StoreInterval = time.Second * 300 //300
 var StoreFile = "/tmp/devops-metrics-db.json"
