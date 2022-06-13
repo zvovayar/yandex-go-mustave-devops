@@ -84,7 +84,7 @@ func NewMonitor(duration time.Duration, chanmonitor chan inst.Monitor) {
 // begin collect metrics infinitly and send they to the channel
 func NewMonitorGopsutil(duration time.Duration, chanmonitor chan inst.Monitor) {
 	var m inst.Monitor
-	vmem, _ := mem.VirtualMemory()
+
 	cpuCounts, _ := cpu.Counts(false)
 
 	m.Cmetrics = make([]inst.Counter, len(inst.Cmetricnames))
@@ -100,6 +100,8 @@ func NewMonitorGopsutil(duration time.Duration, chanmonitor chan inst.Monitor) {
 
 	for {
 		<-time.After(duration)
+
+		vmem, _ := mem.VirtualMemory()
 
 		// Collect stats
 		m.Gmetrics[inst.Gmetricnames["TotalMemory"]] = inst.Gauge(vmem.Total)
