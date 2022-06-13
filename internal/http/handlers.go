@@ -179,16 +179,11 @@ func GetAllMetrics(w http.ResponseWriter, r *http.Request) {
 	sort.Strings(keysC)
 
 	htmlText := "<table border=\"1\">"
-	// for key, element := range inst.Gmetricnames {
-	// 	htmlText += fmt.Sprintf("<tr><td>type gauge</td><td> %v</td><td> #%v =</td><td> %f </td></tr>",
-	// 		key, element, sm.GetGMvalue(key))
-	// }
 	for _, key := range keysG {
 		htmlText += fmt.Sprintf("<tr><td>type gauge</td><td> %v</td><td> #%v =</td><td> %f </td></tr>",
 			key, inst.Gmetricnames[key], sm.GetGMvalue(key))
 	}
 
-	// for key, element := range inst.Cmetricnames {
 	for _, key := range keysC {
 		htmlText += fmt.Sprintf("<tr><td>type counter</td><td> %v</td><td> #%v =</td><td> %d</td></tr>",
 			key, inst.Cmetricnames[key], sm.GetCMvalue(key))

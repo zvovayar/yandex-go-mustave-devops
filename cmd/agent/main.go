@@ -15,6 +15,7 @@ import (
 func main() {
 
 	inst.Sugar = zap.NewExample().Sugar()
+
 	defer inst.Sugar.Sync()
 
 	config.ConfigAgentInit()

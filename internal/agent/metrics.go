@@ -113,7 +113,6 @@ func NewMonitorGopsutil(duration time.Duration, chanmonitor chan inst.Monitor) {
 		for i := 0; i < cpuCounts; i++ {
 
 			onecpuutil := cpuutil[i]
-			// inst.Gmetricnames["CPUutilization"+fmt.Sprint(i)] =
 			m.Gmetrics[inst.Gmetricnames["CPUutilization"+fmt.Sprint(i)]] = inst.Gauge(onecpuutil)
 		}
 		// Send new collected data to the channel
@@ -152,17 +151,17 @@ func SendMetrics(m inst.Monitor) {
 			log.Fatal(err)
 		}
 
-		inst.Sugar.Infof("v=%v", v)
-		inst.Sugar.Infof("body=%v", string(body))
+		inst.Sugar.Debugf("v=%v", v)
+		inst.Sugar.Debugf("body=%v", string(body))
 
 		var url = fmt.Sprintf("http://%v/update/",
 			inst.ServerAddress)
-		inst.Sugar.Infow(url)
+		inst.Sugar.Debugf(url)
 
 		request, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
 		if err != nil {
 			// обработаем ошибку
-			inst.Sugar.Infow(err.Error())
+			inst.Sugar.Error(err.Error())
 		}
 		request.Header.Set("Content-Type", inst.ContentType)
 
@@ -172,11 +171,11 @@ func SendMetrics(m inst.Monitor) {
 		resp, err := client.Do(request)
 		if err != nil {
 			// обработаем ошибку
-			inst.Sugar.Infow(err.Error())
+			inst.Sugar.Error(err.Error())
 			return
 		}
 		defer resp.Body.Close()
-		inst.Sugar.Infow(resp.Status)
+		inst.Sugar.Debug(resp.Status)
 	}
 
 	// counter type send
@@ -199,17 +198,17 @@ func SendMetrics(m inst.Monitor) {
 			log.Fatal(err)
 		}
 
-		inst.Sugar.Infof("v=%v", v)
-		inst.Sugar.Infof("body=%v", string(body))
+		inst.Sugar.Debugf("v=%v", v)
+		inst.Sugar.Debugf("body=%v", string(body))
 
 		var url = fmt.Sprintf("http://%v/update/",
 			inst.ServerAddress)
-		inst.Sugar.Infow(url)
+		inst.Sugar.Debug(url)
 
 		request, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
 		if err != nil {
 			// обработаем ошибку
-			inst.Sugar.Infow(err.Error())
+			inst.Sugar.Error(err.Error())
 		}
 		request.Header.Set("Content-Type", inst.ContentType)
 
@@ -219,11 +218,11 @@ func SendMetrics(m inst.Monitor) {
 		resp, err := client.Do(request)
 		if err != nil {
 			// обработаем ошибку
-			inst.Sugar.Infow(err.Error())
+			inst.Sugar.Error(err.Error())
 			return
 		}
 		defer resp.Body.Close()
-		inst.Sugar.Infow(resp.Status)
+		inst.Sugar.Debug(resp.Status)
 	}
 }
 
@@ -231,59 +230,103 @@ func SendMetrics(m inst.Monitor) {
 func RunSendMetrics(duration time.Duration, chanmonitor1 chan inst.Monitor, chanmonitor2 chan inst.Monitor) {
 
 	inst.Sugar.Infow("Agent started gorutine for send metrics")
+
+	var M, m inst.Monitor
+	var err bool
+
+	M.Cmetrics = make([]inst.Counter, len(inst.Cmetricnames))
+	M.Gmetrics = make([]inst.Gauge, len(inst.Gmetricnames))
+
 	for {
 		<-time.After(duration)
 
 		// read first chan
-		c := len(chanmonitor1)
-		mslice := make([]inst.Monitor, c)
+		c1 := len(chanmonitor1)
+		c2 := len(chanmonitor2)
+		var C int
+		if c1 > c2 {
+			C = c1
+		} else {
+			C = c2
+		}
 
-		inst.Sugar.Infof("runSendMetrics -> quantity new elements %v\n", c)
-		for i := 0; i < c; i++ {
+		mslice := make([]inst.Monitor, C)
 
-			// read next Monitor from channel
-			m, err := <-chanmonitor1
-			if !err {
-				inst.Sugar.Infow("chan ended... why?")
-				break
+		inst.Sugar.Infof("runSendMetrics -> chanmonitor1 quantity new elements %v\n", c1)
+		inst.Sugar.Infof("runSendMetrics -> chanmonitor2 quantity new elements %v\n", c2)
+
+		for i := 0; i < C; i++ {
+
+			// read next Monitor from channels
+			if i < c1 {
+				m, err = <-chanmonitor1
+				if !err {
+					inst.Sugar.Infow("chanmonitor1 ended... why?")
+					break
+				}
+				// add only first 28 metrics
+				// allocate memory if m > M
+				if len(M.Cmetrics) < len(m.Cmetrics) {
+					x := m.Cmetrics[len(M.Cmetrics)-1 : len(m.Cmetrics)]
+					M.Cmetrics = append(M.Cmetrics, x...)
+				}
+				if len(M.Gmetrics) < len(m.Gmetrics) {
+					x := m.Gmetrics[len(M.Gmetrics)-1 : len(m.Gmetrics)]
+					M.Gmetrics = append(M.Gmetrics, x...)
+				}
+				copy(M.Cmetrics, m.Cmetrics)
+				CopyPartSliceG(M.Gmetrics, m.Gmetrics, 0, 28)
 			}
+			if i < c2 {
+				m, err = <-chanmonitor2
+				if !err {
+					inst.Sugar.Infow("chanmonitor1 ended... why?")
+					break
+				}
+				// allocate memory if m > M
+				if len(M.Cmetrics) < len(m.Cmetrics) {
+					x := m.Cmetrics[len(M.Cmetrics)-1 : len(m.Cmetrics)]
+					M.Cmetrics = append(M.Cmetrics, x...)
+				}
+				if len(M.Gmetrics) < len(m.Gmetrics) {
+					x := m.Gmetrics[len(M.Gmetrics)-1 : len(m.Gmetrics)]
+					M.Gmetrics = append(M.Gmetrics, x...)
+				}
+				copy(M.Cmetrics, m.Cmetrics)
+				CopyPartSliceG(M.Gmetrics, m.Gmetrics, 27, len(M.Gmetrics))
+			}
+
 			if inst.BatchSend {
 				// add Metrics to the slice of Monitors
-				mslice[i] = m
+				mslice[i] = M
 			} else {
-				SendMetrics(m)
+				SendMetrics(M)
 			}
 
 		}
-		if inst.BatchSend && c > 0 {
+		if inst.BatchSend && C > 0 {
 			SendBatchMetrics(mslice)
 		}
 
-		// read first chan
-		c = len(chanmonitor2)
-		mslice = make([]inst.Monitor, c)
+	}
+}
 
-		inst.Sugar.Infof("runSendMetrics -> quantity new elements %v\n", c)
-		for i := 0; i < c; i++ {
+func CopyPartSliceG(sdst []inst.Gauge, ssource []inst.Gauge, begin int, end int) {
 
-			// read next Monitor from channel
-			m, err := <-chanmonitor2
-			if !err {
-				inst.Sugar.Infow("chan ended... why?")
-				break
-			}
-			if inst.BatchSend {
-				// add Metrics to the slice of Monitors
-				mslice[i] = m
-			} else {
-				SendMetrics(m)
-			}
+	inst.Sugar.Debugf("CopyPartSliceG sdst=%v", sdst)
+	inst.Sugar.Debugf("CopyPartSliceG ssource=%v", ssource)
 
-		}
-		if inst.BatchSend && c > 0 {
-			SendBatchMetrics(mslice)
-		}
-
+	if begin < 0 || begin >= len(sdst) {
+		return
+	}
+	if end < begin {
+		return
+	}
+	if end > len(sdst) {
+		end = len(sdst)
+	}
+	for i := begin; i < end && i < len(ssource); i++ {
+		sdst[i] = ssource[i]
 	}
 }
 
@@ -333,7 +376,7 @@ func SendBatchMetrics(monitorb []inst.Monitor) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	inst.Sugar.Infof("SendBatchMetrics -> count=%d metricsb=%v", c, metricsb)
+	inst.Sugar.Debugf("SendBatchMetrics -> count=%d metricsb=%v", c, metricsb)
 
 	//
 	// send json via POST

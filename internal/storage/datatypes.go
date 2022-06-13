@@ -52,13 +52,15 @@ var Gmetricnames = map[string]int{
 	"RandomValue":   27,
 	"TotalMemory":   28,
 	"FreeMemory":    29,
+	"testSetGet134": 30,
 }
 var Cmetricnames = map[string]int{
-	"PollCount": 0,
+	"PollCount":    0,
+	"testSetGet33": 1,
 }
 var PollInterval = time.Second * 2    // 2
 var ReportInterval = time.Second * 10 //10
-var BufferLength = 30
+var BufferLength = 1
 var ServerAddress = "127.0.0.1:8080"
 var StoreInterval = time.Second * 300 //300
 var StoreFile = "/tmp/devops-metrics-db.json"

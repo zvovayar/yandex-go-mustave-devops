@@ -46,13 +46,9 @@ func init() {
 
 	Sugar.Infof("Storage init\n")
 
-	// inst.Sugar.Infof("%v", Cmetricnames)
-	// inst.Sugar.Infof("%v", Gmetricnames)
-	// inst.Sugar.Infof("%+v", StoreMonitor.GetMonitor())
+	Sugar.Infof("%v", Cmetricnames)
+	Sugar.Infof("%v", Gmetricnames)
+	Sugar.Infof("%+v", StoreMonitor.GetMonitor())
 
 	Sugar.Infof("Storage type:%s", reflect.TypeOf(StoreMonitor).Name())
-	// if reflect.TypeOf(StoreMonitor).Name() == "MemStorage" {
-	// 	StoreMonitor.InitMemPStorage(make(chan StoreMem, BufferLength))
-	// }
-	// chanPStoreMem = make(chan StoreMem, BufferLength)
 }
