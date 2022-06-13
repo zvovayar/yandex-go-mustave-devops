@@ -89,13 +89,14 @@ func NewMonitorGopsutil(duration time.Duration, chanmonitor chan inst.Monitor) {
 
 	m.Cmetrics = make([]inst.Counter, len(inst.Cmetricnames))
 
+	startLenGmetricnames := len(inst.Gmetricnames)
 	// fill CPUs metrics names
 	for i := 0; i < cpuCounts; i++ {
-		inst.Gmetricnames["CPUutilization"+fmt.Sprint(i)] = len(m.Gmetrics) + i
+		inst.Gmetricnames["CPUutilization"+fmt.Sprint(i)] = startLenGmetricnames + i
 	}
 	m.Gmetrics = make([]inst.Gauge, len(inst.Gmetricnames)+cpuCounts)
 
-	inst.Sugar.Info(inst.Gmetricnames)
+	inst.Sugar.Debugf("NewMonitorGopsutil: Gmetricnames=%v", inst.Gmetricnames)
 
 	for {
 		<-time.After(duration)
@@ -120,6 +121,8 @@ func NewMonitorGopsutil(duration time.Duration, chanmonitor chan inst.Monitor) {
 		//
 		// TODO for plan B: make MonitorAgent struct and send it
 		//
+		inst.Sugar.Debugf("NewMonitorGopsutil: m=%v send it to chanmonitor", m)
+
 		chanmonitor <- m
 
 	}
@@ -252,16 +255,18 @@ func RunSendMetrics(duration time.Duration, chanmonitor1 chan inst.Monitor, chan
 
 		mslice := make([]inst.Monitor, C)
 
-		inst.Sugar.Infof("runSendMetrics -> chanmonitor1 quantity new elements %v\n", c1)
-		inst.Sugar.Infof("runSendMetrics -> chanmonitor2 quantity new elements %v\n", c2)
+		inst.Sugar.Infof("runSendMetrics -> chanmonitor1 quantity new elements %v", c1)
+		inst.Sugar.Infof("runSendMetrics -> chanmonitor2 quantity new elements %v", c2)
 
 		for i := 0; i < C; i++ {
 
 			// read next Monitor from channels
 			if i < c1 {
+				inst.Sugar.Debugf("RunSendMetrics: read i=%d element from chanmonitor1 ", i)
+
 				m, err = <-chanmonitor1
 				if !err {
-					inst.Sugar.Infow("chanmonitor1 ended... why?")
+					inst.Sugar.Infow("RunSendMetrics: chanmonitor1 ended... why?")
 					break
 				}
 				// add only first 28 metrics
@@ -278,9 +283,10 @@ func RunSendMetrics(duration time.Duration, chanmonitor1 chan inst.Monitor, chan
 				CopyPartSliceG(M.Gmetrics, m.Gmetrics, 0, 28)
 			}
 			if i < c2 {
+				inst.Sugar.Debugf("RunSendMetrics: read i=%d element from chanmonitor2 ", i)
 				m, err = <-chanmonitor2
 				if !err {
-					inst.Sugar.Infow("chanmonitor1 ended... why?")
+					inst.Sugar.Infow("RunSendMetrics: chanmonitor2 ended... why?")
 					break
 				}
 				// allocate memory if m > M
@@ -292,10 +298,12 @@ func RunSendMetrics(duration time.Duration, chanmonitor1 chan inst.Monitor, chan
 					x := m.Gmetrics[len(M.Gmetrics)-1 : len(m.Gmetrics)]
 					M.Gmetrics = append(M.Gmetrics, x...)
 				}
-				copy(M.Cmetrics, m.Cmetrics)
-				CopyPartSliceG(M.Gmetrics, m.Gmetrics, 27, len(M.Gmetrics))
+				// copy(M.Cmetrics, m.Cmetrics)
+				CopyPartSliceG(M.Gmetrics, m.Gmetrics, 28, len(M.Gmetrics))
 			}
-
+			inst.Sugar.Debugf("RunSendMetrics Gmetricnames=%v", inst.Gmetricnames)
+			inst.Sugar.Debugf("RunSendMetrics Cmetricnames=%v", inst.Cmetricnames)
+			inst.Sugar.Debugf("RunSendMetrics M=%v", M)
 			if inst.BatchSend {
 				// add Metrics to the slice of Monitors
 				mslice[i] = M

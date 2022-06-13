@@ -38,7 +38,9 @@ var StoreMonitor MemSQLStorage
 
 func init() {
 
-	Sugar = zap.NewExample().Sugar()
+	// Sugar = zap.NewExample().Sugar()
+	// Sugar = zap.NewNop().Sugar().With(zap.NewDevelopmentConfig())
+	Sugar = (*zap.SugaredLogger)(zap.NewExample().Sugar().With(zap.NewProductionConfig()))
 	defer Sugar.Sync()
 
 	StoreMonitor.GetMonitor().Cmetrics = make([]Counter, len(Cmetricnames))
