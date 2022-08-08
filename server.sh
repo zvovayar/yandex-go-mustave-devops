@@ -1,5 +1,6 @@
 
-export ADDRESS=localhost:44751
+#export ADDRESS=localhost:44751
+export ADDRESS=192.168.0.23:44751
 export REPORT_INTERVAL=10s
 export POLL_INTERVAL=2s
 export RESTORE=false
