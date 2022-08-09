@@ -121,7 +121,32 @@ func TestStoreMem_SetGMvalue(t *testing.T) {
 		fields fields
 		args   args
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Set Frees",
+			fields: fields{
+				monitor: Monitor{
+					Gmetrics: []Gauge{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30},
+					Cmetrics: []Counter{},
+				},
+			},
+			args: args{
+				gmname: "Frees",
+				gm:     5,
+			},
+		},
+		{
+			name: "Set new gmetric",
+			fields: fields{
+				monitor: Monitor{
+					Gmetrics: []Gauge{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30},
+					Cmetrics: []Counter{},
+				},
+			},
+			args: args{
+				gmname: "NewMetric",
+				gm:     53,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -129,6 +154,10 @@ func TestStoreMem_SetGMvalue(t *testing.T) {
 				monitor: tt.fields.monitor,
 			}
 			sm.SetGMvalue(tt.args.gmname, tt.args.gm)
+
+			if sm.monitor.Gmetrics[Gmetricnames[tt.args.gmname]] != tt.args.gm {
+				t.Errorf("Fail set %v value", tt.args.gmname)
+			}
 		})
 	}
 }
@@ -146,7 +175,32 @@ func TestStoreMem_SetCMvalue(t *testing.T) {
 		fields fields
 		args   args
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Set testSetGet33",
+			fields: fields{
+				monitor: Monitor{
+					Gmetrics: []Gauge{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30},
+					Cmetrics: []Counter{1, 2},
+				},
+			},
+			args: args{
+				cmname: "testSetGet33",
+				cm:     5,
+			},
+		},
+		{
+			name: "Set new gmetric",
+			fields: fields{
+				monitor: Monitor{
+					Gmetrics: []Gauge{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30},
+					Cmetrics: []Counter{1, 2},
+				},
+			},
+			args: args{
+				cmname: "NewMetric",
+				cm:     7,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -154,6 +208,13 @@ func TestStoreMem_SetCMvalue(t *testing.T) {
 				monitor: tt.fields.monitor,
 			}
 			sm.SetCMvalue(tt.args.cmname, tt.args.cm)
+
+			if sm.monitor.Cmetrics[Cmetricnames[tt.args.cmname]] != 7 {
+				t.Errorf("Fail set %v value set %v got %v", tt.args.cmname,
+					tt.args.cm,
+					sm.monitor.Cmetrics[Cmetricnames[tt.args.cmname]])
+			}
+
 		})
 	}
 }

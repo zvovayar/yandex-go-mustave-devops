@@ -71,6 +71,10 @@ func (mc *MetricsCrypt) ControlHashMetrics(key string) bool {
 	}
 	k := []byte(key)
 
+	inst.Sugar.Infof("crypt.ControlHashMetrics m=%v mMAC=%v k=%v",
+		string(m),
+		hex.EncodeToString(mMAC),
+		string(k))
 	return ValidMAC(m, mMAC, k)
 
 }
