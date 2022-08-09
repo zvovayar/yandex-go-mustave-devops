@@ -17,16 +17,29 @@ func TestStoreMem_GetGMvalue(t *testing.T) {
 		args   args
 		want   Gauge
 	}{
-		{ // TODO: Add test cases.
+		{
 			name: "Get testSetGet134",
 			fields: fields{
 				monitor: Monitor{
-					Gmetrics: []Gauge{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 0},
+					Gmetrics: []Gauge{1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30},
 					Cmetrics: []Counter{0, 1},
 				},
 			},
 			args: args{
 				gmname: "testSetGet134",
+			},
+			want: 30,
+		},
+		{
+			name: "Get testSetGet13 (unrecognized)",
+			fields: fields{
+				monitor: Monitor{
+					Gmetrics: []Gauge{1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30},
+					Cmetrics: []Counter{0, 1},
+				},
+			},
+			args: args{
+				gmname: "testSetGet13",
 			},
 			want: 0,
 		},
@@ -56,7 +69,32 @@ func TestStoreMem_GetCMvalue(t *testing.T) {
 		args   args
 		want   Counter
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Get testSetGet33",
+			fields: fields{
+				monitor: Monitor{
+					Gmetrics: []Gauge{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 10},
+					Cmetrics: []Counter{0, 1},
+				},
+			},
+			args: args{
+				cmname: "testSetGet33",
+			},
+			want: 1,
+		},
+		{
+			name: "Get testSetGet3 (unrecognized)",
+			fields: fields{
+				monitor: Monitor{
+					Gmetrics: []Gauge{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 10},
+					Cmetrics: []Counter{1, 2},
+				},
+			},
+			args: args{
+				cmname: "testSetGet3",
+			},
+			want: 0,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
