@@ -1,6 +1,9 @@
 package main
 
 import (
+	"log"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"syscall"
@@ -11,6 +14,8 @@ import (
 
 	"go.uber.org/zap"
 )
+
+const pprofAddr = ":8082"
 
 func main() {
 
@@ -29,6 +34,12 @@ func main() {
 	go agent.NewMonitorGopsutil(inst.PollInterval, chanmGopsutil)
 
 	go agent.RunSendMetrics(inst.ReportInterval, chanm, chanmGopsutil)
+
+	// start profiler
+	// go http.ListenAndServe(pprofAddr, nil)
+	go func() {
+		log.Println(http.ListenAndServe(pprofAddr, nil))
+	}()
 
 	sig := <-chanOS
 	inst.Sugar.Infof("INFO got a signal '%v', start shutting down...", sig) // put breakpoint here

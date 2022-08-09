@@ -100,6 +100,7 @@ func (mps *MemSQLStorage) GetCMvalue(cmname string) Counter {
 
 // mirror StoreMem interface + persistance function
 func (mps *MemSQLStorage) SetGMvalue(gmname string, gm Gauge) {
+
 	mps.sm.SetGMvalue(gmname, gm)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -111,8 +112,9 @@ func (mps *MemSQLStorage) SetGMvalue(gmname string, gm Gauge) {
 	m.ID = gmname
 	m.MType = "gauge"
 
+	// if _, err := mps.db.NamedExec(`INSERT INTO metrics (id, mtype, delta, value)
 	if _, err := mps.db.NamedExecContext(ctx, `INSERT INTO metrics (id, mtype, delta, value)
-		VALUES (:id, :mtype, :delta, :value)`, m); err != nil {
+	VALUES (:id, :mtype, :delta, :value)`, m); err != nil {
 		Sugar.Infow("SetGMvalue " + err.Error())
 		return
 	}
@@ -121,6 +123,7 @@ func (mps *MemSQLStorage) SetGMvalue(gmname string, gm Gauge) {
 
 // mirror StoreMem interface + persistance function
 func (mps *MemSQLStorage) SetCMvalue(cmname string, cm Counter) {
+
 	mps.sm.SetCMvalue(cmname, cm)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -132,6 +135,7 @@ func (mps *MemSQLStorage) SetCMvalue(cmname string, cm Counter) {
 	m.ID = cmname
 	m.MType = "counter"
 
+	// if _, err := mps.db.NamedExec(`INSERT INTO metrics (id, mtype, delta, value)
 	if _, err := mps.db.NamedExecContext(ctx, `INSERT INTO metrics (id, mtype, delta, value)
 		VALUES (:id, :mtype, :delta, :value)`, m); err != nil {
 		Sugar.Infow("SetCMvalue " + err.Error())
@@ -194,11 +198,7 @@ func (mps *MemSQLStorage) CheckAndCreateMDatabase(ctx context.Context) error {
 }
 
 func (mps *MemSQLStorage) SaveBatch(ctx context.Context, batchM []Metrics) error {
-	//
-	// use: sqlx
-	// cars := []Cars{
-	// 	{},
-	// }
+
 	c := len(batchM)
 	for i := 0; i < c; i++ {
 		if batchM[i].MType == "gauge" {
@@ -208,7 +208,10 @@ func (mps *MemSQLStorage) SaveBatch(ctx context.Context, batchM []Metrics) error
 		}
 	}
 
-	if _, err := mps.db.NamedExec(`INSERT INTO metrics (id, mtype, delta, value)
+	ctxt, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	if _, err := mps.db.NamedExecContext(ctxt, `INSERT INTO metrics (id, mtype, delta, value)
 			VALUES (:id, :mtype, :delta, :value)`, batchM); err != nil {
 		Sugar.Infow("SaveBatch " + err.Error())
 		return err

@@ -203,8 +203,6 @@ func SendMetrics(m inst.Monitor) {
 			v.Hash = mc.MakeHashMetrics(inst.Key)
 		}
 
-		// inst.Sugar.Infof("agent.SendMetrics v.Hash=%v", v.Hash)
-
 		body, err := json.Marshal(v)
 		if err != nil {
 			log.Fatal(err)
@@ -347,9 +345,7 @@ func CopyPartSliceG(sdst []inst.Gauge, ssource []inst.Gauge, begin int, end int)
 	}
 }
 
-//
 // create slices []Metrics and send they POST /updates/
-//
 func SendBatchMetrics(monitorb []inst.Monitor) {
 
 	var mc crypt.MetricsCrypt

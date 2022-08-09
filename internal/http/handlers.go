@@ -389,10 +389,8 @@ func GetMvalueJSON(w http.ResponseWriter, r *http.Request) {
 }
 
 // Сохранение пакета метрик
+// like UpdateMetricJSON, but with slice json
 func UpdateMetricBatch(w http.ResponseWriter, r *http.Request) {
-	//
-	// like UpdateMetricJSON, but with slice json
-	//
 	var mbatch []inst.Metrics
 
 	// decode json form r.Body and init v
@@ -401,7 +399,6 @@ func UpdateMetricBatch(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 		return
 	}
-	//inst.Sugar.Infof("UpdateMetricBatch mbatch=%v", mbatch)
 
 	// save batch
 	if err := sm.SaveBatch(r.Context(), mbatch); err != nil {
