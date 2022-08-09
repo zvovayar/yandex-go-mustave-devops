@@ -41,7 +41,7 @@ func (sm *StoreMem) SetGMvalue(gmname string, gm Gauge) {
 		// сделать добавление новой метрики
 		Gmetricnames[gmname] = len(Gmetricnames)
 		StoreMonitor.GetMonitor().Gmetrics = append(StoreMonitor.GetMonitor().Gmetrics, gm)
-		sm.monitor.Gmetrics = append(sm.monitor.Gmetrics, gm)
+		// sm.monitor.Gmetrics = append(sm.monitor.Gmetrics, gm)
 		return
 	}
 	sm.monitor.Gmetrics[Gmetricnames[gmname]] = gm
@@ -55,7 +55,7 @@ func (sm *StoreMem) SetCMvalue(cmname string, cm Counter) {
 		// сделать добавление новой метрики
 		Cmetricnames[cmname] = len(Cmetricnames)
 		StoreMonitor.GetMonitor().Cmetrics = append(StoreMonitor.GetMonitor().Cmetrics, cm)
-		sm.monitor.Cmetrics = append(sm.monitor.Cmetrics, cm)
+		// sm.monitor.Cmetrics = append(sm.monitor.Cmetrics, cm)
 		return
 	}
 	sm.monitor.Cmetrics[Cmetricnames[cmname]] += cm
