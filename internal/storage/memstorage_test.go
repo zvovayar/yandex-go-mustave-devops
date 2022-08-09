@@ -17,7 +17,19 @@ func TestStoreMem_GetGMvalue(t *testing.T) {
 		args   args
 		want   Gauge
 	}{
-		// TODO: Add test cases.
+		{ // TODO: Add test cases.
+			name: "Get testSetGet134",
+			fields: fields{
+				monitor: Monitor{
+					Gmetrics: []Gauge{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 0},
+					Cmetrics: []Counter{0, 1},
+				},
+			},
+			args: args{
+				gmname: "testSetGet134",
+			},
+			want: 0,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
