@@ -335,7 +335,7 @@ func GetMvalueJSON(w http.ResponseWriter, r *http.Request) {
 	// inst.Sugar.Infow(r.Body)
 	if err := json.NewDecoder(r.Body).Decode(&v); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		log.Fatal(err)
+		log.Print(err)
 		return
 	}
 	inst.Sugar.Infof("v=%v", v)

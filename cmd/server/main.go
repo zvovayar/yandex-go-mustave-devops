@@ -30,6 +30,7 @@ func main() {
 	// зададим встроенные middleware, чтобы улучшить стабильность приложения
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
+
 	// so mach information, switch ON only for debug
 	// r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
@@ -38,11 +39,11 @@ func main() {
 	r.Use(middleware.Compress(5, "application/json", "html/text", "text/plain", "text/html"))
 
 	// GET requests
-	//http.HandleFunc("/", http.NotFound)
 	r.Get("/", inhttp.GetAllMetrics)
 	r.Get("/value/gauge/{GMname}", inhttp.GetGMvalue)
 	r.Get("/value/counter/{CMname}", inhttp.GetCMvalue)
 	r.Get("/ping", inhttp.PingStorage)
+
 	// POST requests update, get
 	r.Post("/value", inhttp.GetMvalueJSON)
 	r.Post("/update", inhttp.UpdateMetricJSON)
