@@ -25,6 +25,16 @@ func (mps *MemSQLStorage) GetMonitor() *Monitor {
 	return &(mps.sm.monitor)
 }
 
+func (mps *MemSQLStorage) OpenDB() error {
+	var err error
+	mps.db, err = sqlx.Open("postgres", DatabaseDSN)
+	if err != nil {
+		Sugar.Infow(err.Error())
+		return err
+	}
+	return nil
+}
+
 func (mps *MemSQLStorage) InitMemSQLStorage(ch chan StoreMem) chan StoreMem {
 	// ch := make(chan StoreMem, BufferLength)
 	mps.chanPStoreMem = ch
@@ -63,12 +73,21 @@ func (mps *MemSQLStorage) NewPersistanceStorage() error {
 
 func (mps *MemSQLStorage) PingSQLserver(ctx context.Context) error {
 
+	if mps.db == nil {
+		var err error
+		mps.db, err = sqlx.Open("postgres", DatabaseDSN)
+		if err != nil {
+			Sugar.Infow(err.Error())
+		}
+		defer mps.db.Close()
+	}
+
 	Sugar.Infof("PingSQLserver try for open connections=%v", mps.db.DB.Stats().OpenConnections)
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
 	if err := mps.db.PingContext(ctx); err != nil {
-		Sugar.Infow("PingSQLserver PingContext error " + err.Error())
+		Sugar.Infow("PingSQLserver PingSQLserver error " + err.Error())
 		return err
 	}
 	Sugar.Infof("PingSQLserver success DSN=%v", DatabaseDSN)
@@ -77,11 +96,10 @@ func (mps *MemSQLStorage) PingSQLserver(ctx context.Context) error {
 
 func (mps *MemSQLStorage) ClosePersistanceStorage() error {
 
-	//
-	// TODO close database
-	//
-
-	return fmt.Errorf("MemSQLStorage.ClosePersistanceStorage not implemented")
+	if err := mps.db.Close(); err != nil {
+		return fmt.Errorf("MemSQLStorage.ClosePersistanceStorage: %v", err.Error())
+	}
+	return nil
 }
 
 // mirror StoreMem interface

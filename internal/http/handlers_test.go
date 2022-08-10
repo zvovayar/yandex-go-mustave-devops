@@ -2,13 +2,27 @@ package http
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
+	"github.com/go-chi/chi/v5"
 	inst "github.com/zvovayar/yandex-go-mustave-devops/internal/storage"
 )
+
+func TestMain(m *testing.M) {
+	fmt.Print("TestMain run\n")
+
+	// config test database URI
+	inst.DatabaseDSN = "postgres://postgres:qweasd@localhost:5432/yandex?sslmode=disable"
+	inst.StoreMonitor.OpenDB()
+	os.Exit(m.Run())
+
+}
 
 func TestGetAllMetrics(t *testing.T) {
 	// Создаем запрос с указанием нашего хендлера. Нам не нужно
@@ -247,4 +261,330 @@ func BenchmarkGetAllMetrics(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		handler.ServeHTTP(rr, req)
 	}
+}
+
+func TestPingStorage(t *testing.T) {
+
+	// init httptest parameters
+	handler := http.HandlerFunc(PingStorage)
+
+	expected := `<h1>Ping database OK</h1>DSN=postgres://postgres:qweasd@localhost:5432/yandex?sslmode=disable`
+	expectedStatus := http.StatusOK
+
+	req, err := http.NewRequest("GET", "/ping", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+
+	// run test
+	handler.ServeHTTP(rr, req)
+
+	// results
+	if status := rr.Code; status != expectedStatus {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+
+	if rr.Body.String() != expected {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			rr.Body.String(), expected)
+	}
+
+}
+
+func TestUpdateMetricJSON(t *testing.T) {
+
+	// init httptest parameters
+	// test counter
+	handler := http.HandlerFunc(UpdateMetricJSON)
+	v := inst.Metrics{
+		ID:    "testSetGet33",
+		MType: "counter",
+		Delta: new(int64),
+		Value: new(float64),
+		Hash:  "",
+	}
+	*v.Delta = 554
+
+	expected := `<h1>Counter metric</h1>testSetGet33`
+	expectedStatus := http.StatusOK
+
+	buf, _ := json.Marshal(v)
+	b := bytes.NewBuffer(buf)
+
+	req, err := http.NewRequest("POST", "/update", b)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+
+	// run test
+	handler.ServeHTTP(rr, req)
+
+	// results
+	if status := rr.Code; status != expectedStatus {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+
+	if rr.Body.String() != expected {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			rr.Body.String(), expected)
+	}
+
+	// test counter
+	handler = http.HandlerFunc(UpdateMetricJSON)
+	v = inst.Metrics{
+		ID:    "RandomValue",
+		MType: "gauge",
+		Delta: new(int64),
+		Value: new(float64),
+		Hash:  "",
+	}
+	*v.Value = 0.987654321
+
+	expected = `<h1>Gauge metric</h1>RandomValue`
+	expectedStatus = http.StatusOK
+
+	buf, _ = json.Marshal(v)
+	b = bytes.NewBuffer(buf)
+
+	req, err = http.NewRequest("POST", "/update", b)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr = httptest.NewRecorder()
+
+	// run test
+	handler.ServeHTTP(rr, req)
+
+	// results
+	if status := rr.Code; status != expectedStatus {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+
+	if rr.Body.String() != expected {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			rr.Body.String(), expected)
+	}
+
+	// bad mtype
+	handler = http.HandlerFunc(UpdateMetricJSON)
+	v = inst.Metrics{
+		ID:    "RandomValue",
+		MType: "gaugex",
+		Delta: new(int64),
+		Value: new(float64),
+		Hash:  "",
+	}
+	*v.Value = 0.987654321
+
+	expected = `<h1>Unknown metric type</h1>gaugex`
+	expectedStatus = 400
+
+	buf, _ = json.Marshal(v)
+	b = bytes.NewBuffer(buf)
+
+	req, err = http.NewRequest("POST", "/update", b)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr = httptest.NewRecorder()
+
+	// run test
+	handler.ServeHTTP(rr, req)
+
+	// results
+	if status := rr.Code; status != expectedStatus {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+
+	if rr.Body.String() != expected {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			rr.Body.String(), expected)
+	}
+
+}
+
+func TestUpdateMetricBatch(t *testing.T) {
+	// init httptest parameters
+	// test counter
+	handler := http.HandlerFunc(UpdateMetricBatch)
+
+	v := []inst.Metrics{
+		{
+			ID:    "RandomValue",
+			MType: "gauge",
+			Delta: new(int64),
+			Value: new(float64),
+			Hash:  "",
+		},
+		{
+			ID:    "testSetGet33",
+			MType: "counter",
+			Delta: new(int64),
+			Value: new(float64),
+			Hash:  "",
+		},
+		{
+			ID:    "testSetGet33132",
+			MType: "counter",
+			Delta: new(int64),
+			Value: new(float64),
+			Hash:  "",
+		},
+	}
+
+	expected := ``
+	expectedStatus := http.StatusOK
+
+	buf, _ := json.Marshal(v)
+	b := bytes.NewBuffer(buf)
+
+	req, err := http.NewRequest("POST", "/updates", b)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+
+	// run test
+	handler.ServeHTTP(rr, req)
+
+	// results
+	if status := rr.Code; status != expectedStatus {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+
+	if rr.Body.String() != expected {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			rr.Body.String(), expected)
+	}
+}
+
+func TestGetGMvalue(t *testing.T) {
+	// init httptest parameters
+	// test good request
+	handler := http.HandlerFunc(GetGMvalue)
+
+	rctx := chi.NewRouteContext()
+	rctx.URLParams.Add("GMname", "RandomValue")
+
+	expected := `0`
+	expectedStatus := http.StatusOK
+
+	r, _ := http.NewRequest("GET", "/value/gauge/{GMname}", nil)
+	r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
+
+	rr := httptest.NewRecorder()
+
+	// run test
+	handler.ServeHTTP(rr, r)
+
+	// results
+	if status := rr.Code; status != expectedStatus {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+
+	if rr.Body.String() != expected {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			rr.Body.String(), expected)
+	}
+
+	// test bad request
+	handler = http.HandlerFunc(GetGMvalue)
+
+	rctx = chi.NewRouteContext()
+	rctx.URLParams.Add("GMname", "RandomValue1")
+
+	expected = `<h1>404 Gauge metric not found</h1>`
+	expectedStatus = http.StatusNotFound
+
+	r, _ = http.NewRequest("GET", "/value/gauge/{GMname}", nil)
+	r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
+
+	rr = httptest.NewRecorder()
+
+	// run test
+	handler.ServeHTTP(rr, r)
+
+	// results
+	if status := rr.Code; status != expectedStatus {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+
+	if rr.Body.String() != expected {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			rr.Body.String(), expected)
+	}
+
+}
+
+func TestGetCMvalue(t *testing.T) {
+	// test good request
+	handler := http.HandlerFunc(GetCMvalue)
+
+	rctx := chi.NewRouteContext()
+	rctx.URLParams.Add("CMname", "testSetGet33")
+
+	expected := `0`
+	expectedStatus := http.StatusOK
+
+	r, _ := http.NewRequest("GET", "/value/counter/{CMname}", nil)
+	r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
+
+	rr := httptest.NewRecorder()
+
+	// run test
+	handler.ServeHTTP(rr, r)
+
+	// results
+	if status := rr.Code; status != expectedStatus {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+
+	if rr.Body.String() != expected {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			rr.Body.String(), expected)
+	}
+
+	// test bad request
+	handler = http.HandlerFunc(GetCMvalue)
+
+	rctx = chi.NewRouteContext()
+	rctx.URLParams.Add("CMname", "RandomValue1")
+
+	expected = `<h1>404 Counter metric not found</h1>`
+	expectedStatus = http.StatusNotFound
+
+	r, _ = http.NewRequest("GET", "/value/counter/{CMname}", nil)
+	r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
+
+	rr = httptest.NewRecorder()
+
+	// run test
+	handler.ServeHTTP(rr, r)
+
+	// results
+	if status := rr.Code; status != expectedStatus {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+
+	if rr.Body.String() != expected {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			rr.Body.String(), expected)
+	}
+
 }

@@ -31,9 +31,7 @@ type PersistanceStorage interface {
 //
 // var StoreMonitor MemPStorage
 
-//
 // Ucomment if you want SQL databse storage
-//
 var StoreMonitor MemSQLStorage
 
 func init() {
@@ -46,7 +44,7 @@ func init() {
 	StoreMonitor.GetMonitor().Cmetrics = make([]Counter, len(Cmetricnames))
 	StoreMonitor.GetMonitor().Gmetrics = make([]Gauge, len(Gmetricnames))
 
-	Sugar.Infof("Storage init\n")
+	Sugar.Infof("Storage init")
 
 	Sugar.Infof("%v", Cmetricnames)
 	Sugar.Infof("%v", Gmetricnames)
