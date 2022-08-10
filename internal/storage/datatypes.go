@@ -21,6 +21,7 @@ type Monitor struct {
 	Cmetrics []Counter
 }
 
+// vocabulary of start gauge metric names
 var Gmetricnames = map[string]int{
 	"Alloc":         0,
 	"BuckHashSys":   1,
@@ -54,10 +55,14 @@ var Gmetricnames = map[string]int{
 	"FreeMemory":    29,
 	"testSetGet134": 30,
 }
+
+// vocabulary of start counter metric names
 var Cmetricnames = map[string]int{
 	"PollCount":    0,
 	"testSetGet33": 1,
 }
+
+// default config values
 var PollInterval = time.Second * 2    // 2
 var ReportInterval = time.Second * 10 //10
 var BufferLength = 1
@@ -69,7 +74,8 @@ var Key = ""
 var DatabaseDSN = ""
 var BatchSend = true
 
-//var ContentType = "text/plain"
+// default content type
 var ContentType = "application/json"
 
+// main logger
 var Sugar *zap.SugaredLogger

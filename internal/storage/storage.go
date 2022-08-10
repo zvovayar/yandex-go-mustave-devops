@@ -31,7 +31,7 @@ type PersistanceStorage interface {
 //
 // var StoreMonitor MemPStorage
 
-// Ucomment if you want SQL databse storage
+// main SQL databse storage
 var StoreMonitor MemSQLStorage
 
 func init() {

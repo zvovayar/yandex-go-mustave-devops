@@ -1,3 +1,17 @@
+// main for agent
+// parameters:
+// environment variables
+// ADDRESS=192.168.0.23:44751
+// REPORT_INTERVAL=1s
+// POLL_INTERVAL=1s
+// KEY=/tmp/zK3deX0
+// flags:
+// -a address to bind on
+// -k key for hash calculate
+// -r report interval
+// -p poll interval
+// -B batch send data
+// Agent collect metrics and send to the server
 package main
 
 import (

@@ -1,3 +1,22 @@
+// main start point for server
+// environment variables:
+// ADDRESS=0.0.0.0:44751
+// REPORT_INTERVAL=10s
+// POLL_INTERVAL=2s
+// RESTORE=false
+// SHUTDOWN_TIMEOUT=5s
+// STORE_INTERVAL=10s
+// STORE_FILE=./devops-metrics-db.json
+// RESTORE=true
+// KEY=secret
+// DATABASE_DSN=postgres://postgres:password@localhost:5432/dbname?sslmode=disable
+// flags:
+// -a "address to listen on"
+// -k "key for hash calculate"
+// -i "store interval"
+// -f "store file"
+// -r "restore from file on start"
+// -d "Database DSN"
 package main
 
 import (
@@ -17,7 +36,27 @@ import (
 	"go.uber.org/zap"
 )
 
+// profiler port
 const pprofAddr = ":8083"
+
+// @Title BucketStorage API
+// @Description Сервис хранения данных bucket-ов.
+// @Version 1.0
+
+// @Contact.email support@ultimatestore.io
+
+// @BasePath /api/v1
+// @Host ultimatestore.io:8080
+
+// @SecurityDefinitions.apikey ApiKeyAuth
+// @In header
+// @Name authorization
+
+// @Tag.name Info
+// @Tag.description "Группа запросов состояния сервиса"
+
+// @Tag.name Storage
+// @Tag.description "Группа для работы с данными внутри bucket-ов"
 
 func main() {
 	inst.Sugar = zap.NewExample().Sugar()

@@ -17,7 +17,7 @@ import (
 
 var sm inst.Storage = &inst.StoreMonitor
 
-// Не реализовано
+// Not implemented stub
 func NotImplemented(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 	_, err := w.Write([]byte("<h1>Not implemented</h1> length="))
@@ -27,7 +27,7 @@ func NotImplemented(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// Ping Storage
+// Ping database Storage
 func PingStorage(w http.ResponseWriter, r *http.Request) {
 
 	if errp := inst.StoreMonitor.PingSQLserver(r.Context()); errp == nil {
@@ -47,7 +47,7 @@ func PingStorage(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// Сохранение метрики  Gauge
+// Save Gauge metric
 func UpdateGaugeMetric(w http.ResponseWriter, r *http.Request) {
 
 	ss := strings.Split(r.URL.Path, "/")
@@ -104,7 +104,7 @@ func UpdateGaugeMetric(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Сохранение метрики Counter
+// Save Counter metric
 func UpdateCounterMetric(w http.ResponseWriter, r *http.Request) {
 	ss := strings.Split(r.URL.Path, "/")
 	cmnamechi := chi.URLParam(r, "CMname")
@@ -161,7 +161,6 @@ func UpdateCounterMetric(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Вернуть все метрики
 func GetAllMetrics(w http.ResponseWriter, r *http.Request) {
 
 	// sort Gnames
@@ -200,7 +199,7 @@ func GetAllMetrics(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// Вернуть одну метрику Gauge
+// Get one metric gauge
 func GetGMvalue(w http.ResponseWriter, r *http.Request) {
 
 	if _, ok := inst.Gmetricnames[chi.URLParam(r, "GMname")]; !ok {
@@ -221,7 +220,7 @@ func GetGMvalue(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Вернуть одну метрику Counter
+// Get one metric Counter
 func GetCMvalue(w http.ResponseWriter, r *http.Request) {
 
 	if _, ok := inst.Cmetricnames[chi.URLParam(r, "CMname")]; !ok {
@@ -242,7 +241,7 @@ func GetCMvalue(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Сохранение одной метрики из JSON
+// Save one metric from JSON
 func UpdateMetricJSON(w http.ResponseWriter, r *http.Request) {
 	var v inst.Metrics
 	var cmname string
@@ -326,7 +325,7 @@ func UpdateMetricJSON(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// Вернуть одну метрику в JSON
+// get one metric in JSON
 func GetMvalueJSON(w http.ResponseWriter, r *http.Request) {
 
 	var v inst.Metrics
@@ -389,8 +388,8 @@ func GetMvalueJSON(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// Сохранение пакета метрик
-// like UpdateMetricJSON, but with slice json
+// save batch of metrics
+// like UpdateMetricJSON, but with slice in json
 func UpdateMetricBatch(w http.ResponseWriter, r *http.Request) {
 	var mbatch []inst.Metrics
 
