@@ -20,6 +20,7 @@ func TestMain(m *testing.M) {
 	// config test database URI
 	inst.DatabaseDSN = "postgres://postgres:qweasd@localhost:5432/yandex?sslmode=disable"
 	inst.StoreMonitor.OpenDB()
+	// inst.StoreMonitor.LoadData()
 	os.Exit(m.Run())
 
 }
@@ -157,7 +158,7 @@ func TestGetMvalueJSON(t *testing.T) {
 
 	if status := rr.Code; status != expectedStatus {
 		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
+			status, expectedStatus)
 	}
 
 	if rr.Body.String() != expected {
@@ -191,7 +192,7 @@ func TestGetMvalueJSON(t *testing.T) {
 
 	if status := rr.Code; status != expectedStatus {
 		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
+			status, expectedStatus)
 	}
 
 	if rr.Body.String() != expected {
@@ -217,7 +218,7 @@ func TestGetMvalueJSON(t *testing.T) {
 
 	if status := rr.Code; status != expectedStatus {
 		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
+			status, expectedStatus)
 	}
 }
 func TestNotImplemented(t *testing.T) {
@@ -242,24 +243,13 @@ func TestNotImplemented(t *testing.T) {
 	// Проверяем код
 	if status := rr.Code; status != http.StatusNotImplemented {
 		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
+			status, http.StatusNotImplemented)
 	}
 
 	// Проверяем тело ответа
 	if rr.Body.String() != expected {
 		t.Errorf("handler returned unexpected body: got %v want %v",
 			rr.Body.String(), expected)
-	}
-}
-
-func BenchmarkGetAllMetrics(b *testing.B) {
-
-	req, _ := http.NewRequest("GET", "/", nil)
-	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(GetAllMetrics)
-
-	for i := 0; i < b.N; i++ {
-		handler.ServeHTTP(rr, req)
 	}
 }
 
@@ -284,7 +274,7 @@ func TestPingStorage(t *testing.T) {
 	// results
 	if status := rr.Code; status != expectedStatus {
 		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
+			status, expectedStatus)
 	}
 
 	if rr.Body.String() != expected {
@@ -327,7 +317,7 @@ func TestUpdateMetricJSON(t *testing.T) {
 	// results
 	if status := rr.Code; status != expectedStatus {
 		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
+			status, expectedStatus)
 	}
 
 	if rr.Body.String() != expected {
@@ -365,7 +355,7 @@ func TestUpdateMetricJSON(t *testing.T) {
 	// results
 	if status := rr.Code; status != expectedStatus {
 		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
+			status, expectedStatus)
 	}
 
 	if rr.Body.String() != expected {
@@ -403,7 +393,7 @@ func TestUpdateMetricJSON(t *testing.T) {
 	// results
 	if status := rr.Code; status != expectedStatus {
 		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
+			status, expectedStatus)
 	}
 
 	if rr.Body.String() != expected {
@@ -461,7 +451,7 @@ func TestUpdateMetricBatch(t *testing.T) {
 	// results
 	if status := rr.Code; status != expectedStatus {
 		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
+			status, expectedStatus)
 	}
 
 	if rr.Body.String() != expected {
@@ -492,7 +482,7 @@ func TestGetGMvalue(t *testing.T) {
 	// results
 	if status := rr.Code; status != expectedStatus {
 		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
+			status, expectedStatus)
 	}
 
 	if rr.Body.String() != expected {
@@ -520,7 +510,7 @@ func TestGetGMvalue(t *testing.T) {
 	// results
 	if status := rr.Code; status != expectedStatus {
 		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
+			status, expectedStatus)
 	}
 
 	if rr.Body.String() != expected {
@@ -537,7 +527,7 @@ func TestGetCMvalue(t *testing.T) {
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("CMname", "testSetGet33")
 
-	expected := `0`
+	expected := `554`
 	expectedStatus := http.StatusOK
 
 	r, _ := http.NewRequest("GET", "/value/counter/{CMname}", nil)
@@ -551,7 +541,7 @@ func TestGetCMvalue(t *testing.T) {
 	// results
 	if status := rr.Code; status != expectedStatus {
 		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
+			status, expectedStatus)
 	}
 
 	if rr.Body.String() != expected {
@@ -579,12 +569,149 @@ func TestGetCMvalue(t *testing.T) {
 	// results
 	if status := rr.Code; status != expectedStatus {
 		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
+			status, expectedStatus)
 	}
 
 	if rr.Body.String() != expected {
 		t.Errorf("handler returned unexpected body: got %v want %v",
 			rr.Body.String(), expected)
 	}
+
+}
+
+func TestUpdateGaugeMetric(t *testing.T) {
+	// init httptest parameters
+	// test good request
+	handler := http.HandlerFunc(UpdateGaugeMetric)
+
+	rctx := chi.NewRouteContext()
+	rctx.URLParams.Add("GMname", "RandomValue")
+	rctx.URLParams.Add("GMvalue", "0.55555")
+
+	expected := `<h1>Gauge metric</h1>RandomValue0.55555`
+	expectedStatus := http.StatusOK
+
+	r, _ := http.NewRequest("POST", "/update/gauge/{GMname}/{GMvalue}", nil)
+	r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
+
+	rr := httptest.NewRecorder()
+
+	// run test
+	handler.ServeHTTP(rr, r)
+
+	// results
+	if status := rr.Code; status != expectedStatus {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, expectedStatus)
+	}
+
+	if rr.Body.String() != expected {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			rr.Body.String(), expected)
+	}
+
+	// test bad request
+	handler = http.HandlerFunc(UpdateGaugeMetric)
+
+	rctx = chi.NewRouteContext()
+	rctx.URLParams.Add("GMname", "RandomValue1")
+	rctx.URLParams.Add("GMvalue", "0.55555")
+
+	expected = `<h1>Gauge metric not found</h1>`
+	expectedStatus = http.StatusNotFound
+
+	r, _ = http.NewRequest("POST", "/update/gauge/{GMname}/{GMvalue}", nil)
+	r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
+
+	rr = httptest.NewRecorder()
+
+	// run test
+	handler.ServeHTTP(rr, r)
+
+	// results
+	if status := rr.Code; status != expectedStatus {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, expectedStatus)
+	}
+
+	if rr.Body.String() != expected {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			rr.Body.String(), expected)
+	}
+}
+
+func TestUpdateCounterMetric(t *testing.T) {
+	// init httptest parameters
+	// test good request
+	handler := http.HandlerFunc(UpdateCounterMetric)
+
+	rctx := chi.NewRouteContext()
+	rctx.URLParams.Add("CMname", "testSetGet33")
+	rctx.URLParams.Add("CMvalue", "55555")
+
+	expected := `<h1>Counter metric</h1>testSetGet3355555`
+	expectedStatus := http.StatusOK
+
+	r, _ := http.NewRequest("POST", "/update/counter/{CMname}/{CMvalue}", nil)
+	r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
+
+	rr := httptest.NewRecorder()
+
+	// run test
+	handler.ServeHTTP(rr, r)
+
+	// results
+	if status := rr.Code; status != expectedStatus {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, expectedStatus)
+	}
+
+	if rr.Body.String() != expected {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			rr.Body.String(), expected)
+	}
+
+	// test bad request
+	handler = http.HandlerFunc(UpdateCounterMetric)
+
+	rctx = chi.NewRouteContext()
+	rctx.URLParams.Add("CMname", "RandomValue1")
+	rctx.URLParams.Add("CMvalue", "55555")
+
+	expected = `<h1>Counter metric not found</h1>`
+	expectedStatus = http.StatusNotFound
+
+	r, _ = http.NewRequest("POST", "/update/counter/{CMname}/{CMvalue}", nil)
+	r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
+
+	rr = httptest.NewRecorder()
+
+	// run test
+	handler.ServeHTTP(rr, r)
+
+	// results
+	if status := rr.Code; status != expectedStatus {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, expectedStatus)
+	}
+
+	if rr.Body.String() != expected {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			rr.Body.String(), expected)
+	}
+}
+
+func BenchmarkGetAllMetrics(b *testing.B) {
+
+	req, _ := http.NewRequest("GET", "/", nil)
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(GetAllMetrics)
+
+	for i := 0; i < b.N; i++ {
+		handler.ServeHTTP(rr, req)
+	}
+}
+
+func BenchmarkUpdateMetricBatch(b *testing.B) {
 
 }

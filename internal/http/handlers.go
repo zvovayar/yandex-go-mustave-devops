@@ -64,7 +64,8 @@ func UpdateGaugeMetric(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	gm, err := strconv.ParseFloat(ss[4], 64)
+	// gm, err := strconv.ParseFloat(ss[4], 64)
+	gm, err := strconv.ParseFloat(gmvaluechi, 64)
 	if err != nil {
 		// значения метрики нет
 		inst.Sugar.Infow(err.Error())
@@ -75,9 +76,9 @@ func UpdateGaugeMetric(w http.ResponseWriter, r *http.Request) {
 		}
 
 		return
-	} else if _, ok := inst.Gmetricnames[ss[3]]; !ok {
+	} else if _, ok := inst.Gmetricnames[gmnamechi]; !ok {
 		// не нашли название метрики, были ошибки
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusNotFound)
 		_, err = w.Write([]byte("<h1>Gauge metric not found</h1>"))
 		if err != nil {
 			log.Fatal(err)
@@ -86,18 +87,18 @@ func UpdateGaugeMetric(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	gmname := ss[3]
-	inst.Sugar.Infof("Gauge metric %v = %f", gmname, gm)
+	//gmname := ss[3]
+	inst.Sugar.Infof("Gauge metric %v = %f", gmnamechi, gm)
 
 	//
 	// сохранять значение метрики
 	//
-	sm.SetGMvalue(gmname, inst.Gauge(gm))
+	sm.SetGMvalue(gmnamechi, inst.Gauge(gm))
 
-	inst.Sugar.Infof("Store %v = %f", gmname, gm)
+	inst.Sugar.Infof("Store %v = %f", gmnamechi, gm)
 
 	w.WriteHeader(http.StatusOK)
-	_, err = w.Write([]byte("<h1>Gauge metric</h1>" + ss[3] + ss[4]))
+	_, err = w.Write([]byte("<h1>Gauge metric</h1>" + gmnamechi + gmvaluechi))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -121,7 +122,7 @@ func UpdateCounterMetric(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cm, err := strconv.ParseInt(ss[4], 10, 64)
+	cm, err := strconv.ParseInt(cmvaluechi, 10, 64)
 
 	if err != nil {
 		// значения метрики нет
@@ -132,9 +133,9 @@ func UpdateCounterMetric(w http.ResponseWriter, r *http.Request) {
 			log.Fatal(err)
 		}
 		return
-	} else if _, ok := inst.Cmetricnames[ss[3]]; !ok {
+	} else if _, ok := inst.Cmetricnames[cmnamechi]; !ok {
 		// не нашли название метрики, были ошибки
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusNotFound)
 		_, err = w.Write([]byte("<h1>Counter metric not found</h1>"))
 		if err != nil {
 			log.Fatal(err)
@@ -142,19 +143,19 @@ func UpdateCounterMetric(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cmname := ss[3]
-	inst.Sugar.Infof("Counter metric %v = %d", cmname, cm)
+	// cmname := ss[3]
+	inst.Sugar.Infof("Counter metric %v = %d", cmnamechi, cm)
 
 	//
 	// сохранять значение метрики
 	//
 
-	sm.SetCMvalue(cmname, inst.Counter(cm))
+	sm.SetCMvalue(cmnamechi, inst.Counter(cm))
 
-	inst.Sugar.Infof("Store %v = %d", cmname, cm)
+	inst.Sugar.Infof("Store %v = %d", cmnamechi, cm)
 
 	w.WriteHeader(http.StatusOK)
-	_, err = w.Write([]byte("<h1>Counter metric</h1>" + ss[3] + ss[4]))
+	_, err = w.Write([]byte("<h1>Counter metric</h1>" + cmnamechi + cmvaluechi))
 	if err != nil {
 		log.Fatal(err)
 	}
