@@ -325,7 +325,7 @@ func TestUpdateMetricJSON(t *testing.T) {
 			rr.Body.String(), expected)
 	}
 
-	// test counter
+	// test gauge
 	handler = http.HandlerFunc(UpdateMetricJSON)
 	v = inst.Metrics{
 		ID:    "RandomValue",
@@ -431,6 +431,8 @@ func TestUpdateMetricBatch(t *testing.T) {
 			Hash:  "",
 		},
 	}
+
+	*v[0].Value = 5.5555
 
 	expected := ``
 	expectedStatus := http.StatusOK
@@ -714,4 +716,102 @@ func BenchmarkGetAllMetrics(b *testing.B) {
 
 func BenchmarkUpdateMetricBatch(b *testing.B) {
 
+	// init httptest parameters
+	// test counter
+	handler := http.HandlerFunc(UpdateMetricBatch)
+
+	v := []inst.Metrics{
+		{
+			ID:    "RandomValue",
+			MType: "gauge",
+			Delta: new(int64),
+			Value: new(float64),
+			Hash:  "",
+		},
+		{
+			ID:    "testSetGet33",
+			MType: "counter",
+			Delta: new(int64),
+			Value: new(float64),
+			Hash:  "",
+		},
+		{
+			ID:    "testSetGet33",
+			MType: "counter",
+			Delta: new(int64),
+			Value: new(float64),
+			Hash:  "",
+		},
+	}
+
+	*v[0].Value = 5.12345
+	*v[1].Delta = 555551
+	*v[2].Delta = 555551
+
+	sbuf, _ := json.Marshal(v)
+	buf := bytes.NewBuffer(sbuf)
+
+	// run test
+	for i := 0; i < b.N; i++ {
+
+		b.StopTimer()
+		req, _ := http.NewRequest("POST", "/updates", buf)
+		rr := httptest.NewRecorder()
+		b.StartTimer()
+
+		handler.ServeHTTP(rr, req)
+	}
+
+}
+
+func BenchmarkUpdateGaugeMetric(b *testing.B) {
+	// init httptest parameters
+	// test good request
+	handler := http.HandlerFunc(UpdateGaugeMetric)
+
+	rctx := chi.NewRouteContext()
+	rctx.URLParams.Add("GMname", "RandomValue")
+	rctx.URLParams.Add("GMvalue", "0.55555")
+
+	r, _ := http.NewRequest("POST", "/update/gauge/{GMname}/{GMvalue}", nil)
+	r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
+
+	rr := httptest.NewRecorder()
+
+	// run test
+	for i := 0; i < b.N; i++ {
+		handler.ServeHTTP(rr, r)
+		// fmt.Print(rr.Body.String())
+	}
+
+}
+
+func BenchmarkUpdateMetricJSON(b *testing.B) {
+	handler := http.HandlerFunc(UpdateMetricJSON)
+	v := inst.Metrics{
+		ID:    "RandomValue",
+		MType: "gauge",
+		Delta: new(int64),
+		Value: new(float64),
+		Hash:  "",
+	}
+	*v.Value = 0.087654321
+
+	sbuf, _ := json.Marshal(v)
+	buf := bytes.NewBuffer(sbuf)
+
+	// run test
+	for i := 0; i < b.N; i++ {
+		b.StopTimer()
+
+		req, err := http.NewRequest("POST", "/update", buf)
+		if err != nil {
+			fmt.Print(err)
+		}
+
+		rr := httptest.NewRecorder()
+
+		b.StartTimer()
+		handler.ServeHTTP(rr, req)
+	}
 }
