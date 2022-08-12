@@ -71,7 +71,9 @@ func main() {
 	r.Use(middleware.RealIP)
 
 	// so mach information, switch ON only for debug
-	// r.Use(middleware.Logger)
+	if inst.LogHTTP {
+		r.Use(middleware.Logger)
+	}
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.StripSlashes)
 	r.Use(middleware.AllowContentEncoding("deflate", "gzip"))

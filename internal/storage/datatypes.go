@@ -73,6 +73,7 @@ var Restore = true
 var Key = ""
 var DatabaseDSN = ""
 var BatchSend = true
+var LogHTTP = false
 
 // default content type
 var ContentType = "application/json"

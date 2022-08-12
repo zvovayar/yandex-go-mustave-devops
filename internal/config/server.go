@@ -16,6 +16,7 @@ type ServerConfig struct {
 	Restore       bool          `env:"RESTORE"`
 	Key           string        `env:"KEY"`
 	DatabaseDSN   string        `env:"DATABASE_DSN"`
+	LogHTTP       bool          `env:"Log_HTTP"`
 }
 
 func ConfigServerInit() {
@@ -41,6 +42,7 @@ func ConfigServerInit() {
 	flag.StringVar(&cfgFromFlags.StoreFile, "f", inst.StoreFile, "store file")
 	flag.BoolVar(&cfgFromFlags.Restore, "r", inst.Restore, "restore from file on start")
 	flag.StringVar(&cfgFromFlags.DatabaseDSN, "d", inst.DatabaseDSN, "Database DSN")
+	flag.BoolVar(&cfgFromFlags.LogHTTP, "l", inst.LogHTTP, "log HTTP switch, so mach information, switch ON only for debug")
 	flag.Parse()
 	inst.Sugar.Infof("Server Config flags:%+v", cfgFromFlags)
 
@@ -85,6 +87,14 @@ func ConfigServerInit() {
 		inst.DatabaseDSN = cfg.DatabaseDSN
 	} else if cfgFromFlags.DatabaseDSN != "" {
 		inst.DatabaseDSN = cfgFromFlags.DatabaseDSN
+	}
+
+	if cfg.LogHTTP {
+		inst.LogHTTP = true
+	} else if cfgFromFlags.LogHTTP {
+		inst.LogHTTP = true
+	} else {
+		inst.LogHTTP = false
 	}
 
 	inst.Sugar.Infof("Server Strated with variables: Restore=%v", inst.Restore)

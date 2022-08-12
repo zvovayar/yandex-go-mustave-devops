@@ -1,9 +1,9 @@
 package crypt
 
 import (
-	"reflect"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	inst "github.com/zvovayar/yandex-go-mustave-devops/internal/storage"
 )
 
@@ -28,9 +28,9 @@ func TestMakeMAC(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := MakeMAC(tt.args.message, tt.args.key); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("MakeMAC() = %v, want %v", got, tt.want)
-			}
+			got := MakeMAC(tt.args.message, tt.args.key)
+			assert.Equal(t, tt.want, got, "they should be equal")
+
 		})
 	}
 }
@@ -67,9 +67,8 @@ func TestValidMAC(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ValidMAC(tt.args.message, tt.args.messageMAC, tt.args.key); got != tt.want {
-				t.Errorf("ValidMAC() = %v, want %v", got, tt.want)
-			}
+			got := ValidMAC(tt.args.message, tt.args.messageMAC, tt.args.key)
+			assert.Equal(t, tt.want, got, "they should be equal")
 		})
 	}
 }
@@ -151,9 +150,8 @@ func TestMetricsCrypt_MakeHashMetrics(t *testing.T) {
 				key: tt.fields.key,
 				Msg: tt.fields.Msg,
 			}
-			if got := mc.MakeHashMetrics(tt.args.key); got != tt.want {
-				t.Errorf("MetricsCrypt.MakeHashMetrics() = %v, want %v", got, tt.want)
-			}
+			got := mc.MakeHashMetrics(tt.args.key)
+			assert.Equal(t, tt.want, got, "they should be equal")
 		})
 	}
 }
@@ -200,9 +198,8 @@ func TestMetricsCrypt_ControlHashMetrics(t *testing.T) {
 				key: tt.fields.key,
 				Msg: tt.fields.Msg,
 			}
-			if got := mc.ControlHashMetrics(tt.args.key); got != tt.want {
-				t.Errorf("MetricsCrypt.ControlHashMetrics() = %v, want %v", got, tt.want)
-			}
+			got := mc.ControlHashMetrics(tt.args.key)
+			assert.Equal(t, tt.want, got, "they should be equal")
 		})
 	}
 }

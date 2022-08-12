@@ -11,7 +11,12 @@ import (
 	"testing"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/stretchr/testify/assert"
 	inst "github.com/zvovayar/yandex-go-mustave-devops/internal/storage"
+)
+
+const (
+	GetAllMetricsHTMLText = `<table border="1"><tr><td>type gauge</td><td> Alloc</td><td> #0 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> BuckHashSys</td><td> #1 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> FreeMemory</td><td> #29 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> Frees</td><td> #2 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> GCCPUFraction</td><td> #3 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> GCSys</td><td> #4 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> HeapAlloc</td><td> #5 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> HeapIdle</td><td> #6 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> HeapInuse</td><td> #7 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> HeapObjects</td><td> #8 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> HeapReleased</td><td> #9 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> HeapSys</td><td> #10 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> LastGC</td><td> #11 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> Lookups</td><td> #12 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> MCacheInuse</td><td> #13 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> MCacheSys</td><td> #14 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> MSpanInuse</td><td> #15 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> MSpanSys</td><td> #16 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> Mallocs</td><td> #17 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> NextGC</td><td> #18 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> NumForcedGC</td><td> #19 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> NumGC</td><td> #20 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> OtherSys</td><td> #21 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> PauseTotalNs</td><td> #22 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> RandomValue</td><td> #27 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> StackInuse</td><td> #23 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> StackSys</td><td> #24 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> Sys</td><td> #25 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> TotalAlloc</td><td> #26 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> TotalMemory</td><td> #28 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> testSetGet134</td><td> #30 =</td><td> 0.000000 </td></tr><tr><td>type counter</td><td> PollCount</td><td> #0 =</td><td> 0</td></tr><tr><td>type counter</td><td> testSetGet33</td><td> #1 =</td><td> 0</td></tr></table>`
 )
 
 func TestMain(m *testing.M) {
@@ -44,17 +49,10 @@ func TestGetAllMetrics(t *testing.T) {
 	handler.ServeHTTP(rr, req)
 
 	// Проверяем код
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
-	}
+	assert.Equal(t, http.StatusOK, rr.Code)
 
 	// Проверяем тело ответа
-	expected := `<table border="1"><tr><td>type gauge</td><td> Alloc</td><td> #0 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> BuckHashSys</td><td> #1 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> FreeMemory</td><td> #29 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> Frees</td><td> #2 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> GCCPUFraction</td><td> #3 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> GCSys</td><td> #4 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> HeapAlloc</td><td> #5 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> HeapIdle</td><td> #6 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> HeapInuse</td><td> #7 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> HeapObjects</td><td> #8 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> HeapReleased</td><td> #9 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> HeapSys</td><td> #10 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> LastGC</td><td> #11 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> Lookups</td><td> #12 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> MCacheInuse</td><td> #13 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> MCacheSys</td><td> #14 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> MSpanInuse</td><td> #15 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> MSpanSys</td><td> #16 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> Mallocs</td><td> #17 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> NextGC</td><td> #18 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> NumForcedGC</td><td> #19 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> NumGC</td><td> #20 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> OtherSys</td><td> #21 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> PauseTotalNs</td><td> #22 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> RandomValue</td><td> #27 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> StackInuse</td><td> #23 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> StackSys</td><td> #24 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> Sys</td><td> #25 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> TotalAlloc</td><td> #26 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> TotalMemory</td><td> #28 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> testSetGet134</td><td> #30 =</td><td> 0.000000 </td></tr><tr><td>type counter</td><td> PollCount</td><td> #0 =</td><td> 0</td></tr><tr><td>type counter</td><td> testSetGet33</td><td> #1 =</td><td> 0</td></tr></table>`
-	if rr.Body.String() != expected {
-		t.Errorf("handler returned unexpected body: got %v want %v",
-			rr.Body.String(), expected)
-	}
+	assert.Equal(t, GetAllMetricsHTMLText, rr.Body.String())
 }
 
 func TestGetMvalueJSON(t *testing.T) {
@@ -122,15 +120,8 @@ func TestGetMvalueJSON(t *testing.T) {
 
 	handler.ServeHTTP(rr, req)
 
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
-	}
-
-	if rr.Body.String() != expected {
-		t.Errorf("handler returned unexpected body: got %v want %v",
-			rr.Body.String(), expected)
-	}
+	assert.Equal(t, http.StatusOK, rr.Code)
+	assert.Equal(t, expected, rr.Body.String())
 
 	// bad counter test
 	v = inst.Metrics{
@@ -156,15 +147,8 @@ func TestGetMvalueJSON(t *testing.T) {
 
 	handler.ServeHTTP(rr, req)
 
-	if status := rr.Code; status != expectedStatus {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, expectedStatus)
-	}
-
-	if rr.Body.String() != expected {
-		t.Errorf("handler returned unexpected body: got %v want %v",
-			rr.Body.String(), expected)
-	}
+	assert.Equal(t, expectedStatus, rr.Code)
+	assert.Equal(t, expected, rr.Body.String())
 
 	// bad gauge test
 	v = inst.Metrics{
@@ -190,18 +174,11 @@ func TestGetMvalueJSON(t *testing.T) {
 
 	handler.ServeHTTP(rr, req)
 
-	if status := rr.Code; status != expectedStatus {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, expectedStatus)
-	}
-
-	if rr.Body.String() != expected {
-		t.Errorf("handler returned unexpected body: got %v want %v",
-			rr.Body.String(), expected)
-	}
+	assert.Equal(t, expectedStatus, rr.Code)
+	assert.Equal(t, expected, rr.Body.String())
 
 	// bad json
-	expected = `invalid character 'b' looking for beginning of value`
+	expected = "invalid character 'b' looking for beginning of value\n"
 	expectedStatus = 400
 
 	b = bytes.NewBuffer([]byte("bad json"))
@@ -216,11 +193,10 @@ func TestGetMvalueJSON(t *testing.T) {
 
 	handler.ServeHTTP(rr, req)
 
-	if status := rr.Code; status != expectedStatus {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, expectedStatus)
-	}
+	assert.Equal(t, expectedStatus, rr.Code)
+	assert.Equal(t, expected, rr.Body.String())
 }
+
 func TestNotImplemented(t *testing.T) {
 	// Создаем запрос с указанием нашего хендлера. Нам не нужно
 	// указывать параметры, поэтому вторым аргументом передаем nil
@@ -240,17 +216,9 @@ func TestNotImplemented(t *testing.T) {
 	// Request и ResponseRecorder
 	handler.ServeHTTP(rr, req)
 
-	// Проверяем код
-	if status := rr.Code; status != http.StatusNotImplemented {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusNotImplemented)
-	}
+	assert.Equal(t, http.StatusNotImplemented, rr.Code)
+	assert.Equal(t, expected, rr.Body.String())
 
-	// Проверяем тело ответа
-	if rr.Body.String() != expected {
-		t.Errorf("handler returned unexpected body: got %v want %v",
-			rr.Body.String(), expected)
-	}
 }
 
 func TestPingStorage(t *testing.T) {
@@ -272,15 +240,8 @@ func TestPingStorage(t *testing.T) {
 	handler.ServeHTTP(rr, req)
 
 	// results
-	if status := rr.Code; status != expectedStatus {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, expectedStatus)
-	}
-
-	if rr.Body.String() != expected {
-		t.Errorf("handler returned unexpected body: got %v want %v",
-			rr.Body.String(), expected)
-	}
+	assert.Equal(t, expectedStatus, rr.Code)
+	assert.Equal(t, expected, rr.Body.String())
 
 }
 
@@ -315,15 +276,8 @@ func TestUpdateMetricJSON(t *testing.T) {
 	handler.ServeHTTP(rr, req)
 
 	// results
-	if status := rr.Code; status != expectedStatus {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, expectedStatus)
-	}
-
-	if rr.Body.String() != expected {
-		t.Errorf("handler returned unexpected body: got %v want %v",
-			rr.Body.String(), expected)
-	}
+	assert.Equal(t, expectedStatus, rr.Code)
+	assert.Equal(t, expected, rr.Body.String())
 
 	// test gauge
 	handler = http.HandlerFunc(UpdateMetricJSON)
@@ -353,15 +307,8 @@ func TestUpdateMetricJSON(t *testing.T) {
 	handler.ServeHTTP(rr, req)
 
 	// results
-	if status := rr.Code; status != expectedStatus {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, expectedStatus)
-	}
-
-	if rr.Body.String() != expected {
-		t.Errorf("handler returned unexpected body: got %v want %v",
-			rr.Body.String(), expected)
-	}
+	assert.Equal(t, expectedStatus, rr.Code)
+	assert.Equal(t, expected, rr.Body.String())
 
 	// bad mtype
 	handler = http.HandlerFunc(UpdateMetricJSON)
@@ -391,15 +338,8 @@ func TestUpdateMetricJSON(t *testing.T) {
 	handler.ServeHTTP(rr, req)
 
 	// results
-	if status := rr.Code; status != expectedStatus {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, expectedStatus)
-	}
-
-	if rr.Body.String() != expected {
-		t.Errorf("handler returned unexpected body: got %v want %v",
-			rr.Body.String(), expected)
-	}
+	assert.Equal(t, expectedStatus, rr.Code)
+	assert.Equal(t, expected, rr.Body.String())
 
 }
 
@@ -451,15 +391,8 @@ func TestUpdateMetricBatch(t *testing.T) {
 	handler.ServeHTTP(rr, req)
 
 	// results
-	if status := rr.Code; status != expectedStatus {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, expectedStatus)
-	}
-
-	if rr.Body.String() != expected {
-		t.Errorf("handler returned unexpected body: got %v want %v",
-			rr.Body.String(), expected)
-	}
+	assert.Equal(t, expectedStatus, rr.Code)
+	assert.Equal(t, expected, rr.Body.String())
 }
 
 func TestGetGMvalue(t *testing.T) {
@@ -482,15 +415,8 @@ func TestGetGMvalue(t *testing.T) {
 	handler.ServeHTTP(rr, r)
 
 	// results
-	if status := rr.Code; status != expectedStatus {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, expectedStatus)
-	}
-
-	if rr.Body.String() != expected {
-		t.Errorf("handler returned unexpected body: got %v want %v",
-			rr.Body.String(), expected)
-	}
+	assert.Equal(t, expectedStatus, rr.Code)
+	assert.Equal(t, expected, rr.Body.String())
 
 	// test bad request
 	handler = http.HandlerFunc(GetGMvalue)
@@ -510,15 +436,8 @@ func TestGetGMvalue(t *testing.T) {
 	handler.ServeHTTP(rr, r)
 
 	// results
-	if status := rr.Code; status != expectedStatus {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, expectedStatus)
-	}
-
-	if rr.Body.String() != expected {
-		t.Errorf("handler returned unexpected body: got %v want %v",
-			rr.Body.String(), expected)
-	}
+	assert.Equal(t, expectedStatus, rr.Code)
+	assert.Equal(t, expected, rr.Body.String())
 
 }
 
@@ -541,15 +460,8 @@ func TestGetCMvalue(t *testing.T) {
 	handler.ServeHTTP(rr, r)
 
 	// results
-	if status := rr.Code; status != expectedStatus {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, expectedStatus)
-	}
-
-	if rr.Body.String() != expected {
-		t.Errorf("handler returned unexpected body: got %v want %v",
-			rr.Body.String(), expected)
-	}
+	assert.Equal(t, expectedStatus, rr.Code)
+	assert.Equal(t, expected, rr.Body.String())
 
 	// test bad request
 	handler = http.HandlerFunc(GetCMvalue)
@@ -569,15 +481,8 @@ func TestGetCMvalue(t *testing.T) {
 	handler.ServeHTTP(rr, r)
 
 	// results
-	if status := rr.Code; status != expectedStatus {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, expectedStatus)
-	}
-
-	if rr.Body.String() != expected {
-		t.Errorf("handler returned unexpected body: got %v want %v",
-			rr.Body.String(), expected)
-	}
+	assert.Equal(t, expectedStatus, rr.Code)
+	assert.Equal(t, expected, rr.Body.String())
 
 }
 
@@ -602,15 +507,8 @@ func TestUpdateGaugeMetric(t *testing.T) {
 	handler.ServeHTTP(rr, r)
 
 	// results
-	if status := rr.Code; status != expectedStatus {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, expectedStatus)
-	}
-
-	if rr.Body.String() != expected {
-		t.Errorf("handler returned unexpected body: got %v want %v",
-			rr.Body.String(), expected)
-	}
+	assert.Equal(t, expectedStatus, rr.Code)
+	assert.Equal(t, expected, rr.Body.String())
 
 	// test bad request
 	handler = http.HandlerFunc(UpdateGaugeMetric)
@@ -631,15 +529,8 @@ func TestUpdateGaugeMetric(t *testing.T) {
 	handler.ServeHTTP(rr, r)
 
 	// results
-	if status := rr.Code; status != expectedStatus {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, expectedStatus)
-	}
-
-	if rr.Body.String() != expected {
-		t.Errorf("handler returned unexpected body: got %v want %v",
-			rr.Body.String(), expected)
-	}
+	assert.Equal(t, expectedStatus, rr.Code)
+	assert.Equal(t, expected, rr.Body.String())
 }
 
 func TestUpdateCounterMetric(t *testing.T) {
@@ -663,15 +554,8 @@ func TestUpdateCounterMetric(t *testing.T) {
 	handler.ServeHTTP(rr, r)
 
 	// results
-	if status := rr.Code; status != expectedStatus {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, expectedStatus)
-	}
-
-	if rr.Body.String() != expected {
-		t.Errorf("handler returned unexpected body: got %v want %v",
-			rr.Body.String(), expected)
-	}
+	assert.Equal(t, expectedStatus, rr.Code)
+	assert.Equal(t, expected, rr.Body.String())
 
 	// test bad request
 	handler = http.HandlerFunc(UpdateCounterMetric)
@@ -692,15 +576,8 @@ func TestUpdateCounterMetric(t *testing.T) {
 	handler.ServeHTTP(rr, r)
 
 	// results
-	if status := rr.Code; status != expectedStatus {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, expectedStatus)
-	}
-
-	if rr.Body.String() != expected {
-		t.Errorf("handler returned unexpected body: got %v want %v",
-			rr.Body.String(), expected)
-	}
+	assert.Equal(t, expectedStatus, rr.Code)
+	assert.Equal(t, expected, rr.Body.String())
 }
 
 func BenchmarkGetAllMetrics(b *testing.B) {
@@ -781,7 +658,6 @@ func BenchmarkUpdateGaugeMetric(b *testing.B) {
 	// run test
 	for i := 0; i < b.N; i++ {
 		handler.ServeHTTP(rr, r)
-		// fmt.Print(rr.Body.String())
 	}
 
 }
@@ -860,11 +736,9 @@ func ExampleGetAllMetrics() {
 	handler.ServeHTTP(rr, req)
 
 	fmt.Println(rr.Code)
-	fmt.Println(rr.Body.String())
 
 	// Output:
 	// 200
-	// <table border="1"><tr><td>type gauge</td><td> Alloc</td><td> #0 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> BuckHashSys</td><td> #1 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> FreeMemory</td><td> #29 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> Frees</td><td> #2 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> GCCPUFraction</td><td> #3 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> GCSys</td><td> #4 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> HeapAlloc</td><td> #5 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> HeapIdle</td><td> #6 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> HeapInuse</td><td> #7 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> HeapObjects</td><td> #8 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> HeapReleased</td><td> #9 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> HeapSys</td><td> #10 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> LastGC</td><td> #11 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> Lookups</td><td> #12 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> MCacheInuse</td><td> #13 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> MCacheSys</td><td> #14 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> MSpanInuse</td><td> #15 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> MSpanSys</td><td> #16 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> Mallocs</td><td> #17 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> NextGC</td><td> #18 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> NumForcedGC</td><td> #19 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> NumGC</td><td> #20 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> OtherSys</td><td> #21 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> PauseTotalNs</td><td> #22 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> RandomValue</td><td> #27 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> StackInuse</td><td> #23 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> StackSys</td><td> #24 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> Sys</td><td> #25 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> TotalAlloc</td><td> #26 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> TotalMemory</td><td> #28 =</td><td> 0.000000 </td></tr><tr><td>type gauge</td><td> testSetGet134</td><td> #30 =</td><td> 0.000000 </td></tr><tr><td>type counter</td><td> PollCount</td><td> #0 =</td><td> 0</td></tr><tr><td>type counter</td><td> testSetGet33</td><td> #1 =</td><td> 0</td></tr></table>
 }
 
 func ExampleGetMvalueJSON() {
