@@ -1,3 +1,4 @@
+// Package storage contains main datatypes, constants, global values, start values
 package storage
 
 import (
@@ -21,7 +22,7 @@ type Monitor struct {
 	Cmetrics []Counter
 }
 
-// vocabulary of start gauge metric names
+// Gmetricnames vocabulary of start gauge metric names
 var Gmetricnames = map[string]int{
 	"Alloc":         0,
 	"BuckHashSys":   1,
@@ -56,13 +57,14 @@ var Gmetricnames = map[string]int{
 	"testSetGet134": 30,
 }
 
-// vocabulary of start counter metric names
+// Cmetricnames vocabulary of start counter metric names
 var Cmetricnames = map[string]int{
 	"PollCount":    0,
 	"testSetGet33": 1,
 }
 
 // default config values
+
 var PollInterval = time.Second * 2    // 2
 var ReportInterval = time.Second * 10 //10
 var BufferLength = 1
@@ -75,8 +77,8 @@ var DatabaseDSN = ""
 var BatchSend = true
 var LogHTTP = false
 
-// default content type
+// ContentType default content type
 var ContentType = "application/json"
 
-// main logger
+// Sugar main global logger
 var Sugar *zap.SugaredLogger

@@ -1,3 +1,4 @@
+// Package http include handlers and senders HTTP functions
 package http
 
 import (
@@ -17,7 +18,7 @@ import (
 
 var sm inst.Storage = &inst.StoreMonitor
 
-// Not implemented stub
+// NotImplemented Not implemented stub
 func NotImplemented(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 	_, err := w.Write([]byte("<h1>Not implemented</h1> length="))
@@ -27,7 +28,7 @@ func NotImplemented(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// Ping database Storage
+// PingStorage ping database Storage
 func PingStorage(w http.ResponseWriter, r *http.Request) {
 
 	if errp := inst.StoreMonitor.PingSQLserver(r.Context()); errp == nil {
@@ -47,7 +48,7 @@ func PingStorage(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// Save Gauge metric
+// UpdateGaugeMetric save Gauge metric
 func UpdateGaugeMetric(w http.ResponseWriter, r *http.Request) {
 
 	ss := strings.Split(r.URL.Path, "/")
@@ -104,7 +105,7 @@ func UpdateGaugeMetric(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Save Counter metric
+// UpdateCounterMetric save Counter metric
 func UpdateCounterMetric(w http.ResponseWriter, r *http.Request) {
 	ss := strings.Split(r.URL.Path, "/")
 	cmnamechi := chi.URLParam(r, "CMname")
@@ -199,7 +200,7 @@ func GetAllMetrics(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// Get one metric gauge
+// GetGMvalue get one metric gauge
 func GetGMvalue(w http.ResponseWriter, r *http.Request) {
 
 	if _, ok := inst.Gmetricnames[chi.URLParam(r, "GMname")]; !ok {
@@ -220,7 +221,7 @@ func GetGMvalue(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Get one metric Counter
+// GetCMvalue get one metric Counter
 func GetCMvalue(w http.ResponseWriter, r *http.Request) {
 
 	if _, ok := inst.Cmetricnames[chi.URLParam(r, "CMname")]; !ok {
@@ -241,7 +242,7 @@ func GetCMvalue(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Save one metric from JSON
+// UpdateMetricJSON save one metric from JSON
 func UpdateMetricJSON(w http.ResponseWriter, r *http.Request) {
 	var v inst.Metrics
 	var cmname string
@@ -325,7 +326,7 @@ func UpdateMetricJSON(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// get one metric in JSON
+// GetMvalueJSON get one metric in JSON
 func GetMvalueJSON(w http.ResponseWriter, r *http.Request) {
 
 	var v inst.Metrics
@@ -388,7 +389,7 @@ func GetMvalueJSON(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// save batch of metrics
+// UpdateMetricBatch save batch of metrics
 // like UpdateMetricJSON, but with slice in json
 func UpdateMetricBatch(w http.ResponseWriter, r *http.Request) {
 	var mbatch []inst.Metrics

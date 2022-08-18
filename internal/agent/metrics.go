@@ -1,3 +1,5 @@
+// Package agent contain core functions agent metrics
+// thread safety functions
 package agent
 
 import (
@@ -16,16 +18,7 @@ import (
 	inst "github.com/zvovayar/yandex-go-mustave-devops/internal/storage"
 )
 
-//
-// plan B increment #14
-//
-// type MonitorAgent struct {
-// 	M        inst.Monitor
-// 	GMetrics []string // названия метрик Gauge
-// 	CMetrics []string // газвания метрик Counter
-// }
-
-// begin collect metrics infinitly and send they to the channel
+// NewMonitor begin collect metrics infinitly and send they to the channel
 func NewMonitor(duration time.Duration, chanmonitor chan inst.Monitor) {
 	var m inst.Monitor
 	var rtm runtime.MemStats
@@ -81,7 +74,7 @@ func NewMonitor(duration time.Duration, chanmonitor chan inst.Monitor) {
 	}
 }
 
-// begin collect metrics infinitly and send they to the channel
+// NewMonitorGopsutil begin collect metrics infinitly and send they to the channel
 func NewMonitorGopsutil(duration time.Duration, chanmonitor chan inst.Monitor) {
 	var m inst.Monitor
 
@@ -130,7 +123,7 @@ func NewMonitorGopsutil(duration time.Duration, chanmonitor chan inst.Monitor) {
 	}
 }
 
-// send collected metrics to the web API
+// SendMetrics send collected metrics to the web API
 func SendMetrics(m inst.Monitor) {
 
 	var mc crypt.MetricsCrypt
@@ -236,7 +229,7 @@ func SendMetrics(m inst.Monitor) {
 	}
 }
 
-// begin waiting metrics from channel and send they to the web APIs
+// RunSendMetrics begin waiting metrics from channel and send they to the web APIs
 func RunSendMetrics(duration time.Duration, chanmonitor1 chan inst.Monitor, chanmonitor2 chan inst.Monitor) {
 
 	inst.Sugar.Infow("Agent started gorutine for send metrics")
@@ -345,7 +338,7 @@ func CopyPartSliceG(sdst []inst.Gauge, ssource []inst.Gauge, begin int, end int)
 	}
 }
 
-// create slices []Metrics and send they POST /updates/
+// SendBatchMetrics create slices []Metrics and send they POST /updates/
 func SendBatchMetrics(monitorb []inst.Monitor) {
 
 	var mc crypt.MetricsCrypt

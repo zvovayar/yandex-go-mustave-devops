@@ -1,3 +1,4 @@
+// Package crypt contain simple crypt functions for validate end create hash
 package crypt
 
 import (

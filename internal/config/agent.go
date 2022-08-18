@@ -1,3 +1,4 @@
+// Package config fill config vars from environment and command flags
 package config
 
 import (

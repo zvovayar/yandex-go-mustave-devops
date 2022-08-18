@@ -102,21 +102,21 @@ func (mps *MemSQLStorage) ClosePersistanceStorage() error {
 	return nil
 }
 
-// mirror StoreMem interface
+// GetGMvalue mirror StoreMem interface
 func (mps *MemSQLStorage) GetGMvalue(gmname string) Gauge {
 
 	var g = mps.sm.GetGMvalue(gmname)
 	return g
 }
 
-// mirror StoreMem interface
+// GetCMvalue mirror StoreMem interface
 func (mps *MemSQLStorage) GetCMvalue(cmname string) Counter {
 
 	var c = mps.sm.GetCMvalue(cmname)
 	return c
 }
 
-// mirror StoreMem interface + persistance function
+// SetGMvalue mirror StoreMem interface + persistance function
 func (mps *MemSQLStorage) SetGMvalue(gmname string, gm Gauge) {
 
 	mps.sm.SetGMvalue(gmname, gm)
@@ -139,7 +139,7 @@ func (mps *MemSQLStorage) SetGMvalue(gmname string, gm Gauge) {
 	Sugar.Infof("SetGMvalue value %v=%f saved", gmname, mps.sm.GetGMvalue(gmname))
 }
 
-// mirror StoreMem interface + persistance function
+// SetCMvalue mirror StoreMem interface + persistance function
 func (mps *MemSQLStorage) SetCMvalue(cmname string, cm Counter) {
 
 	mps.sm.SetCMvalue(cmname, cm)
