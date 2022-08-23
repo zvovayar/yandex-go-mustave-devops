@@ -851,7 +851,7 @@ func ExampleGetGMvalue() {
 
 	// Output:
 	// 200
-	// 0
+	// 5.5555
 
 }
 
@@ -874,7 +874,7 @@ func ExampleGetCMvalue() {
 
 	// Output:
 	// 200
-	// 0
+	// 56109
 }
 
 func ExampleUpdateGaugeMetric() {
