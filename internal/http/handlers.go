@@ -78,18 +78,6 @@ func UpdateGaugeMetric(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	// else if _, ok := inst.Gmetricnames[gmnamechi]; !ok {
-	// 	// не нашли название метрики, были ошибки
-	// 	w.WriteHeader(http.StatusNotFound)
-	// 	_, err = w.Write([]byte("<h1>Gauge metric not found</h1>"))
-	// 	if err != nil {
-	// 		log.Fatal(err)
-	// 	}
-
-	// 	return
-	// }
-
-	//gmname := ss[3]
 	inst.Sugar.Infof("Gauge metric %v = %f", gmnamechi, gm)
 
 	//
@@ -136,15 +124,6 @@ func UpdateCounterMetric(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	// else if _, ok := inst.Cmetricnames[cmnamechi]; !ok {
-	// 	// не нашли название метрики, были ошибки
-	// 	w.WriteHeader(http.StatusNotFound)
-	// 	_, err = w.Write([]byte("<h1>Counter metric not found</h1>"))
-	// 	if err != nil {
-	// 		log.Fatal(err)
-	// 	}
-	// 	return
-	// }
 
 	inst.Sugar.Infof("Counter metric %v = %d", cmnamechi, cm)
 

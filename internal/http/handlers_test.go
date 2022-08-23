@@ -227,7 +227,9 @@ func TestPingStorage(t *testing.T) {
 	handler := http.HandlerFunc(PingStorage)
 
 	expected := `<h1>Ping database OK</h1>DSN=postgres://postgres:qweasd@localhost:5432/yandex?sslmode=disable`
+	expected = "<h1>Ping database fail</h1>DSN=postgres://postgres:qweasd@localhost:5432/yandex?sslmode=disable<br>dial tcp [::1]:5432: connect: connection refused"
 	expectedStatus := http.StatusOK
+	expectedStatus = http.StatusInternalServerError
 
 	req, err := http.NewRequest("GET", "/ping", nil)
 	if err != nil {
@@ -377,6 +379,14 @@ func TestUpdateMetricBatch(t *testing.T) {
 	expected := ``
 	expectedStatus := http.StatusOK
 
+	if err := inst.StoreMonitor.PingSQLserver(context.Background()); err != nil {
+		expected = "dial tcp [::1]:5432: connect: connection refused\n"
+		expectedStatus = 400
+	} else {
+		expected = ``
+		expectedStatus = http.StatusOK
+	}
+
 	buf, _ := json.Marshal(v)
 	b := bytes.NewBuffer(buf)
 
@@ -403,7 +413,7 @@ func TestGetGMvalue(t *testing.T) {
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("GMname", "RandomValue")
 
-	expected := `0`
+	expected := `5.5555`
 	expectedStatus := http.StatusOK
 
 	r, _ := http.NewRequest("GET", "/value/gauge/{GMname}", nil)
@@ -467,7 +477,7 @@ func TestGetCMvalue(t *testing.T) {
 	handler = http.HandlerFunc(GetCMvalue)
 
 	rctx = chi.NewRouteContext()
-	rctx.URLParams.Add("CMname", "RandomValue1")
+	rctx.URLParams.Add("CMname", "RandomValue13")
 
 	expected = `<h1>404 Counter metric not found</h1>`
 	expectedStatus = http.StatusNotFound
@@ -514,11 +524,11 @@ func TestUpdateGaugeMetric(t *testing.T) {
 	handler = http.HandlerFunc(UpdateGaugeMetric)
 
 	rctx = chi.NewRouteContext()
-	rctx.URLParams.Add("GMname", "RandomValue1")
+	rctx.URLParams.Add("GMname", "RandomValue13")
 	rctx.URLParams.Add("GMvalue", "0.55555")
 
-	expected = `<h1>Gauge metric not found</h1>`
-	expectedStatus = http.StatusNotFound
+	expected = `<h1>Gauge metric</h1>RandomValue130.55555`
+	expectedStatus = http.StatusOK
 
 	r, _ = http.NewRequest("POST", "/update/gauge/{GMname}/{GMvalue}", nil)
 	r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
@@ -564,8 +574,8 @@ func TestUpdateCounterMetric(t *testing.T) {
 	rctx.URLParams.Add("CMname", "RandomValue1")
 	rctx.URLParams.Add("CMvalue", "55555")
 
-	expected = `<h1>Counter metric not found</h1>`
-	expectedStatus = http.StatusNotFound
+	expected = `<h1>Counter metric</h1>RandomValue155555`
+	expectedStatus = http.StatusOK
 
 	r, _ = http.NewRequest("POST", "/update/counter/{CMname}/{CMvalue}", nil)
 	r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
