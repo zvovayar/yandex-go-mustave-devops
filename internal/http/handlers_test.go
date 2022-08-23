@@ -833,6 +833,7 @@ func ExampleUpdateMetricBatch() {
 
 	// Output:
 	// 200
+	// database unreachable
 }
 
 func ExampleGetGMvalue() {
