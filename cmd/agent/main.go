@@ -15,6 +15,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
@@ -31,7 +32,27 @@ import (
 
 const pprofAddr = ":8082"
 
+var (
+	buildVersion string
+	buildDate    string
+	buildCommit  string
+)
+
 func main() {
+
+	if buildVersion == "" {
+		buildVersion = "N/A"
+	}
+	if buildDate == "" {
+		buildDate = "N/A"
+	}
+	if buildCommit == "" {
+		buildCommit = "N/A"
+	}
+
+	fmt.Printf("Build version:%s\n", buildVersion)
+	fmt.Printf("Build date:%s\n", buildDate)
+	fmt.Printf("Build commit:%s\n", buildCommit)
 
 	inst.Sugar = zap.NewExample().Sugar()
 

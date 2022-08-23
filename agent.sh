@@ -6,5 +6,5 @@ export RESTORE=false
 export SHUTDOWN_TIMEOUT=5s
 export KEY=/tmp/zK3deX0
 
-go run ./cmd/agent/main.go -B=true
+go run -ldflags "-X main.buildVersion=v1.0.1 -X main.buildDate=23.08.2022 -X main.buildCommit=CWCWCWC" ./cmd/agent/main.go -B=true
 
