@@ -47,7 +47,9 @@ func (mps *MemPStorage) NewPersistanceStorage() error {
 
 	// infinity for{} flash data to file
 	for {
-		<-time.After(StoreInterval)
+		if StoreFile != "/tmp/devops-metrics-db.json" {
+			<-time.After(StoreInterval)
+		}
 
 		// inst.Sugar.Infof("Save data to the file %v\n", StoreFile)
 
@@ -116,6 +118,10 @@ func (mps *MemPStorage) NewPersistanceStorage() error {
 		if err := mps.writer.Flush(); err != nil {
 			log.Fatal(err)
 			return err
+		}
+
+		if StoreFile == "/tmp/devops-metrics-db.json" {
+			return nil
 		}
 	}
 
