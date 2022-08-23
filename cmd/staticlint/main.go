@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-critic/go-critic/checkers/analyzer"
 	"github.com/kisielk/errcheck/errcheck"
+	"github.com/zvovayar/yandex-go-mustave-devops/internal/staticlint"
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/analysis/multichecker"
 	"golang.org/x/tools/go/analysis/passes/asmdecl"
@@ -110,6 +111,9 @@ func main() {
 
 	// add go-critic analyzer
 	mychecks = append(mychecks, analyzer.Analyzer)
+
+	// add project specific analyzer
+	mychecks = append(mychecks, staticlint.OsExitAnalyzer)
 
 	// add gosec analyzer
 	// mychecks = append(mychecks, gosec.NewAnalyzer() )
