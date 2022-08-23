@@ -228,6 +228,8 @@ func TestPingStorage(t *testing.T) {
 
 	expected := `<h1>Ping database OK</h1>DSN=postgres://postgres:qweasd@localhost:5432/yandex?sslmode=disable`
 	expected = "<h1>Ping database fail</h1>DSN=postgres://postgres:qweasd@localhost:5432/yandex?sslmode=disable<br>dial tcp [::1]:5432: connect: connection refused"
+	expected = "<h1>Ping database fail</h1>DSN=postgres://postgres:qweasd@localhost:5432/yandex?sslmode=disable<br>dial tcp 127.0.0.1:5432: connect: connection refused"
+
 	expectedStatus := http.StatusOK
 	expectedStatus = http.StatusInternalServerError
 
@@ -381,7 +383,9 @@ func TestUpdateMetricBatch(t *testing.T) {
 
 	if err := inst.StoreMonitor.PingSQLserver(context.Background()); err != nil {
 		expected = "dial tcp [::1]:5432: connect: connection refused\n"
-		expectedStatus = 400
+		expected = "dial tcp 127.0.0.1:5432: connect: connection refused\n"
+		expected = "database unreachable\n"
+		expectedStatus = 200
 	} else {
 		expected = ``
 		expectedStatus = http.StatusOK
@@ -829,8 +833,6 @@ func ExampleUpdateMetricBatch() {
 
 	// Output:
 	// 200
-	//
-
 }
 
 func ExampleGetGMvalue() {

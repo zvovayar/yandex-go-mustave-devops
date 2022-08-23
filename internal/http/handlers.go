@@ -377,13 +377,14 @@ func UpdateMetricBatch(w http.ResponseWriter, r *http.Request) {
 	// decode json form r.Body and init v
 	if err := json.NewDecoder(r.Body).Decode(&mbatch); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		log.Fatal(err)
+		inst.Sugar.Infow(err.Error())
 		return
 	}
 
 	// save batch
 	if err := sm.SaveBatch(r.Context(), mbatch); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		// http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "database unreachable", http.StatusOK)
 		inst.Sugar.Infow(err.Error())
 		return
 	}
