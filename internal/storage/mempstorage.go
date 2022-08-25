@@ -113,7 +113,6 @@ func (mps *MemPStorage) NewPersistanceStorage() error {
 			return err
 		}
 
-		// }
 		// записываем буфер в файл
 		if err := mps.writer.Flush(); err != nil {
 			log.Fatal(err)

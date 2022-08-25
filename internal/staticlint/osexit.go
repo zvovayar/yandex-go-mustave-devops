@@ -1,4 +1,5 @@
 // Package staticlint for project specific static linters
+// check usage os.Exit() in main() function
 package staticlint
 
 import (
@@ -13,7 +14,7 @@ var OsExitAnalyzer = &analysis.Analyzer{
 	Run:  run,
 }
 
-// run linter function
+// run linter check os.Exit() in main() function
 func run(pass *analysis.Pass) (interface{}, error) {
 
 	// обойти дерево AST
