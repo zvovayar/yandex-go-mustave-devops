@@ -34,7 +34,16 @@ func run(pass *analysis.Pass) (interface{}, error) {
 						switch nx := nodeMain.(type) {
 						case *ast.SelectorExpr:
 							if nx.Sel.Name == "Exit" {
-								pass.Reportf(nx.Pos(), "remove call os.Exit() from main()")
+
+								ast.Inspect(nx, func(nodeExit ast.Node) bool {
+									switch nxx := nodeExit.(type) {
+									case *ast.Ident:
+										if nxx.Name == "os" {
+											pass.Reportf(nxx.Pos(), "remove call os.Exit() from main()")
+										}
+									}
+									return true
+								})
 							}
 						}
 						return true
