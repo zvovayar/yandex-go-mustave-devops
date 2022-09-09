@@ -19,7 +19,8 @@ func run(pass *analysis.Pass) (interface{}, error) {
 
 	// обойти дерево AST
 	// найти функцию main()
-	// в функции main() найти os.Exit(int i)
+	// в функции main() найти выражение Exit с селектором и проверить есть ли у него селектор os
+	// значит это os.Exit()
 
 	for _, file := range pass.Files {
 
