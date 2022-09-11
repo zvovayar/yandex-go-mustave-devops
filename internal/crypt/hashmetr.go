@@ -93,6 +93,7 @@ func ValidMAC(message, messageMAC, key []byte) bool {
 	return hmac.Equal(messageMAC, expectedMAC)
 }
 
+// MakeMAC create and return MAC for message with key
 func MakeMAC(message, key []byte) []byte {
 	mac := hmac.New(sha256.New, key)
 	mac.Write(message)

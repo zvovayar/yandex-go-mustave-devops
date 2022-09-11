@@ -10,30 +10,32 @@ import (
 )
 
 type ServerConfig struct {
-	Address       string        `env:"ADDRESS"`
-	StoreInterval time.Duration `env:"STORE_INTERVAL"`
-	StoreFile     string        `env:"STORE_FILE"`
-	Restore       bool          `env:"RESTORE"`
-	Key           string        `env:"KEY"`
-	DatabaseDSN   string        `env:"DATABASE_DSN"`
-	LogHTTP       bool          `env:"Log_HTTP"`
+	Address            string        `env:"ADDRESS"`
+	StoreInterval      time.Duration `env:"STORE_INTERVAL"`
+	StoreFile          string        `env:"STORE_FILE"`
+	Restore            bool          `env:"RESTORE"`
+	Key                string        `env:"KEY"`
+	DatabaseDSN        string        `env:"DATABASE_DSN"`
+	LogHTTP            bool          `env:"Log_HTTP"`
+	PrivateKeyFileName string        `env:"CRYPTO_KEY"`
 }
 
+// ConfigServerInit load config from flags and environment variables
 func ConfigServerInit() {
-	var cfg ServerConfig
+	var cfgEnv ServerConfig
 	var cfgFromFlags ServerConfig
 
 	inst.Sugar.Infow("Server started")
 
-	cfg.StoreInterval = time.Second * 300
+	cfgEnv.StoreInterval = time.Second * 300
 	// load environment variables
 
-	err := env.Parse(&cfg)
+	err := env.Parse(&cfgEnv)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	inst.Sugar.Infof("Server Config environment:%+v", cfg)
+	inst.Sugar.Infof("Server Config environment:%+v", cfgEnv)
 
 	// load flags
 	flag.StringVar(&cfgFromFlags.Address, "a", inst.ServerAddress, "address to listen on")
@@ -43,61 +45,70 @@ func ConfigServerInit() {
 	flag.BoolVar(&cfgFromFlags.Restore, "r", inst.Restore, "restore from file on start")
 	flag.StringVar(&cfgFromFlags.DatabaseDSN, "d", inst.DatabaseDSN, "Database DSN")
 	flag.BoolVar(&cfgFromFlags.LogHTTP, "l", inst.LogHTTP, "log HTTP switch, so mach information, switch ON only for debug")
+	flag.StringVar(&cfgFromFlags.PrivateKeyFileName, "crypto-key", inst.PrivateKeyFileName, "private key file name")
+
 	flag.Parse()
+
 	inst.Sugar.Infof("Server Config flags:%+v", cfgFromFlags)
 
 	// assign work parameters
-	if cfg.Address != "" {
-		inst.ServerAddress = cfg.Address
+	if cfgEnv.Address != "" {
+		inst.ServerAddress = cfgEnv.Address
 	} else {
 		inst.ServerAddress = cfgFromFlags.Address
 	}
 	inst.Sugar.Infof("Server Strated with variables: address=%v", inst.ServerAddress)
 
-	if cfg.StoreInterval >= 0 {
-		inst.StoreInterval = cfg.StoreInterval
+	if cfgEnv.StoreInterval >= 0 {
+		inst.StoreInterval = cfgEnv.StoreInterval
 	} else {
 		inst.StoreInterval = cfgFromFlags.StoreInterval
 	}
 	inst.Sugar.Infof("Server Strated with variables: StoreInterval=%v", inst.StoreInterval)
 
-	if len(cfg.StoreFile) > 0 {
-		inst.StoreFile = cfg.StoreFile
+	if len(cfgEnv.StoreFile) > 0 {
+		inst.StoreFile = cfgEnv.StoreFile
 	} else {
 		inst.StoreFile = cfgFromFlags.StoreFile
 	}
 	inst.Sugar.Infof("Server Strated with variables: StoreFile=%v", inst.StoreFile)
 
-	if cfg.Key != "" {
-		inst.Key = cfg.Key
+	if cfgEnv.Key != "" {
+		inst.Key = cfgEnv.Key
 	} else {
 		inst.Key = cfgFromFlags.Key
 	}
 	inst.Sugar.Infof("Server Strated with variables: Key=%v", inst.Key)
 
-	if cfg.Restore {
+	if cfgEnv.Restore {
 		inst.Restore = true
 	} else if cfgFromFlags.Restore {
 		inst.Restore = true
 	} else {
 		inst.Restore = false
 	}
+	inst.Sugar.Infof("Server Strated with variables: Restore=%v", inst.Restore)
 
-	if cfg.DatabaseDSN != "" {
-		inst.DatabaseDSN = cfg.DatabaseDSN
+	if cfgEnv.DatabaseDSN != "" {
+		inst.DatabaseDSN = cfgEnv.DatabaseDSN
 	} else if cfgFromFlags.DatabaseDSN != "" {
 		inst.DatabaseDSN = cfgFromFlags.DatabaseDSN
 	}
+	inst.Sugar.Infof("Server Strated with variables: DatabaseDSN=%v", inst.DatabaseDSN)
 
-	if cfg.LogHTTP {
+	if cfgEnv.LogHTTP {
 		inst.LogHTTP = true
 	} else if cfgFromFlags.LogHTTP {
 		inst.LogHTTP = true
 	} else {
 		inst.LogHTTP = false
 	}
+	inst.Sugar.Infof("Server Strated with variables: LogHTTP=%v", inst.LogHTTP)
 
-	inst.Sugar.Infof("Server Strated with variables: Restore=%v", inst.Restore)
-	inst.Sugar.Infof("Server Strated with variables: DatabaseDSN=%v", inst.DatabaseDSN)
-
+	if cfgEnv.PrivateKeyFileName != "" {
+		inst.PrivateKeyFileName = cfgEnv.PrivateKeyFileName
+	} else if cfgFromFlags.PrivateKeyFileName != "" {
+		inst.PrivateKeyFileName = cfgFromFlags.PrivateKeyFileName
+	}
+	inst.Sugar.Infof("Server Strated with variables: PrivateKeyFileName=%v", inst.PrivateKeyFileName)
 }

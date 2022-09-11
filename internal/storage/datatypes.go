@@ -76,6 +76,8 @@ var Key = ""
 var DatabaseDSN = ""
 var BatchSend = true
 var LogHTTP = false
+var PrivateKeyFileName = ""
+var PublicKeyFileName = ""
 
 // ContentType default content type
 var ContentType = "application/json"

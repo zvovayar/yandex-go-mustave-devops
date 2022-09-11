@@ -18,6 +18,8 @@ import (
 
 var sm inst.Storage = &inst.StoreMonitor
 
+var ServerDecrypter crypt.Decrypter
+
 // NotImplemented Not implemented stub
 func NotImplemented(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
@@ -230,17 +232,38 @@ func UpdateMetricJSON(w http.ResponseWriter, r *http.Request) {
 	var cm inst.Counter
 	var gm inst.Gauge
 
-	// decode json form r.Body and init v
-	if err := json.NewDecoder(r.Body).Decode(&v); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		log.Fatal(err)
-		return
-	}
-	// inst.Sugar.Infow(v)
+	// decrypt json if we have key file
+	if inst.PrivateKeyFileName != "" {
+		ServerDecrypter.Init()
+		buf := make([]byte, 1)
+		body := make([]byte, 0)
 
-	//
+		n := 1
+		for n > 0 {
+			n, _ = r.Body.Read(buf)
+			if n == 0 {
+				break
+			}
+			body = append(body, buf...)
+		}
+
+		inst.Sugar.Infof("body encrypted: %v", body)
+
+		bodyEnc, _ := ServerDecrypter.DecryptBytes(body)
+		inst.Sugar.Infof("body decrypted: %v", bodyEnc)
+		json.Unmarshal(bodyEnc, &v)
+	} else {
+
+		// decode json form r.Body and init v
+		if err := json.NewDecoder(r.Body).Decode(&v); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			log.Fatal(err)
+			return
+		}
+	}
+	inst.Sugar.Infof("json decoded: %v", v)
+
 	// check hash if key exist
-	//
 	if inst.Key != "" {
 		var mc crypt.MetricsCrypt
 

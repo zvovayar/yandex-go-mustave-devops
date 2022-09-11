@@ -18,6 +18,8 @@ import (
 	inst "github.com/zvovayar/yandex-go-mustave-devops/internal/storage"
 )
 
+var AgentEncrypter crypt.Encrypter
+
 // NewMonitor begin collect metrics infinitly and send they to the channel
 func NewMonitor(duration time.Duration, chanmonitor chan inst.Monitor) {
 	var m inst.Monitor
@@ -159,6 +161,14 @@ func SendMetrics(m inst.Monitor) {
 			inst.ServerAddress)
 		inst.Sugar.Debugf(url)
 
+		// crypt body if key exist
+		if inst.PublicKeyFileName != "" {
+			AgentEncrypter.Init()
+			inst.Sugar.Infof("body clear: %v", body)
+			body, _ = AgentEncrypter.EncryptBytes(body)
+			inst.Sugar.Infof("body encrypted: %v", body)
+		}
+
 		request, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
 		if err != nil {
 			// обработаем ошибку
@@ -207,6 +217,14 @@ func SendMetrics(m inst.Monitor) {
 		var url = fmt.Sprintf("http://%v/update/",
 			inst.ServerAddress)
 		inst.Sugar.Debug(url)
+
+		// crypt body if key exist
+		if inst.PublicKeyFileName != "" {
+			AgentEncrypter.Init()
+			inst.Sugar.Infof("body clear: %v", body)
+			body, _ = AgentEncrypter.EncryptBytes(body)
+			inst.Sugar.Infof("body encrypted: %v", body)
+		}
 
 		request, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
 		if err != nil {
@@ -390,9 +408,7 @@ func SendBatchMetrics(monitorb []inst.Monitor) {
 	}
 	inst.Sugar.Debugf("SendBatchMetrics -> count=%d metricsb=%v", c, metricsb)
 
-	//
 	// send json via POST
-	//
 	var url = fmt.Sprintf("http://%v/updates/",
 		inst.ServerAddress)
 	inst.Sugar.Infow(url)
@@ -405,8 +421,8 @@ func SendBatchMetrics(monitorb []inst.Monitor) {
 	request.Header.Set("Content-Type", inst.ContentType)
 
 	client := &http.Client{}
-	// отправляем запрос
 
+	// отправляем запрос
 	resp, err := client.Do(request)
 	if err != nil {
 		// обработаем ошибку
