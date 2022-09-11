@@ -26,3 +26,4 @@ vendor/
 devops-metrics-db.json
 internal/tools
 agent.log
+*.pem
