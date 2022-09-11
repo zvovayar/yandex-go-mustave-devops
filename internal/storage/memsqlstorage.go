@@ -96,6 +96,9 @@ func (mps *MemSQLStorage) PingSQLserver(ctx context.Context) error {
 
 func (mps *MemSQLStorage) ClosePersistanceStorage() error {
 
+	if err := mps.db.MustBegin().Commit(); err != nil {
+		return fmt.Errorf("MemSQLStorage.ClosePersistanceStorage: %v", err.Error())
+	}
 	if err := mps.db.Close(); err != nil {
 		return fmt.Errorf("MemSQLStorage.ClosePersistanceStorage: %v", err.Error())
 	}

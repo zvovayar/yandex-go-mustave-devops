@@ -10,6 +10,7 @@ import (
 	"math/rand"
 	"net/http"
 	"runtime"
+	"sync"
 	"time"
 
 	"github.com/shirou/gopsutil/v3/cpu"
@@ -21,15 +22,24 @@ import (
 var AgentEncrypter crypt.Encrypter
 
 // NewMonitor begin collect metrics infinitly and send they to the channel
-func NewMonitor(duration time.Duration, chanmonitor chan inst.Monitor) {
+func NewMonitor(WG *sync.WaitGroup, duration time.Duration, chanmonitor chan inst.Monitor, chansync chan string) {
 	var m inst.Monitor
 	var rtm runtime.MemStats
+
+	WG.Add(1)
+	defer WG.Done()
 
 	m.Cmetrics = make([]inst.Counter, len(inst.Cmetricnames))
 	m.Gmetrics = make([]inst.Gauge, len(inst.Gmetricnames))
 
 	for {
-		<-time.After(duration)
+		select {
+		case t := <-time.After(duration):
+			fmt.Printf("duration event time:%v", t)
+		case sig := <-chansync:
+			fmt.Printf("sync signal:%v", sig)
+			return
+		}
 
 		// Read full memory stats
 		runtime.ReadMemStats(&rtm)
@@ -67,18 +77,17 @@ func NewMonitor(duration time.Duration, chanmonitor chan inst.Monitor) {
 		m.Cmetrics[inst.Cmetricnames["PoolCount"]]++
 
 		// Send new collected data to the channel
-
-		//
-		// TODO: make MonitorAgent struct and send it
-		//
 		chanmonitor <- m
 
 	}
 }
 
 // NewMonitorGopsutil begin collect metrics infinitly and send they to the channel
-func NewMonitorGopsutil(duration time.Duration, chanmonitor chan inst.Monitor) {
+func NewMonitorGopsutil(WG *sync.WaitGroup, duration time.Duration, chanmonitor chan inst.Monitor, chansync chan string) {
 	var m inst.Monitor
+
+	WG.Add(1)
+	defer WG.Done()
 
 	cpuCounts, _ := cpu.Counts(false)
 
@@ -94,7 +103,13 @@ func NewMonitorGopsutil(duration time.Duration, chanmonitor chan inst.Monitor) {
 	inst.Sugar.Debugf("NewMonitorGopsutil: Gmetricnames=%v", inst.Gmetricnames)
 
 	for {
-		<-time.After(duration)
+		select {
+		case t := <-time.After(duration):
+			fmt.Printf("duration event time:%v", t)
+		case sig := <-chansync:
+			fmt.Printf("sync signal:%v", sig)
+			return
+		}
 
 		vmem, _ := mem.VirtualMemory()
 
@@ -113,13 +128,10 @@ func NewMonitorGopsutil(duration time.Duration, chanmonitor chan inst.Monitor) {
 			onecpuutil := cpuutil[i]
 			m.Gmetrics[inst.Gmetricnames["CPUutilization"+fmt.Sprint(i+1)]] = inst.Gauge(onecpuutil)
 		}
-		// Send new collected data to the channel
 
-		//
-		// TODO for plan B: make MonitorAgent struct and send it
-		//
 		inst.Sugar.Debugf("NewMonitorGopsutil: m=%v send it to chanmonitor", m)
 
+		// Send new collected data to the channel
 		chanmonitor <- m
 
 	}
@@ -147,8 +159,6 @@ func SendMetrics(m inst.Monitor) {
 			v.Hash = mc.MakeHashMetrics(inst.Key)
 		}
 
-		// inst.Sugar.Infof("agent.SendMetrics v.Hash=%v", v.Hash)
-
 		body, err := json.Marshal(v)
 		if err != nil {
 			log.Fatal(err)
@@ -164,9 +174,7 @@ func SendMetrics(m inst.Monitor) {
 		// crypt body if key exist
 		if inst.PublicKeyFileName != "" {
 			AgentEncrypter.Init()
-			inst.Sugar.Infof("body clear: %v", body)
 			body, _ = AgentEncrypter.EncryptBytes(body)
-			inst.Sugar.Infof("body encrypted: %v", body)
 		}
 
 		request, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
@@ -221,9 +229,7 @@ func SendMetrics(m inst.Monitor) {
 		// crypt body if key exist
 		if inst.PublicKeyFileName != "" {
 			AgentEncrypter.Init()
-			inst.Sugar.Infof("body clear: %v", body)
 			body, _ = AgentEncrypter.EncryptBytes(body)
-			inst.Sugar.Infof("body encrypted: %v", body)
 		}
 
 		request, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
@@ -248,15 +254,20 @@ func SendMetrics(m inst.Monitor) {
 }
 
 // RunSendMetrics begin waiting metrics from channel and send they to the web APIs
-func RunSendMetrics(duration time.Duration, chanmonitor1 chan inst.Monitor, chanmonitor2 chan inst.Monitor) {
+func RunSendMetrics(WG *sync.WaitGroup, duration time.Duration, chanmonitor1 chan inst.Monitor, chanmonitor2 chan inst.Monitor) {
 
 	inst.Sugar.Infow("Agent started gorutine for send metrics")
 
 	var M, m inst.Monitor
 	var err bool
 
+	WG.Add(1)
+	defer WG.Done()
+
 	M.Cmetrics = make([]inst.Counter, len(inst.Cmetricnames))
 	M.Gmetrics = make([]inst.Gauge, len(inst.Gmetricnames))
+
+	slipcount := 0
 
 	for {
 		<-time.After(duration)
@@ -264,6 +275,15 @@ func RunSendMetrics(duration time.Duration, chanmonitor1 chan inst.Monitor, chan
 		// read first chan
 		c1 := len(chanmonitor1)
 		c2 := len(chanmonitor2)
+
+		if c1 == 0 && c2 == 0 {
+			slipcount++
+		}
+		if slipcount > 3 {
+			inst.Sugar.Infof("runSendMetrics -> 3 times empty channel, exit %v", slipcount)
+			return
+		}
+
 		var C int
 		if c1 > c2 {
 			C = c1
@@ -319,9 +339,9 @@ func RunSendMetrics(duration time.Duration, chanmonitor1 chan inst.Monitor, chan
 				// copy(M.Cmetrics, m.Cmetrics)
 				CopyPartSliceG(M.Gmetrics, m.Gmetrics, 28, len(M.Gmetrics))
 			}
-			inst.Sugar.Debugf("RunSendMetrics Gmetricnames=%v", inst.Gmetricnames)
-			inst.Sugar.Debugf("RunSendMetrics Cmetricnames=%v", inst.Cmetricnames)
-			inst.Sugar.Debugf("RunSendMetrics M=%v", M)
+			// inst.Sugar.Debugf("RunSendMetrics Gmetricnames=%v", inst.Gmetricnames)
+			// inst.Sugar.Debugf("RunSendMetrics Cmetricnames=%v", inst.Cmetricnames)
+			// inst.Sugar.Debugf("RunSendMetrics M=%v", M)
 			if inst.BatchSend {
 				// add Metrics to the slice of Monitors
 				mslice[i] = M
@@ -406,7 +426,7 @@ func SendBatchMetrics(monitorb []inst.Monitor) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	inst.Sugar.Debugf("SendBatchMetrics -> count=%d metricsb=%v", c, metricsb)
+	// inst.Sugar.Debugf("SendBatchMetrics -> count=%d metricsb=%v", c, metricsb)
 
 	// send json via POST
 	var url = fmt.Sprintf("http://%v/updates/",

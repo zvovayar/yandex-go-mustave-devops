@@ -16,11 +16,10 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"net/http"
 	_ "net/http/pprof"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 
 	"github.com/zvovayar/yandex-go-mustave-devops/internal/agent"
@@ -40,6 +39,7 @@ var (
 
 func main() {
 
+	var WG sync.WaitGroup
 	if buildVersion == "" {
 		buildVersion = "N/A"
 	}
@@ -65,19 +65,21 @@ func main() {
 
 	chanm := make(chan inst.Monitor, inst.BufferLength)
 	chanmGopsutil := make(chan inst.Monitor, inst.BufferLength)
-	go agent.NewMonitor(inst.PollInterval, chanm)
-	go agent.NewMonitorGopsutil(inst.PollInterval, chanmGopsutil)
 
-	go agent.RunSendMetrics(inst.ReportInterval, chanm, chanmGopsutil)
+	chanSync := make(chan string, 1)
 
-	// start profiler
-	// go http.ListenAndServe(pprofAddr, nil)
-	go func() {
-		log.Println(http.ListenAndServe(pprofAddr, nil))
-	}()
+	go agent.NewMonitor(&WG, inst.PollInterval, chanm, chanSync)
+	go agent.NewMonitorGopsutil(&WG, inst.PollInterval, chanmGopsutil, chanSync)
+
+	go agent.RunSendMetrics(&WG, inst.ReportInterval, chanm, chanmGopsutil)
 
 	sig := <-chanOS
 	inst.Sugar.Infof("INFO got a signal '%v', start shutting down...", sig) // put breakpoint here
+
+	close(chanSync)
+
+	WG.Wait()
+
 	inst.Sugar.Infow("Shutdown complete")
 
 }

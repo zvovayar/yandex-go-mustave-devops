@@ -247,10 +247,7 @@ func UpdateMetricJSON(w http.ResponseWriter, r *http.Request) {
 			body = append(body, buf...)
 		}
 
-		inst.Sugar.Infof("body encrypted: %v", body)
-
 		bodyEnc, _ := ServerDecrypter.DecryptBytes(body)
-		inst.Sugar.Infof("body decrypted: %v", bodyEnc)
 		json.Unmarshal(bodyEnc, &v)
 	} else {
 

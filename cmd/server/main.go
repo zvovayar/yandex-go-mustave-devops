@@ -27,7 +27,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -138,9 +137,9 @@ func main() {
 	signal.Notify(chanOS, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT)
 	sig := <-chanOS
 
-	inst.Sugar.Infof("INFO got a signal '%v', start shutting down... wait 5 seconds\n", sig) // put breakpoint here
+	inst.Sugar.Infof("INFO got a signal '%v', start shutting down...\n", sig)
 	inst.StoreMonitor.ClosePersistanceStorage()
-	<-time.After(time.Second * 5)
+	// <-time.After(time.Second * 5)
 
 	inst.Sugar.Infof("Shutdown complete")
 }
