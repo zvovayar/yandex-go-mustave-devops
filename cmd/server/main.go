@@ -139,7 +139,6 @@ func main() {
 
 	inst.Sugar.Infof("INFO got a signal '%v', start shutting down...\n", sig)
 	inst.StoreMonitor.ClosePersistanceStorage()
-	// <-time.After(time.Second * 5)
 
 	inst.Sugar.Infof("Shutdown complete")
 }
