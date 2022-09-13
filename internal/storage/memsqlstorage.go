@@ -55,6 +55,7 @@ func (mps *MemSQLStorage) NewPersistanceStorage() error {
 	mps.db, err = sqlx.Open("postgres", DatabaseDSN)
 	if err != nil {
 		Sugar.Infow(err.Error())
+		mps.db = nil
 	}
 	defer mps.db.Close()
 
@@ -62,10 +63,17 @@ func (mps *MemSQLStorage) NewPersistanceStorage() error {
 		Sugar.Infow(err.Error())
 	}
 
-	// infinity loop for{} save data to SQL database
+	// infinity loop for{} open database
 	for {
 		<-time.After(StoreInterval)
 
+		if mps.db == nil {
+			mps.db, err = sqlx.Open("postgres", DatabaseDSN)
+			if err != nil {
+				Sugar.Infow(err.Error())
+				mps.db = nil
+			}
+		}
 	}
 
 	// return nil
@@ -78,6 +86,8 @@ func (mps *MemSQLStorage) PingSQLserver(ctx context.Context) error {
 		mps.db, err = sqlx.Open("postgres", DatabaseDSN)
 		if err != nil {
 			Sugar.Infow(err.Error())
+			mps.db = nil
+			return err
 		}
 		defer mps.db.Close()
 	}
@@ -96,6 +106,9 @@ func (mps *MemSQLStorage) PingSQLserver(ctx context.Context) error {
 
 func (mps *MemSQLStorage) ClosePersistanceStorage() error {
 
+	if mps.db == nil {
+		return nil
+	}
 	if err := mps.db.MustBegin().Commit(); err != nil {
 		return fmt.Errorf("MemSQLStorage.ClosePersistanceStorage: %v", err.Error())
 	}

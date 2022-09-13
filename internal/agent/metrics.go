@@ -184,6 +184,8 @@ func SendMetrics(m inst.Monitor) {
 		}
 		request.Header.Set("Content-Type", inst.ContentType)
 
+		request.Header.Set("X-Real-IP", inst.UseIp)
+
 		client := &http.Client{}
 
 		// отправляем запрос
@@ -238,6 +240,8 @@ func SendMetrics(m inst.Monitor) {
 			inst.Sugar.Error(err.Error())
 		}
 		request.Header.Set("Content-Type", inst.ContentType)
+
+		request.Header.Set("X-Real-IP", inst.UseIp)
 
 		client := &http.Client{}
 		// отправляем запрос

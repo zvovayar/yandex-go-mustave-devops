@@ -21,6 +21,7 @@ type ServerConfig struct {
 	LogHTTP            bool          `env:"Log_HTTP" json:"log_http"`
 	PrivateKeyFileName string        `env:"CRYPTO_KEY" json:"crypto_key"`
 	ConfigFile         string        `env:"CONFIG"`
+	TrustedSubnet      string        `env:"TRUSTED_SUBNET" json:"trusted_subnet"`
 }
 
 // ConfigServerInit load config from flags and environment variables
@@ -51,6 +52,7 @@ func ConfigServerInit() {
 	flag.BoolVar(&cfgFromFlags.LogHTTP, "l", inst.LogHTTP, "log HTTP switch, so mach information, switch ON only for debug")
 	flag.StringVar(&cfgFromFlags.PrivateKeyFileName, "crypto-key", inst.PrivateKeyFileName, "private key file name")
 	flag.StringVar(&cfgFromFlags.ConfigFile, "c", "", "config file name")
+	flag.StringVar(&cfgFromFlags.TrustedSubnet, "t", "", "config file name")
 
 	flag.Parse()
 
@@ -161,4 +163,14 @@ func ConfigServerInit() {
 		inst.PrivateKeyFileName = cfgFromFlags.PrivateKeyFileName
 	}
 	inst.Sugar.Infof("Server Strated with variables: PrivateKeyFileName=%v", inst.PrivateKeyFileName)
+
+	if cfgFromJsonFile.TrustedSubnet != "" {
+		inst.TrustedSubnet = cfgFromJsonFile.TrustedSubnet
+	}
+	if cfgEnv.TrustedSubnet != "" {
+		inst.TrustedSubnet = cfgEnv.TrustedSubnet
+	} else if cfgFromFlags.TrustedSubnet != "" {
+		inst.TrustedSubnet = cfgFromFlags.TrustedSubnet
+	}
+	inst.Sugar.Infof("Server Strated with variables: TrustedSubnet=%v", inst.TrustedSubnet)
 }

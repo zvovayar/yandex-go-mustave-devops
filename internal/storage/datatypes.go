@@ -78,6 +78,8 @@ var BatchSend = true
 var LogHTTP = false
 var PrivateKeyFileName = ""
 var PublicKeyFileName = ""
+var TrustedSubnet = ""
+var UseIp = ""
 
 // ContentType default content type
 var ContentType = "application/json"

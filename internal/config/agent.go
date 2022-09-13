@@ -19,6 +19,7 @@ type AgentConfig struct {
 	Key               string        `env:"KEY" json:"key"`
 	PublicKeyFileName string        `env:"CRYPTO_KEY" json:"crypto_key"`
 	ConfigFile        string        `env:"CONFIG"`
+	UseIp             string        `env:"use_ip"`
 }
 
 func ConfigAgentInit() {
@@ -42,6 +43,7 @@ func ConfigAgentInit() {
 	flag.DurationVar(&cfgFromFlags.PollInterval, "p", inst.PollInterval, "poll interval")
 	flag.StringVar(&cfgFromFlags.PublicKeyFileName, "crypto-key", inst.PublicKeyFileName, "certificate with public key file name")
 	flag.StringVar(&cfgFromFlags.ConfigFile, "c", "", "config file name")
+	flag.StringVar(&cfgFromFlags.UseIp, "i", "", "use ip-address to send in X-Real-IP to the server")
 
 	flag.BoolVar(&inst.BatchSend, "B", true, "batch send data")
 	flag.Parse()
@@ -114,6 +116,15 @@ func ConfigAgentInit() {
 		inst.PublicKeyFileName = cfgFromFlags.PublicKeyFileName
 	}
 
-	inst.Sugar.Infof("Agent Strated with variables: address=%v, poll interval=%v, report interval=%v, key=%v, batch send=%v, PublicKeyFileName=%s, ConfigFileName=%s",
-		inst.ServerAddress, inst.PollInterval, inst.ReportInterval, inst.Key, inst.BatchSend, inst.PublicKeyFileName, ConfigFileName)
+	if cfgFromJsonFile.UseIp != "" {
+		inst.UseIp = cfgFromJsonFile.UseIp
+	}
+	if cfgEnv.PublicKeyFileName != "" {
+		inst.UseIp = cfgEnv.UseIp
+	} else {
+		inst.UseIp = cfgFromFlags.UseIp
+	}
+
+	inst.Sugar.Infof("Agent Strated with variables: address=%v, poll interval=%v, report interval=%v, key=%v, batch send=%v, PublicKeyFileName=%s, UseIp=%s, ConfigFileName=%s",
+		inst.ServerAddress, inst.PollInterval, inst.ReportInterval, inst.Key, inst.BatchSend, inst.PublicKeyFileName, inst.UseIp, ConfigFileName)
 }

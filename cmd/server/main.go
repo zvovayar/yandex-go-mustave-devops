@@ -90,6 +90,7 @@ func main() {
 	// зададим встроенные middleware, чтобы улучшить стабильность приложения
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
+	r.Use(inhttp.TrustIpFilter)
 
 	// so mach information, switch ON only for debug
 	if inst.LogHTTP {
