@@ -35,15 +35,11 @@ func (mc *MetricsCrypt) MakeHashMetrics(key string) string {
 
 	mc.Msg = msg
 
-	// inst.Sugar.Infof("crypt.MakeHashMetrics msg=%v\nmc=%v", msg, mc)
-
 	m := []byte(msg)
 	k := []byte(key)
 	sign := MakeMAC(m, k)
 
 	mc.M.Hash = hex.EncodeToString(sign)
-	// inst.Sugar.Infof("crypt.MakeHashMetrics sign=%v ", sign)
-	// inst.Sugar.Infof("crypt.MakeHashMetrics msg=%v\nmc=%v", msg, mc)
 
 	return mc.M.Hash
 }
@@ -62,8 +58,6 @@ func (mc *MetricsCrypt) ControlHashMetrics(key string) bool {
 	}
 
 	mc.Msg = msg
-
-	// inst.Sugar.Infof("crypt.ControlHashMetrics msg=%v\nmc=%v", msg, mc)
 
 	m := []byte(msg)
 	mMAC, err := hex.DecodeString(mc.M.Hash)
@@ -85,10 +79,6 @@ func ValidMAC(message, messageMAC, key []byte) bool {
 	mac := hmac.New(sha256.New, key)
 	mac.Write(message)
 	expectedMAC := mac.Sum(nil)
-	// inst.Sugar.Infof("ValidMAC messageMAC=%v\nexpectedMAC=%v", messageMAC, expectedMAC)
-	// inst.Sugar.Infof("ValidMAC (str)messageMAC=%v\n(str)expectedMAC=%v",
-	// hex.EncodeToString(messageMAC),
-	// hex.EncodeToString(expectedMAC))
 
 	return hmac.Equal(messageMAC, expectedMAC)
 }
@@ -98,7 +88,6 @@ func MakeMAC(message, key []byte) []byte {
 	mac := hmac.New(sha256.New, key)
 	mac.Write(message)
 	MAC := mac.Sum(nil)
-	// inst.Sugar.Infof("MakeMAC expectedMAC=%v", MAC)
 	return MAC
 
 }

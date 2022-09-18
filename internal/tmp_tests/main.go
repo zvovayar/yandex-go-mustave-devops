@@ -8,6 +8,7 @@ import (
 )
 
 //go:generate ls -l
+//go:embed ls.txt
 var src string
 
 func main() {
