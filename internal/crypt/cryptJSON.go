@@ -85,6 +85,7 @@ func (dec *Decrypter) loadPrivKey(filename string) error {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer file.Close()
 
 	reader := bufio.NewReader(file)
 
@@ -98,8 +99,6 @@ func (dec *Decrypter) loadPrivKey(filename string) error {
 			return err
 		}
 	}
-
-	file.Close()
 
 	block, _ := pem.Decode(data)
 	if block == nil {
