@@ -21,7 +21,6 @@ type MemSQLStorage struct {
 }
 
 func (mps *MemSQLStorage) GetMonitor() *Monitor {
-	// inst.Sugar.Infof("func (mps MemSQLStorage) GetMonitor() *Monitor ")
 	return &(mps.sm.monitor)
 }
 
@@ -36,7 +35,6 @@ func (mps *MemSQLStorage) OpenDB() error {
 }
 
 func (mps *MemSQLStorage) InitMemSQLStorage(ch chan StoreMem) chan StoreMem {
-	// ch := make(chan StoreMem, BufferLength)
 	mps.chanPStoreMem = ch
 	return mps.chanPStoreMem
 }
@@ -76,7 +74,6 @@ func (mps *MemSQLStorage) NewPersistanceStorage() error {
 		}
 	}
 
-	// return nil
 }
 
 func (mps *MemSQLStorage) PingSQLserver(ctx context.Context) error {
@@ -203,15 +200,14 @@ func (mps *MemSQLStorage) LoadData() {
 		return
 	}
 
-	c := len(m)
-	for i := 0; i < c; i++ {
+	for i := range m {
 		if m[i].MType == "gauge" {
 			mps.sm.SetGMvalue(m[i].ID, Gauge(*m[i].Value))
 		} else if m[i].MType == "counter" {
 			mps.sm.SetCMvalue(m[i].ID, Counter(*m[i].Delta))
 		}
 	}
-	Sugar.Infof("LoadData loaded %d metrics", c)
+	Sugar.Infof("LoadData loaded %d metrics", len(m))
 }
 
 func (mps *MemSQLStorage) CheckAndCreateMDatabase(ctx context.Context) error {
