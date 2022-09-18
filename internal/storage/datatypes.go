@@ -57,6 +57,8 @@ var Gmetricnames = map[string]int{
 	"testSetGet134": 30,
 }
 
+const FirstGoRutineVariables = 28
+
 // Cmetricnames vocabulary of start counter metric names
 var Cmetricnames = map[string]int{
 	"PollCount":    0,

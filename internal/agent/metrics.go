@@ -311,7 +311,6 @@ func RunSendMetrics(WG *sync.WaitGroup, duration time.Duration, chanmonitor1 cha
 					inst.Sugar.Infow("RunSendMetrics: chanmonitor1 ended... why?")
 					break
 				}
-				// add only first 28 metrics
 				// allocate memory if m > M
 				if len(M.Cmetrics) < len(m.Cmetrics) {
 					x := m.Cmetrics[len(M.Cmetrics)-1 : len(m.Cmetrics)]
@@ -322,7 +321,8 @@ func RunSendMetrics(WG *sync.WaitGroup, duration time.Duration, chanmonitor1 cha
 					M.Gmetrics = append(M.Gmetrics, x...)
 				}
 				copy(M.Cmetrics, m.Cmetrics)
-				CopyPartSliceG(M.Gmetrics, m.Gmetrics, 0, 28)
+				// add only first FirstGoRutineVariables metrics, they sended in first go rutine
+				CopyPartSliceG(M.Gmetrics, m.Gmetrics, 0, inst.FirstGoRutineVariables)
 			}
 			if i < c2 {
 				inst.Sugar.Debugf("RunSendMetrics: read i=%d element from chanmonitor2 ", i)
@@ -340,12 +340,9 @@ func RunSendMetrics(WG *sync.WaitGroup, duration time.Duration, chanmonitor1 cha
 					x := m.Gmetrics[len(M.Gmetrics)-1 : len(m.Gmetrics)]
 					M.Gmetrics = append(M.Gmetrics, x...)
 				}
-				// copy(M.Cmetrics, m.Cmetrics)
-				CopyPartSliceG(M.Gmetrics, m.Gmetrics, 28, len(M.Gmetrics))
+				// add only last from FirstGoRutineVariables metrics, they sended in second go rutine
+				CopyPartSliceG(M.Gmetrics, m.Gmetrics, inst.FirstGoRutineVariables, len(M.Gmetrics))
 			}
-			// inst.Sugar.Debugf("RunSendMetrics Gmetricnames=%v", inst.Gmetricnames)
-			// inst.Sugar.Debugf("RunSendMetrics Cmetricnames=%v", inst.Cmetricnames)
-			// inst.Sugar.Debugf("RunSendMetrics M=%v", M)
 			if inst.BatchSend {
 				// add Metrics to the slice of Monitors
 				mslice[i] = M
