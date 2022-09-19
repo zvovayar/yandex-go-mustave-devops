@@ -22,3 +22,7 @@ git fetch template && git checkout template/main .github
 ```
 
 Затем добавьте полученные изменения в свой репозиторий.
+
+# обновление PlantUML диаграммы
+
+goplantuml -recursive ./ > ./internal/arch_schemas/classes.puml

@@ -1,112 +1,179 @@
+// main start point for server
+// environment variables:
+// ADDRESS=0.0.0.0:44751
+// REPORT_INTERVAL=10s
+// POLL_INTERVAL=2s
+// RESTORE=false
+// SHUTDOWN_TIMEOUT=5s
+// STORE_INTERVAL=10s
+// STORE_FILE=./devops-metrics-db.json
+// RESTORE=true
+// KEY=secret
+// DATABASE_DSN=postgres://postgres:password@localhost:5432/dbname?sslmode=disable
+// flags:
+// -a "address to listen on"
+// -k "key for hash calculate"
+// -i "store interval"
+// -f "store file"
+// -r "restore from file on start"
+// -d "Database DSN"
 package main
 
 import (
 	"fmt"
 	"log"
+	"net"
 	"net/http"
-	"strconv"
-	"strings"
+	_ "net/http/pprof"
+	"os"
+	"os/signal"
+	"syscall"
 
-	"github.com/zvovayar/yandex-go-mustave-devops/internal"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/zvovayar/yandex-go-mustave-devops/internal/config"
+	grpcs "github.com/zvovayar/yandex-go-mustave-devops/internal/grpc"
+	inhttp "github.com/zvovayar/yandex-go-mustave-devops/internal/http"
+	"github.com/zvovayar/yandex-go-mustave-devops/internal/proto"
+	inst "github.com/zvovayar/yandex-go-mustave-devops/internal/storage"
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
+)
+
+// profiler port
+const pprofAddr = ":8083"
+
+// @Title BucketStorage API
+// @Description Сервис хранения данных bucket-ов.
+// @Version 1.0
+
+// @Contact.email support@ultimatestore.io
+
+// @BasePath /api/v1
+// @Host ultimatestore.io:8080
+
+// @SecurityDefinitions.apikey ApiKeyAuth
+// @In header
+// @Name authorization
+
+// @Tag.name Info
+// @Tag.description "Группа запросов состояния сервиса"
+
+// @Tag.name Storage
+// @Tag.description "Группа для работы с данными внутри bucket-ов"
+
+var (
+	buildVersion string
+	buildDate    string
+	buildCommit  string
 )
 
 func main() {
+
+	if buildVersion == "" {
+		buildVersion = "N/A"
+	}
+	if buildDate == "" {
+		buildDate = "N/A"
+	}
+	if buildCommit == "" {
+		buildCommit = "N/A"
+	}
+
+	fmt.Printf("Build version:%s\n", buildVersion)
+	fmt.Printf("Build date:%s\n", buildDate)
+	fmt.Printf("Build commit:%s\n", buildCommit)
+
+	inst.Sugar = zap.NewExample().Sugar()
+	defer inst.Sugar.Sync()
+
+	config.ConfigServerInit()
 	// маршрутизация запросов обработчику
+	r := chi.NewRouter()
 
-	// root
-	http.HandleFunc("/", http.NotFound)
-	// update
-	http.HandleFunc("/update/", NotImplemented)
+	// зададим встроенные middleware, чтобы улучшить стабильность приложения
+	r.Use(middleware.RequestID)
+	r.Use(middleware.RealIP)
+	r.Use(inhttp.TrustIpFilter)
 
-	http.HandleFunc("/update/gauge/", UpdateGaugeMetric)
-	http.HandleFunc("/update/counter/", UpdateCounterMetric)
+	// so mach information, switch ON only for debug
+	if inst.LogHTTP {
+		r.Use(middleware.Logger)
+	}
+	r.Use(middleware.Recoverer)
+	r.Use(middleware.StripSlashes)
+	r.Use(middleware.AllowContentEncoding("deflate", "gzip"))
+	r.Use(middleware.Compress(5, "application/json", "html/text", "text/plain", "text/html"))
 
-	// запуск сервера с адресом localhost, порт 8080
-	http.ListenAndServe(":8080", nil)
-}
+	// GET requests
+	r.Get("/", inhttp.GetAllMetrics)
+	r.Get("/value/gauge/{GMname}", inhttp.GetGMvalue)
+	r.Get("/value/counter/{CMname}", inhttp.GetCMvalue)
+	r.Get("/ping", inhttp.PingStorage)
 
-// Не реализовано
-func NotImplemented(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusNotImplemented)
-	w.Write([]byte("<h1>Not implemented</h1> length="))
-	return
-}
+	// POST requests update, get
+	r.Post("/value", inhttp.GetMvalueJSON)
+	r.Post("/update", inhttp.UpdateMetricJSON)
+	r.Post("/updates", inhttp.UpdateMetricBatch)
+	r.Post("/update/{type}/", inhttp.NotImplemented)
+	r.Post("/update/{type}/{vname}/", http.NotFound)
+	r.Post("/update/{type}/{vname}/{value}", inhttp.NotImplemented)
+	r.Post("/update/gauge/", http.NotFound)
+	r.Post("/update/counter/", http.NotFound)
+	r.Post("/update/gauge/{GMname}/{GMvalue}", inhttp.UpdateGaugeMetric)
+	r.Post("/update/counter/{CMname}/{CMvalue}", inhttp.UpdateCounterMetric)
 
-// Сохранение метрики Gauge
-func UpdateGaugeMetric(w http.ResponseWriter, r *http.Request) {
-
-	ss := strings.Split(r.URL.Path, "/")
-	log.Printf("%v count=%v", r.URL.Path, len(ss))
-	log.Println(ss)
-
-	if len(ss) != 5 {
-		// мало или много параметров в URL
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("<h1>Gauge metric URL is not valid</h1> length=" + fmt.Sprintf("%d", len(ss))))
-		return
-	} else if _, ok := internal.Gmetricnames[ss[3]]; !ok {
-		// не нашли название метрики, были ошибки
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("<h1>Gauge metric not found</h1>"))
-		return
+	if inst.Restore {
+		inst.StoreMonitor.LoadData()
 	}
 
-	gm, err := strconv.ParseFloat(ss[4], 64)
+	// start data's saver persistance
+	go inst.StoreMonitor.NewPersistanceStorage()
 
+	// start profiler
+	// go http.ListenAndServe(pprofAddr, nil)
+	go func() {
+		log.Println(http.ListenAndServe(pprofAddr, nil))
+	}()
+
+	// start listen http
+	go ListenRutine(r)
+
+	// start listen gRPC
+	if inst.GrpcAddr != "" {
+		go ListenGrpc(inst.GrpcAddr)
+	}
+
+	chanOS := make(chan os.Signal, 1) // we need to reserve to buffer size 1, so the notifier are not blocked
+	signal.Notify(chanOS, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT)
+	sig := <-chanOS
+
+	inst.Sugar.Infof("INFO got a signal '%v', start shutting down...\n", sig)
+	inst.StoreMonitor.ClosePersistanceStorage()
+
+	inst.Sugar.Infof("Shutdown complete")
+}
+
+func ListenRutine(r *chi.Mux) {
+	if err := http.ListenAndServe(inst.ServerAddress, r); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func ListenGrpc(addr string) {
+	// определяем порт для сервера
+	listen, err := net.Listen("tcp", addr)
 	if err != nil {
-		// значения метрики нет
-		log.Println(err)
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("<h1>Gauge metric value not found</h1>"))
-		return
+		inst.Sugar.Fatal(err)
 	}
+	// создаём gRPC-сервер без зарегистрированной службы
+	s := grpc.NewServer()
+	// регистрируем сервис
+	proto.RegisterUsersServer(s, &grpcs.UsersServer{})
 
-	gmname := ss[3]
-	log.Printf("Gauge metric %v = %f", gmname, gm)
-
-	//
-	// TODO: здесь сохранять значение метрики
-	//
-
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("<h1>Gauge metric</h1>" + ss[3] + ss[4]))
-}
-
-// Сохранение метрики Counter
-func UpdateCounterMetric(w http.ResponseWriter, r *http.Request) {
-	ss := strings.Split(r.URL.Path, "/")
-	log.Printf("%v count=%v", r.URL.Path, len(ss))
-	log.Println(ss)
-
-	if len(ss) != 5 {
-		// мало или много параметров в URL
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("<h1>Counter metric URL is not valid</h1> length=" + fmt.Sprintf("%d", len(ss))))
-		return
-	} else if _, ok := internal.Cmetricnames[ss[3]]; !ok {
-		// не нашли название метрики, были ошибки
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("<h1>Counter metric not found</h1>"))
-		return
+	inst.Sugar.Debug("Сервер gRPC начал работу")
+	// получаем запрос gRPC
+	if err := s.Serve(listen); err != nil {
+		inst.Sugar.Fatal(err)
 	}
-
-	cm, err := strconv.ParseInt(ss[4], 10, 64)
-
-	if err != nil {
-		// значения метрики нет
-		log.Println(err)
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("<h1>Counter metric value not found</h1>"))
-		return
-	}
-
-	cmname := ss[3]
-	log.Printf("Counter metric %v = %d", cmname, cm)
-
-	//
-	// TODO: здесь сохранять значение метрики
-	//
-
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("<h1>Gauge metric</h1>" + ss[3] + ss[4]))
 }

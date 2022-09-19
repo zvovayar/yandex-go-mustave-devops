@@ -1,0 +1,289 @@
+@startuml
+namespace config {
+    class AgentConfig << (S,Aquamarine) >> {
+        + Address string
+        + ReportInterval time.Duration
+        + PollInterval time.Duration
+        + Key string
+        + PublicKeyFileName string
+        + ConfigFile string
+        + UseIp string
+        + GrpcSrvAddr string
+
+    }
+    class ServerConfig << (S,Aquamarine) >> {
+        + Address string
+        + StoreInterval time.Duration
+        + StoreFile string
+        + Restore bool
+        + Key string
+        + DatabaseDSN string
+        + LogHTTP bool
+        + PrivateKeyFileName string
+        + ConfigFile string
+        + TrustedSubnet string
+        + GrpcAddr string
+
+    }
+}
+
+
+namespace crypt {
+    class Decrypter << (S,Aquamarine) >> {
+        - privKey *rsa.PrivateKey
+        - fileName string
+
+        - loadPrivKey(filename string) error
+
+        + Init() 
+        + DecryptBytes(b []byte) ([]byte, error)
+
+    }
+    class Encrypter << (S,Aquamarine) >> {
+        - pubKey *rsa.PublicKey
+        - fileName string
+
+        - loadPubKey(filename string) error
+
+        + Init() 
+        + EncryptBytes(b []byte) ([]byte, error)
+
+    }
+    interface HashMetrics  {
+        + MakeHashMetrics(key string) string
+        + ControlHashMetrics(key string) bool
+
+    }
+    class MetricsCrypt << (S,Aquamarine) >> {
+        - key string
+
+        + M storage.Metrics
+        + Msg string
+
+        + MakeHashMetrics(key string) string
+        + ControlHashMetrics(key string) bool
+
+    }
+}
+
+"crypt.HashMetrics" <|-- "crypt.MetricsCrypt"
+
+namespace grpcs {
+    class UsersServer << (S,Aquamarine) >> {
+        + GetMetric(ctx context.Context, m *proto.Metric) (*proto.Metric, error)
+        + UpdateMetric(ctx context.Context, m *proto.Metric) (*proto.Result, error)
+        + UpdateBatchMetrics(ctx context.Context, m *proto.BatchMetrics) (*proto.Result, error)
+
+    }
+}
+"proto.UnimplementedUsersServer" *-- "grpcs.UsersServer"
+
+
+namespace proto {
+    class BatchMetrics << (S,Aquamarine) >> {
+        - state protoimpl.MessageState
+        - sizeCache protoimpl.SizeCache
+        - unknownFields protoimpl.UnknownFields
+
+        + Metrics []*Metric
+        + Count int32
+
+        + Reset() 
+        + String() string
+        + ProtoMessage() 
+        + ProtoReflect() protoreflect.Message
+        + Descriptor() ([]byte, []int)
+        + GetMetrics() []*Metric
+        + GetCount() int32
+
+    }
+    class Metric << (S,Aquamarine) >> {
+        - state protoimpl.MessageState
+        - sizeCache protoimpl.SizeCache
+        - unknownFields protoimpl.UnknownFields
+
+        + ID string
+        + MType string
+        + Delta int64
+        + Value float64
+        + Hash string
+
+        + Reset() 
+        + String() string
+        + ProtoMessage() 
+        + ProtoReflect() protoreflect.Message
+        + Descriptor() ([]byte, []int)
+        + GetID() string
+        + GetMType() string
+        + GetDelta() int64
+        + GetValue() float64
+        + GetHash() string
+
+    }
+    class Result << (S,Aquamarine) >> {
+        - state protoimpl.MessageState
+        - sizeCache protoimpl.SizeCache
+        - unknownFields protoimpl.UnknownFields
+
+        + Code Result_CodeError
+        + Text string
+
+        + Reset() 
+        + String() string
+        + ProtoMessage() 
+        + ProtoReflect() protoreflect.Message
+        + Descriptor() ([]byte, []int)
+        + GetCode() Result_CodeError
+        + GetText() string
+
+    }
+    class Result_CodeError << (S,Aquamarine) >> {
+        + Enum() *Result_CodeError
+        + String() string
+        + Descriptor() protoreflect.EnumDescriptor
+        + Type() protoreflect.EnumType
+        + Number() protoreflect.EnumNumber
+        + EnumDescriptor() ([]byte, []int)
+
+    }
+    class UnimplementedUsersServer << (S,Aquamarine) >> {
+        - mustEmbedUnimplementedUsersServer() 
+
+        + GetMetric( context.Context,  *Metric) (*Metric, error)
+        + UpdateMetric( context.Context,  *Metric) (*Result, error)
+        + UpdateBatchMetrics( context.Context,  *BatchMetrics) (*Result, error)
+
+    }
+    interface UnsafeUsersServer  {
+        - mustEmbedUnimplementedUsersServer() 
+
+    }
+    interface UsersClient  {
+        + GetMetric(ctx context.Context, in *Metric, opts ...grpc.CallOption) (*Metric, error)
+        + UpdateMetric(ctx context.Context, in *Metric, opts ...grpc.CallOption) (*Result, error)
+        + UpdateBatchMetrics(ctx context.Context, in *BatchMetrics, opts ...grpc.CallOption) (*Result, error)
+
+    }
+    interface UsersServer  {
+        - mustEmbedUnimplementedUsersServer() 
+
+        + GetMetric( context.Context,  *Metric) (*Metric, error)
+        + UpdateMetric( context.Context,  *Metric) (*Result, error)
+        + UpdateBatchMetrics( context.Context,  *BatchMetrics) (*Result, error)
+
+    }
+    class proto.Result_CodeError << (T, #FF7700) >>  {
+    }
+    class usersClient << (S,Aquamarine) >> {
+        - cc grpc.ClientConnInterface
+
+        + GetMetric(ctx context.Context, in *Metric, opts ...grpc.CallOption) (*Metric, error)
+        + UpdateMetric(ctx context.Context, in *Metric, opts ...grpc.CallOption) (*Result, error)
+        + UpdateBatchMetrics(ctx context.Context, in *BatchMetrics, opts ...grpc.CallOption) (*Result, error)
+
+    }
+}
+
+"proto.UnsafeUsersServer" <|-- "proto.UnimplementedUsersServer"
+"proto.UsersServer" <|-- "proto.UnimplementedUsersServer"
+"proto.UsersClient" <|-- "proto.usersClient"
+
+namespace storage {
+    class MemPStorage << (S,Aquamarine) >> {
+        - sm StoreMem
+        - chanPStoreMem <font color=blue>chan</font> StoreMem
+        - file *os.File
+        - writer *bufio.Writer
+
+        + GetMonitor() *Monitor
+        + InitMemPStorage(ch <font color=blue>chan</font> StoreMem) <font color=blue>chan</font> StoreMem
+        + NewPersistanceStorage() error
+        + ClosePersistanceStorage() error
+        + GetGMvalue(gmname string) Gauge
+        + GetCMvalue(cmname string) Counter
+        + SetGMvalue(gmname string, gm Gauge) 
+        + SetCMvalue(cmname string, cm Counter) 
+        + LoadData() 
+        + SaveBatch(ctx context.Context, batchM []Metrics) error
+        + PingSQLserver(ctx context.Context) error
+
+    }
+    class MemSQLStorage << (S,Aquamarine) >> {
+        - sm StoreMem
+        - chanPStoreMem <font color=blue>chan</font> StoreMem
+        - db *sqlx.DB
+
+        + DatabaseDSN string
+
+        + GetMonitor() *Monitor
+        + OpenDB() error
+        + InitMemSQLStorage(ch <font color=blue>chan</font> StoreMem) <font color=blue>chan</font> StoreMem
+        + NewPersistanceStorage() error
+        + PingSQLserver(ctx context.Context) error
+        + ClosePersistanceStorage() error
+        + GetGMvalue(gmname string) Gauge
+        + GetCMvalue(cmname string) Counter
+        + SetGMvalue(gmname string, gm Gauge) 
+        + SetCMvalue(cmname string, cm Counter) 
+        + LoadData() 
+        + CheckAndCreateMDatabase(ctx context.Context) error
+        + SaveBatch(ctx context.Context, batchM []Metrics) error
+
+    }
+    class Metrics << (S,Aquamarine) >> {
+        + ID string
+        + MType string
+        + Delta *int64
+        + Value *float64
+        + Hash string
+
+    }
+    class Monitor << (S,Aquamarine) >> {
+        + Gmetrics []Gauge
+        + Cmetrics []Counter
+
+    }
+    interface PersistanceStorage  {
+        + NewPersistanceStorage() error
+        + ClosePersistanceStorage() error
+
+    }
+    interface Storage  {
+        + GetGMvalue(gmname string) Gauge
+        + GetCMvalue(cmname string) Counter
+        + SetGMvalue(gmname string, gm Gauge) 
+        + SetCMvalue(cmname string, cm Counter) 
+        + SaveBatch(ctx context.Context, batchM []Metrics) error
+
+    }
+    class StoreMem << (S,Aquamarine) >> {
+        - monitor Monitor
+
+        + GetMonitor() *Monitor
+        + GetGMvalue(gmname string) Gauge
+        + GetCMvalue(cmname string) Counter
+        + SetGMvalue(gmname string, gm Gauge) 
+        + SetCMvalue(cmname string, cm Counter) 
+
+    }
+    interface StoreMemInt  {
+        + GetMonitor() *Monitor
+        + SetMonitor(m *Monitor) 
+
+    }
+    class storage.Counter << (T, #FF7700) >>  {
+    }
+    class storage.Gauge << (T, #FF7700) >>  {
+    }
+}
+"storage.Storage" *-- "storage.PersistanceStorage"
+
+"storage.PersistanceStorage" <|-- "storage.MemPStorage"
+"storage.Storage" <|-- "storage.MemPStorage"
+"storage.PersistanceStorage" <|-- "storage.MemSQLStorage"
+"storage.Storage" <|-- "storage.MemSQLStorage"
+
+"__builtin__.float64" #.. "storage.Gauge"
+"__builtin__.int32" #.. "proto.Result_CodeError"
+"__builtin__.int64" #.. "storage.Counter"
+@enduml

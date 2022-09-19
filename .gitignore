@@ -23,3 +23,8 @@ vendor/
 # IDEs directories
 .idea
 .vscode
+devops-metrics-db.json
+internal/tools
+agent.log
+*.pem
+out
