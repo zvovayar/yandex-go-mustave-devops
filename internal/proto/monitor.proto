@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package metrics;
+
+option go_package = "internal/proto";
+
+message Metric {
+  string ID = 1;             // имя метрики
+	string MType = 2; // параметр, принимающий значение gauge или counter
+	int64 Delta =3;    // значение метрики в случае передачи counter
+	double Value = 4; // значение метрики в случае передачи gauge
+	string Hash = 5;  // значение хеш-функции
+}
+
+message BatchMetrics{
+  repeated Metric  Metrics = 1;
+  int32 Count = 2;
+}
+
+message Result{
+  enum CodeError {
+    OK = 0;
+    ERR = 1;
+  }
+
+  CodeError Code = 1;
+  string Text = 2;
+}
+
+service Users {
+  rpc GetMetric(Metric) returns (Metric);
+  rpc UpdateMetric(Metric) returns (Result);
+  rpc UpdateBatchMetrics(BatchMetrics) returns(Result);
+}

@@ -19,7 +19,8 @@ type AgentConfig struct {
 	Key               string        `env:"KEY" json:"key"`
 	PublicKeyFileName string        `env:"CRYPTO_KEY" json:"crypto_key"`
 	ConfigFile        string        `env:"CONFIG"`
-	UseIp             string        `env:"use_ip"`
+	UseIp             string        `env:"USE_IP"`
+	GrpcSrvAddr       string        `env:"GRPC_SRV_ADDR"`
 }
 
 func ConfigAgentInit() {
@@ -37,13 +38,14 @@ func ConfigAgentInit() {
 	inst.Sugar.Infof("Config environment:%+v", cfgEnv)
 
 	// load flags
-	flag.StringVar(&cfgFromFlags.Address, "a", inst.ServerAddress, "address to bind on")
+	flag.StringVar(&cfgFromFlags.Address, "a", "", "address to bind on")
 	flag.StringVar(&cfgFromFlags.Key, "k", "", "key for hash calculate")
 	flag.DurationVar(&cfgFromFlags.ReportInterval, "r", inst.ReportInterval, "report interval")
 	flag.DurationVar(&cfgFromFlags.PollInterval, "p", inst.PollInterval, "poll interval")
 	flag.StringVar(&cfgFromFlags.PublicKeyFileName, "crypto-key", inst.PublicKeyFileName, "certificate with public key file name")
 	flag.StringVar(&cfgFromFlags.ConfigFile, "c", "", "config file name")
 	flag.StringVar(&cfgFromFlags.UseIp, "i", "", "use ip-address to send in X-Real-IP to the server")
+	flag.StringVar(&cfgFromFlags.GrpcSrvAddr, "gsa", "", "gRPC server address to bind on")
 
 	flag.BoolVar(&inst.BatchSend, "B", true, "batch send data")
 	flag.Parse()
@@ -125,6 +127,15 @@ func ConfigAgentInit() {
 		inst.UseIp = cfgFromFlags.UseIp
 	}
 
-	inst.Sugar.Infof("Agent Strated with variables: address=%v, poll interval=%v, report interval=%v, key=%v, batch send=%v, PublicKeyFileName=%s, UseIp=%s, ConfigFileName=%s",
-		inst.ServerAddress, inst.PollInterval, inst.ReportInterval, inst.Key, inst.BatchSend, inst.PublicKeyFileName, inst.UseIp, ConfigFileName)
+	if cfgFromJsonFile.GrpcSrvAddr != "" {
+		inst.GrpcSrvAddr = cfgFromJsonFile.GrpcSrvAddr
+	}
+	if cfgEnv.GrpcSrvAddr != "" {
+		inst.GrpcSrvAddr = cfgEnv.GrpcSrvAddr
+	} else {
+		inst.GrpcSrvAddr = cfgFromFlags.GrpcSrvAddr
+	}
+
+	inst.Sugar.Infof("Agent Strated with variables: address=%v, poll interval=%v, report interval=%v, key=%v, batch send=%v, PublicKeyFileName=%s, UseIp=%s, ConfigFileName=%s, GrpcSrvAddr=%s",
+		inst.ServerAddress, inst.PollInterval, inst.ReportInterval, inst.Key, inst.BatchSend, inst.PublicKeyFileName, inst.UseIp, ConfigFileName, inst.GrpcSrvAddr)
 }

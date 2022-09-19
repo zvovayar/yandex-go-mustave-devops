@@ -82,6 +82,8 @@ var PrivateKeyFileName = ""
 var PublicKeyFileName = ""
 var TrustedSubnet = ""
 var UseIp = ""
+var GrpcAddr = ""
+var GrpcSrvAddr = ""
 
 // ContentType default content type
 var ContentType = "application/json"

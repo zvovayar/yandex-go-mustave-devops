@@ -7,6 +7,7 @@ export SHUTDOWN_TIMEOUT=5s
 export KEY=/tmp/zK3deX0
 export CRYPTO_KEY=./publickey.pem
 export CONFIG=./agent.json
+export GRPC_SRV_ADDR=192.168.0.23:3222
 
 go run -ldflags "-X main.buildVersion=v1.0.1 -X main.buildDate=23.08.2022 -X main.buildCommit=CWCWCWC" ./cmd/agent/main.go -B=true
 

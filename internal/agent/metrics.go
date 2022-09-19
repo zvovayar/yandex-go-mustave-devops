@@ -4,6 +4,7 @@ package agent
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -16,10 +17,15 @@ import (
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/mem"
 	"github.com/zvovayar/yandex-go-mustave-devops/internal/crypt"
+	"github.com/zvovayar/yandex-go-mustave-devops/internal/proto"
 	inst "github.com/zvovayar/yandex-go-mustave-devops/internal/storage"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 var AgentEncrypter crypt.Encrypter
+
+var GrpcUsersClient *proto.UsersClient
 
 // NewMonitor begin collect metrics infinitly and send they to the channel
 func NewMonitor(WG *sync.WaitGroup, duration time.Duration, chanmonitor chan inst.Monitor, chansync chan string) {
@@ -146,6 +152,7 @@ func SendMetrics(m inst.Monitor) {
 	for key, element := range inst.Gmetricnames {
 
 		var v inst.Metrics
+		var mv proto.Metric
 
 		v.ID = key
 		v.MType = "gauge"
@@ -159,49 +166,31 @@ func SendMetrics(m inst.Monitor) {
 			v.Hash = mc.MakeHashMetrics(inst.Key)
 		}
 
-		body, err := json.Marshal(v)
-		if err != nil {
-			log.Fatal(err)
+		if inst.ServerAddress != "" {
+			err := SendHttpMetric(v)
+			if err != nil {
+				inst.Sugar.Debug(err)
+			}
 		}
 
-		inst.Sugar.Debugf("v=%v", v)
-		inst.Sugar.Debugf("body=%v", string(body))
-
-		var url = fmt.Sprintf("http://%v/update/",
-			inst.ServerAddress)
-		inst.Sugar.Debugf(url)
-
-		// crypt body if key exist
-		if inst.PublicKeyFileName != "" {
-			AgentEncrypter.Init()
-			body, _ = AgentEncrypter.EncryptBytes(body)
+		if inst.GrpcSrvAddr == "" {
+			break
 		}
+		// send gRPC request
+		mv.ID = v.ID
+		mv.MType = v.MType
+		mv.Value = *v.Value
+		mv.Hash = v.Hash
 
-		request, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
-		if err != nil {
-			// обработаем ошибку
-			inst.Sugar.Error(err.Error())
-		}
-		request.Header.Set("Content-Type", inst.ContentType)
+		SendGrpcMetric(&mv)
 
-		request.Header.Set("X-Real-IP", inst.UseIp)
-
-		client := &http.Client{}
-
-		// отправляем запрос
-		resp, err := client.Do(request)
-		if err != nil {
-			// обработаем ошибку
-			inst.Sugar.Error(err.Error())
-			return
-		}
-		defer resp.Body.Close()
-		inst.Sugar.Debug(resp.Status)
 	}
 
 	// counter type send
 	for key, element := range inst.Cmetricnames {
+
 		var v inst.Metrics
+		var mv proto.Metric
 
 		if len(m.Cmetrics) < element+1 {
 			break
@@ -216,45 +205,61 @@ func SendMetrics(m inst.Monitor) {
 			v.Hash = mc.MakeHashMetrics(inst.Key)
 		}
 
-		body, err := json.Marshal(v)
-		if err != nil {
-			log.Fatal(err)
+		if inst.ServerAddress != "" {
+			err := SendHttpMetric(v)
+			if err != nil {
+				inst.Sugar.Debug(err)
+			}
 		}
 
-		inst.Sugar.Debugf("v=%v", v)
-		inst.Sugar.Debugf("body=%v", string(body))
-
-		var url = fmt.Sprintf("http://%v/update/",
-			inst.ServerAddress)
-		inst.Sugar.Debug(url)
-
-		// crypt body if key exist
-		if inst.PublicKeyFileName != "" {
-			AgentEncrypter.Init()
-			body, _ = AgentEncrypter.EncryptBytes(body)
+		if inst.GrpcSrvAddr == "" {
+			break
 		}
+		// send gRPC request
+		mv.ID = v.ID
+		mv.MType = v.MType
+		mv.Delta = *v.Delta
+		mv.Hash = v.Hash
 
-		request, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
-		if err != nil {
-			// обработаем ошибку
-			inst.Sugar.Error(err.Error())
-		}
-		request.Header.Set("Content-Type", inst.ContentType)
-
-		request.Header.Set("X-Real-IP", inst.UseIp)
-
-		client := &http.Client{}
-		// отправляем запрос
-
-		resp, err := client.Do(request)
-		if err != nil {
-			// обработаем ошибку
-			inst.Sugar.Error(err.Error())
-			return
-		}
-		defer resp.Body.Close()
-		inst.Sugar.Debug(resp.Status)
+		SendGrpcMetric(&mv)
 	}
+}
+
+func SendHttpMetric(v inst.Metrics) error {
+	body, err := json.Marshal(v)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var url = fmt.Sprintf("http://%v/update/",
+		inst.ServerAddress)
+
+	if inst.PublicKeyFileName != "" {
+		AgentEncrypter.Init()
+		body, _ = AgentEncrypter.EncryptBytes(body)
+	}
+
+	request, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
+	if err != nil {
+
+		inst.Sugar.Error(err.Error())
+		return err
+	}
+	request.Header.Set("Content-Type", inst.ContentType)
+
+	request.Header.Set("X-Real-IP", inst.UseIp)
+
+	client := &http.Client{}
+
+	resp, err := client.Do(request)
+	if err != nil {
+
+		inst.Sugar.Error(err.Error())
+		return err
+	}
+	defer resp.Body.Close()
+	inst.Sugar.Debug(resp.Status)
+	return nil
 }
 
 // RunSendMetrics begin waiting metrics from channel and send they to the web APIs
@@ -423,33 +428,123 @@ func SendBatchMetrics(monitorb []inst.Monitor) {
 			metricsb = append(metricsb, v)
 		}
 	}
+
+	if inst.ServerAddress != "" {
+		err := SendHttpBatch(metricsb)
+		if err != nil {
+			inst.Sugar.Infow(err.Error())
+			return
+		}
+	}
+
+	if inst.GrpcSrvAddr == "" {
+		return
+	}
+
+	err := SendGrpcBatch(metricsb)
+	if err != nil {
+		inst.Sugar.Infow(err.Error())
+		return
+	}
+
+}
+
+func SendHttpBatch(metricsb []inst.Metrics) error {
 	body, err := json.Marshal(metricsb)
 	if err != nil {
 		log.Fatal(err)
 	}
-	// inst.Sugar.Debugf("SendBatchMetrics -> count=%d metricsb=%v", c, metricsb)
 
-	// send json via POST
 	var url = fmt.Sprintf("http://%v/updates/",
 		inst.ServerAddress)
 	inst.Sugar.Infow(url)
 
 	request, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
 	if err != nil {
-		// обработаем ошибку
+
 		inst.Sugar.Infow(err.Error())
 	}
 	request.Header.Set("Content-Type", inst.ContentType)
 
 	client := &http.Client{}
 
-	// отправляем запрос
 	resp, err := client.Do(request)
 	if err != nil {
-		// обработаем ошибку
+
 		inst.Sugar.Infow(err.Error())
-		return
+		return err
 	}
 	defer resp.Body.Close()
 	inst.Sugar.Infow(resp.Status)
+	return nil
+}
+
+func SendGrpcMetric(m *proto.Metric) {
+
+	if GrpcUsersClient == nil {
+		// устанавливаем соединение с сервером
+		conn, err := grpc.Dial(inst.GrpcSrvAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			inst.Sugar.Fatal(err)
+		}
+		// defer conn.Close()
+
+		// получаем переменную интерфейсного типа UsersClient,
+		// через которую будем отправлять сообщения
+		c := proto.NewUsersClient(conn)
+		GrpcUsersClient = &c
+	}
+
+	ret, err := (*GrpcUsersClient).UpdateMetric(context.Background(), m)
+	if err != nil {
+		inst.Sugar.Fatal(err)
+	}
+	inst.Sugar.Debug(ret.GetText())
+}
+
+func SendGrpcBatch(metricsb []inst.Metrics) error {
+
+	if GrpcUsersClient == nil {
+		// устанавливаем соединение с сервером
+		conn, err := grpc.Dial(inst.GrpcSrvAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			inst.Sugar.Debug(err)
+			return err
+		}
+		// defer conn.Close()
+
+		// получаем переменную интерфейсного типа UsersClient,
+		// через которую будем отправлять сообщения
+		c := proto.NewUsersClient(conn)
+		GrpcUsersClient = &c
+	}
+
+	var mb proto.BatchMetrics
+
+	for i := range metricsb {
+
+		var pm = proto.Metric{
+			ID:    metricsb[i].ID,
+			MType: metricsb[i].MType,
+			Hash:  metricsb[i].Hash,
+		}
+
+		if pm.MType == "counter" {
+			pm.Delta = *metricsb[i].Delta
+		}
+		if pm.MType == "gauge" {
+			pm.Value = *metricsb[i].Value
+		}
+
+		mb.Metrics = append(mb.Metrics, &pm)
+		mb.Count = int32(i)
+	}
+
+	ret, err := (*GrpcUsersClient).UpdateBatchMetrics(context.Background(), &mb)
+	if err != nil {
+		inst.Sugar.Debug(err)
+		return err
+	}
+	inst.Sugar.Debug(ret.GetText())
+	return nil
 }

@@ -22,6 +22,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
@@ -31,9 +32,12 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/zvovayar/yandex-go-mustave-devops/internal/config"
+	grpcs "github.com/zvovayar/yandex-go-mustave-devops/internal/grpc"
 	inhttp "github.com/zvovayar/yandex-go-mustave-devops/internal/http"
+	"github.com/zvovayar/yandex-go-mustave-devops/internal/proto"
 	inst "github.com/zvovayar/yandex-go-mustave-devops/internal/storage"
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
 )
 
 // profiler port
@@ -123,8 +127,6 @@ func main() {
 		inst.StoreMonitor.LoadData()
 	}
 
-	// start listen http
-	go ListenRutine(r)
 	// start data's saver persistance
 	go inst.StoreMonitor.NewPersistanceStorage()
 
@@ -133,6 +135,14 @@ func main() {
 	go func() {
 		log.Println(http.ListenAndServe(pprofAddr, nil))
 	}()
+
+	// start listen http
+	go ListenRutine(r)
+
+	// start listen gRPC
+	if inst.GrpcAddr != "" {
+		go ListenGrpc(inst.GrpcAddr)
+	}
 
 	chanOS := make(chan os.Signal, 1) // we need to reserve to buffer size 1, so the notifier are not blocked
 	signal.Notify(chanOS, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT)
@@ -147,5 +157,23 @@ func main() {
 func ListenRutine(r *chi.Mux) {
 	if err := http.ListenAndServe(inst.ServerAddress, r); err != nil {
 		log.Fatal(err)
+	}
+}
+
+func ListenGrpc(addr string) {
+	// определяем порт для сервера
+	listen, err := net.Listen("tcp", addr)
+	if err != nil {
+		inst.Sugar.Fatal(err)
+	}
+	// создаём gRPC-сервер без зарегистрированной службы
+	s := grpc.NewServer()
+	// регистрируем сервис
+	proto.RegisterUsersServer(s, &grpcs.UsersServer{})
+
+	inst.Sugar.Debug("Сервер gRPC начал работу")
+	// получаем запрос gRPC
+	if err := s.Serve(listen); err != nil {
+		inst.Sugar.Fatal(err)
 	}
 }

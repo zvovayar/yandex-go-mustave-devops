@@ -15,5 +15,6 @@ export DATABASE_DSN=postgres://postgres:qweasd@localhost:5432/yandex?sslmode=dis
 #export DATABASE_DSN="'***postgres:9999/praktikum?easter_egg_msg=you_must_prefer_this_incorrect_settings_to_those_obtained_through_arguments'"
 export CRYPTO_KEY=./privatekey.pem
 export CONFIG=./server.json
+export GRPC_ADDR=0.0.0.0:3222
 
 go run -ldflags "-X main.buildVersion=v1.0.1 -X main.buildDate=23.08.2022 -X main.buildCommit=CWCWCWC" ./cmd/server/main.go 

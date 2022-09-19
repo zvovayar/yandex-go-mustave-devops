@@ -22,6 +22,7 @@ type ServerConfig struct {
 	PrivateKeyFileName string        `env:"CRYPTO_KEY" json:"crypto_key"`
 	ConfigFile         string        `env:"CONFIG"`
 	TrustedSubnet      string        `env:"TRUSTED_SUBNET" json:"trusted_subnet"`
+	GrpcAddr           string        `env:"GRPC_ADDR" json:"grpc_addr"`
 }
 
 // ConfigServerInit load config from flags and environment variables
@@ -53,6 +54,7 @@ func ConfigServerInit() {
 	flag.StringVar(&cfgFromFlags.PrivateKeyFileName, "crypto-key", inst.PrivateKeyFileName, "private key file name")
 	flag.StringVar(&cfgFromFlags.ConfigFile, "c", "", "config file name")
 	flag.StringVar(&cfgFromFlags.TrustedSubnet, "t", "", "config file name")
+	flag.StringVar(&cfgFromFlags.GrpcAddr, "ga", "", "gRPC address to listen on")
 
 	flag.Parse()
 
@@ -173,4 +175,15 @@ func ConfigServerInit() {
 		inst.TrustedSubnet = cfgFromFlags.TrustedSubnet
 	}
 	inst.Sugar.Infof("Server Strated with variables: TrustedSubnet=%v", inst.TrustedSubnet)
+
+	if cfgFromJsonFile.GrpcAddr != "" {
+		inst.GrpcAddr = cfgFromJsonFile.GrpcAddr
+	}
+	if cfgEnv.GrpcAddr != "" {
+		inst.GrpcAddr = cfgEnv.GrpcAddr
+	} else if cfgFromFlags.GrpcAddr != "" {
+		inst.GrpcAddr = cfgFromFlags.GrpcAddr
+	}
+	inst.Sugar.Infof("Server Strated with variables: GrpcAddr=%v", inst.GrpcAddr)
+
 }
