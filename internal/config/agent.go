@@ -38,7 +38,7 @@ func ConfigAgentInit() {
 	inst.Sugar.Infof("Config environment:%+v", cfgEnv)
 
 	// load flags
-	flag.StringVar(&cfgFromFlags.Address, "a", "", "address to bind on")
+	flag.StringVar(&cfgFromFlags.Address, "a", inst.ServerAddress, "address to bind on")
 	flag.StringVar(&cfgFromFlags.Key, "k", "", "key for hash calculate")
 	flag.DurationVar(&cfgFromFlags.ReportInterval, "r", inst.ReportInterval, "report interval")
 	flag.DurationVar(&cfgFromFlags.PollInterval, "p", inst.PollInterval, "poll interval")
